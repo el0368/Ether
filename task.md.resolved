@@ -1,0 +1,53 @@
+# Aether IDE - Task Tracker
+
+## Phase 0: Foundation
+- [x] Set up Svelte 5 frontend with Vite
+- [x] Create EditorChannel for WebSocket communication
+- [x] Implement FileServerAgent (GenServer for file I/O)
+- [x] Fix WebSocket connection issue
+- [x] Test file tree functionality
+- [x] Push to GitHub
+
+## Phase 1: Core Development Agents
+- [x] TestingAgent (mix test wrapper)
+- [x] LintAgent (Credo integration)
+- [x] FormatAgent (mix format wrapper)
+- [ ] Agent status dashboard in UI
+
+## Phase 2: Desktop Shell (Elixir Desktop)
+- [x] Add `desktop` + `burrito` dependencies
+- [x] Create Aether.Desktop module
+- [x] Create native window with wxWidgets
+- [x] Embed WebView for Svelte UI
+- [x] Native menu bar (File, Edit, View, Help)
+
+## Phase 3: Advanced Agents
+- [ ] RefactorAgent (AI-assisted refactoring)
+- [ ] DocAgent (documentation generation)
+- [ ] CIAgent (pre-commit pipeline)
+- [ ] Scanner module (project indexing)
+
+## Phase 4: AI Integration
+- [ ] Add Instructor + Jido dependencies
+- [ ] CommanderAgent (orchestrator)
+- [ ] ActionPlan schema
+- [ ] Structured code generation
+
+## Phase 5: Editor Core
+- [ ] Integrate CodeMirror 6
+- [ ] File open/save via channels
+- [ ] Tab management
+- [ ] Syntax highlighting
+
+## Phase 6: Terminal Integration
+- [ ] Terminal.svelte component
+- [ ] xterm.js integration
+- [ ] Shell session management
+- [ ] ANSI color support
+
+## Phase 7: Packaging & Distribution
+- [ ] Burrito release configuration
+- [ ] Windows executable (.exe)
+- [ ] macOS app bundle (.app)
+- [ ] Linux AppImage
+- [ ] Auto-update system

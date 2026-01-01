@@ -49,6 +49,13 @@
 - Implemented `Desktop.Menu` with raw string XML to fix parser issues
 - Created `start_desktop.bat` for easy launching
 
+### Phase 3 Preparation (22:30)
+- Defined Workflow Agents in `.agent/workflows/`:
+    - `refactor-agent.md`: Protocol for safe code refactoring.
+    - `doc-agent.md`: Protocol for documentation maintenance.
+    - `ci-agent.md`: Protocol for pre-commit checks.
+    - `qa-auditor.md`: Protocol for code quality auditing.
+
 ## Phase Roadmap Status
 
 ### ✅ Phase 0: Foundation

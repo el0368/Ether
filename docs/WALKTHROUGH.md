@@ -140,6 +140,16 @@ Aether.Agents.FileServerAgent.list_files(path)
 
 ---
 
+### ✅ Phase 2: Desktop Shell
+- [x] Add `desktop` + `burrito` dependencies
+- [x] Create Aether.Desktop module
+- [x] Create native window with wxWidgets
+- [x] Embed WebView for Svelte UI
+- [x] Native menu bar
+
+### ⏳ Phase 3: Advanced Agents (Next)
+ (File, Edit, View, Help)
+
 ## Next Phase: Desktop Shell
 
 **Phase 2 Goals**:
@@ -149,12 +159,25 @@ Aether.Agents.FileServerAgent.list_files(path)
 4. Embed WebView for Svelte UI
 5. Native menu bar (File, Edit, View, Help)
 
+### Phase 2: Desktop Shell Implementation
+**Time**: ~21:40
+
+**Achievements**:
+-   **Architecture**: Implemented `Desktop.Window` wrapper wrapping a native wxWidgets frame with an embedded WebView component (using Edge/WebKit).
+-   **Native Menu Bar**: Created `Aether.Desktop.MenuBar` using the `Desktop.Menu` behaviour.
+    -   *Challenge*: `~H` sigil injected debug comments `<!-- -->` which broke the strict XML parser in `Desktop.Menu`.
+    -   *Fix*: Used raw string `"""` for XML definition instead.
+-   **Burrito**: Configured `releases` in `mix.exs` targeting Windows x86_64.
+-   **Launch**: Created `start_desktop.bat` which successfully launches Phoenix + Desktop Window.
+
+**Created Files**:
+-   `lib/aether/desktop.ex`
+-   `lib/aether/desktop/menu_bar.ex`
+-   `start_desktop.bat`
+
+**Verification**:
+-   `start_desktop.bat` works.
+-   Window opens and loads Svelte app.
+-   Events like "New File" from native menu are received by the Elixir backend.
+
 ---
-
-## Lessons Applied
-
-From `LESSONS_LEARNED.md`:
-- ✅ No NIFs - all agents are pure Elixir
-- ✅ Database password configured in dev.exs AND test.exs
-- ✅ Using `.bat` scripts for Windows
-- ✅ Removed problematic `compilers` and `listeners` from mix.exs

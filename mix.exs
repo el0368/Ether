@@ -9,7 +9,8 @@ defmodule Aether.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      releases: releases()
     ]
   end
 
@@ -63,7 +64,24 @@ defmodule Aether.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
       # Development Lifecycle
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      # Desktop Application
+      {:desktop, "~> 1.5"},
+      {:wx, "~> 1.1", hex: :bridge, targets: [:windows, :macos, :linux]},
+      {:burrito, "~> 1.2"}
+    ]
+  end
+
+  def releases do
+    [
+      aether: [
+        steps: [:assemble, &Burrito.wrap/1],
+        burrito: [
+          targets: [
+            windows: [os: :windows, cpu: :x86_64]
+          ]
+        ]
+      ]
     ]
   end
 

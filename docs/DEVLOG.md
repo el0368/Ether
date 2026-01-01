@@ -31,7 +31,23 @@
 - ✅ All tests passing (5/5)
 - ✅ Pushed to GitHub
 
+### Phase 2 Complete (21:50)
+- ✅ Aether.Desktop (Native Window)
+- ✅ Embedded WebView
+- ✅ Native Menu Bar
+- ✅ Desktop Launch Script
+- ✅ README updated
+
 ---
+
+## Session 2: 2026-01-01 (21:10 - 21:50)
+
+### Desktop Shell Implementation
+- Added `desktop` (~> 1.5) and `burrito` (~> 1.2) dependencies
+- Implemented `Desktop.Window` wrapper for native window
+- Fixed `wx` constant issues in Elixir syntax
+- Implemented `Desktop.Menu` with raw string XML to fix parser issues
+- Created `start_desktop.bat` for easy launching
 
 ## Phase Roadmap Status
 
@@ -47,12 +63,16 @@
 - [x] FormatAgent (mix format wrapper)
 - [ ] Agent status dashboard in UI
 
-### ⏳ Phase 2: Desktop Shell (Next)
-- [ ] Add `desktop` + `burrito` dependencies
-- [ ] Create Aether.Desktop.App module
-- [ ] Create native window with wxWidgets
-- [ ] Embed WebView for Svelte UI
-- [ ] Native menu bar
+### ✅ Phase 2: Desktop Shell
+- [x] Add `desktop` + `burrito` dependencies
+- [x] Create native window with wxWidgets
+- [x] Embed WebView for Svelte UI
+- [x] Native menu bar
+
+### ⏳ Phase 3: Advanced Agents (Next)
+- [ ] RefactorAgent
+- [ ] CommandAgent
+- [ ] GitAgent
 
 ### Phase 3: Advanced Agents
 ### Phase 4: AI Integration

@@ -12,8 +12,12 @@ defmodule Aether.Application do
       Aether.Repo,
       {DNSCluster, query: Application.get_env(:aether, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Aether.PubSub},
-      # Start a worker by calling: Aether.Worker.start_link(arg)
-      # {Aether.Worker, arg},
+      # Aether Agents - File Operations
+      Aether.Agents.FileServerAgent,
+      # Aether Agents - Development Lifecycle
+      Aether.Agents.TestingAgent,
+      Aether.Agents.LintAgent,
+      Aether.Agents.FormatAgent,
       # Start to serve requests, typically the last entry
       AetherWeb.Endpoint
     ]

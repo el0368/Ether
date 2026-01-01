@@ -7,7 +7,7 @@ import Config
 # Run `mix help test` for more information.
 config :aether, Aether.Repo,
   username: "postgres",
-  password: "postgres",
+  password: "a",
   hostname: "localhost",
   database: "aether_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,

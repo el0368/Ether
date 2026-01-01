@@ -78,7 +78,10 @@ defmodule Aether.MixProject do
         steps: [:assemble, &Burrito.wrap/1],
         burrito: [
           targets: [
-            windows: [os: :windows, cpu: :x86_64]
+            windows: [os: :windows, cpu: :x86_64],
+            macos: [os: :darwin, cpu: :x86_64],
+            macos_m1: [os: :darwin, cpu: :aarch64],
+            linux: [os: :linux, cpu: :x86_64]
           ]
         ]
       ]

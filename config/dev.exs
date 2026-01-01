@@ -24,10 +24,9 @@ config :aether, AetherWeb.Endpoint,
   code_reloader: true,
   debug_errors: true,
   secret_key_base: "M2N+uB8iTprrkLZREli7NUmrfizVq7ULNqucf7buEJubtWNF5EV4Y7QW8ZpxmiSA",
-  watchers: [
-    esbuild: {Esbuild, :install_and_run, [:aether, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:aether, ~w(--watch)]}
-  ]
+  # Watchers disabled - using Vite for Svelte frontend
+  # Run `npm run dev` in /assets for live reload
+  watchers: []
 
 # ## SSL Support
 #

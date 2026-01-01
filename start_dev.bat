@@ -19,7 +19,14 @@ echo Fetching dependencies...
 call mix deps.get
 
 echo.
-echo Compiling...
+echo Building Svelte frontend...
+cd assets
+call npm install
+call npm run build
+cd ..
+
+echo.
+echo Compiling Elixir...
 call mix compile
 
 echo.

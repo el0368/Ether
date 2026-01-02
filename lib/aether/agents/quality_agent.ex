@@ -44,10 +44,12 @@ defmodule Aether.Agents.QualityAgent do
   # --- Private Verification Steps ---
 
   defp check_native_reflexes do
-    # Placeholder for checking if the Zig scanner is responsive
-    # and not leaking memory via the BEAM allocator.
-    Logger.debug("Quality Agent: Testing Zig Reflexes...")
-    :ok 
+    Logger.debug("Quality Agent: Testing Reflexes (Pure Elixir Mode)...")
+    # Verify the fallback scanner works
+    case Aether.Scanner.scan(".") do
+      {:ok, _files} -> :ok
+      {:error, reason} -> {:error, :scanner, reason}
+    end
   end
 
   defp check_elixir_logic do

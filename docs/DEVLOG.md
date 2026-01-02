@@ -142,3 +142,25 @@ https://github.com/el0368/Aether.git
 - **Reflexes**: Hybrid-ready (Pure Elixir active).
 - **Quality**: Jido-guarded.
 - **Desktop**: Fully operational.
+
+---
+
+## Session 4: 2026-01-02 (Resilient Hybrid Transition)
+
+### The Resilient Hybrid Engine Attempt
+- **Goal**: Activate Zig NIFs for `Aether.Scanner` using "Unbreakable Zig Protocol".
+- **Execution**: 
+    - Re-enabled `zigler` (~> 0.15.0).
+    - Created `scripts/audit_env.bat` to verify Windows environment.
+    - Implemented `Aether.Native.Bridge` to handle safe fallbacks.
+- **Outcome**: The compilation of the NIF stalled/failed due to missing build tools (`nmake`, `erl_nif_win.h` issues) on the host Windows machine.
+- **Resolution**:
+    - **Safe Mode Activated**: Reverted `mix.exs` and `config.exs` to disable Zigler.
+    - **Bridge Verified**: Validated that `Aether.Native.Bridge` correctly detects the disabled native module and fails back to the pure Elixir scanner without crashing.
+    - **Status**: The project is now "Safe Mode" but structurally ready for Hybrid activation once the environment is fixed.
+
+### Key Artifacts Created
+- `scripts/audit_env.bat`: Diagnostic tool for native compilation.
+- `lib/aether/native/bridge.ex`: The redundancy layer.
+- `lib/aether/native/scanner.ex`: The dormant Zig implementation.
+

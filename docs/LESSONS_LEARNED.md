@@ -130,3 +130,19 @@ The `jido` library pulls in `ex_dbug`, which requires `credo` as a runtime depen
 
 ### Resolution
 Removed `only: [:dev, :test]` from the `credo` definition in `mix.exs`, making it available in all environments. This satisfied `ex_dbug`'s requirement.
+
+---
+
+## 10. The Resilient Bridge Pattern
+
+### Problem
+Native dependencies (NIFs) introduce a risk of crashing the entire VM or failing to compile on certain environments (e.g., missing C headers on Windows).
+
+### Solution
+Implement a **Bridge Module** (`Aether.Native.Bridge`) that:
+1. Wraps the NIF call in a `try/rescue/catch` block.
+2. Checks for module availability (`Code.ensure_loaded?`).
+3. specificially handles `{:error, :native_disabled}` or similar flags.
+4. Seamlessly degrades to a Pure Elixir implementation (The Fallback) if the Native path fails.
+
+This ensures the application is "Unbreakable" regardless of the underlying environment's readiness for native compilation.

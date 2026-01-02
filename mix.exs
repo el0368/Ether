@@ -68,11 +68,13 @@ defmodule Aether.MixProject do
       # Desktop Application
       {:desktop, "~> 1.5"},
       {:wx, "~> 1.1", hex: :bridge, targets: [:windows, :macos, :linux]},
-      # {:zigler, "~> 0.15.0"},
       {:burrito, "~> 1.2"},
+      # Native Reflexes (The Industrial Hybrid Engine)
+      # {:zigler, "~> 0.15.0", runtime: false},
       
-      # Agent Framework
+      # Agent Framework & Intelligence
       {:jido, "~> 1.0.0"}
+      # {:instructor, "~> 0.1.0"}
     ]
   end
 

@@ -1,37 +1,44 @@
 @echo off
-echo ============================================
-echo   Aether IDE - Pure Elixir Stack
-echo ============================================
+setlocal EnableDelayedExpansion
 
-REM Set PATH for Elixir, Erlang, Git, Node.js
-set PATH=C:\elixir-otp-28\bin;C:\Program Files\Erlang OTP\bin;C:\Program Files\Git\cmd;C:\Program Files\nodejs;C:\Windows\system32;C:\Windows
+echo 🌌 [Aether] Initializing Industrial Environment...
 
-echo.
-echo [CHECK] Elixir Version:
-call elixir -v
+:: 🛠️ AUTO-DETECT VISUAL STUDIO ENVIRONMENT
+:: This looks for the VS Dev Command script and runs it if nmake isn't found.
+where nmake >nul 2>nul
+if %ERRORLEVEL% neq 0 (
+    echo 🔍 [Aether] NMake not in PATH. Attempting to source VS Build Tools...
+    
+    set "VS_DEV_CMD=C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat"
+    
+    if exist "!VS_DEV_CMD!" (
+        echo 🟢 [Aether] Found VS Build Tools. Initializing...
+        call "!VS_DEV_CMD!" >nul
+    ) else (
+        echo 🔴 [Error] VS Build Tools not found at expected path: "!VS_DEV_CMD!"
+        echo 💡 [Fix] Please ensure Visual Studio 2022 is installed.
+        pause
+        exit /b 1
+    )
+)
 
-echo.
-echo Ensuring database exists...
-call mix ecto.create
+:: 🛡️ UNBREAKABLE PATH HARDENING
+set "OLD_PATH=%PATH%"
+set "PATH=%PATH:C:\Zig;=%"
+set "PATH=%PATH:C:\Zig=%"
 
-echo.
-echo Fetching dependencies...
+:: 📂 DIRECTORY SETUP
+cd /d "%~dp0"
+
+echo 🛡️ [Path] System Zig excluded. Developer environment active.
+
+:: 📦 DEPENDENCY & TOOLING SYNC
+echo 📦 [Aether] Syncing dependencies...
 call mix deps.get
+call mix zig.get
 
-echo.
-echo Building Svelte frontend...
-cd assets
-call npm install
-call npm run build
-cd ..
+:: 🚀 LAUNCH IEX SESSION
+echo 🚀 [Aether] Launching Brain...
+iex -S mix phx.server
 
-echo.
-echo Compiling Elixir...
-call mix compile
-
-echo.
-echo ============================================
-echo   Starting Phoenix Server...
-echo   Open http://localhost:4000
-echo ============================================
-call mix phx.server
+endlocal

@@ -58,6 +58,16 @@
   // UI State
   let showRefactor = $state(false);
   let activeSidebar = $state("files");
+  let sidebarVisible = $state(true);
+
+  function toggleSidebar(section) {
+    if (activeSidebar === section && sidebarVisible) {
+      sidebarVisible = false;
+    } else {
+      activeSidebar = section;
+      sidebarVisible = true;
+    }
+  }
 
   function handleRefactorSuccess(newCode) {
     fileContent = newCode;
@@ -65,38 +75,46 @@
   }
 </script>
 
-<div class="app-container bg-[#0d0f14] text-slate-200 select-none">
+<div class="app-container bg-[#1e1e1e] text-[#cccccc] select-none font-sans">
   <!-- VS Code Top Menu Bar -->
   <header
-    class="h-8 bg-[#181818] flex items-center px-3 border-b border-white/5 shrink-0"
+    class="h-9 bg-[#181818] flex items-center px-3 border-b border-white/[0.03] shrink-0"
   >
-    <div class="flex items-center gap-4 text-[12px] opacity-70">
-      <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer"
+    <div class="flex items-center gap-4 text-[13px] opacity-70">
+      <span
+        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
         >File</span
       >
-      <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer"
+      <span
+        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
         >Edit</span
       >
-      <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer"
+      <span
+        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
         >Selection</span
       >
-      <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer"
+      <span
+        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
         >View</span
       >
-      <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer"
+      <span
+        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
         >Go</span
       >
-      <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer"
+      <span
+        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
         >Run</span
       >
-      <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer"
+      <span
+        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
         >Terminal</span
       >
-      <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer"
+      <span
+        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
         >Help</span
       >
     </div>
-    <div class="flex-1 text-center text-[11px] opacity-40 font-medium">
+    <div class="flex-1 text-center text-[12px] opacity-40 font-medium">
       Aether - Antigravity - Task [Administrator]
     </div>
   </header>
@@ -105,163 +123,178 @@
   <main class="flex flex-1 overflow-hidden">
     <!-- VS Code Activity Bar (Far Left) -->
     <nav
-      class="w-12 bg-[#333333] flex flex-col items-center py-2 gap-2 shrink-0"
+      class="w-12 bg-[#333333] flex flex-col items-center py-2 gap-2 shrink-0 border-r border-white/[0.03]"
     >
       <div class="flex flex-col gap-1 w-full">
         <button
-          class="h-12 w-full flex items-center justify-center transition-all cursor-pointer text-xl border-l-2 {activeSidebar ===
-          'files'
+          class="h-12 w-full flex items-center justify-center transition-all cursor-pointer text-xl border-l-[3px] {activeSidebar ===
+            'files' && sidebarVisible
             ? 'border-white opacity-100 bg-white/5'
             : 'border-transparent opacity-40 hover:opacity-80'}"
           title="Explorer"
-          onclick={() => (activeSidebar = "files")}>📁</button
+          onclick={() => toggleSidebar("files")}>📁</button
         >
         <button
-          class="h-12 w-full flex items-center justify-center transition-all cursor-pointer text-xl border-l-2 {activeSidebar ===
-          'git'
+          class="h-12 w-full flex items-center justify-center transition-all cursor-pointer text-xl border-l-[3px] {activeSidebar ===
+            'git' && sidebarVisible
             ? 'border-white opacity-100 bg-white/5'
             : 'border-transparent opacity-40 hover:opacity-80'}"
           title="Source Control"
-          onclick={() => (activeSidebar = "git")}>🌿</button
+          onclick={() => toggleSidebar("git")}>🌿</button
         >
         <button
-          class="h-12 w-full flex items-center justify-center transition-all cursor-pointer text-xl border-l-2 {activeSidebar ===
-          'search'
+          class="h-12 w-full flex items-center justify-center transition-all cursor-pointer text-xl border-l-[3px] {activeSidebar ===
+            'search' && sidebarVisible
             ? 'border-white opacity-100 bg-white/5'
             : 'border-transparent opacity-40 hover:opacity-80'}"
           title="Search"
-          onclick={() => (activeSidebar = "search")}>🔍</button
+          onclick={() => toggleSidebar("search")}>🔍</button
         >
         <button
-          class="h-12 w-full flex items-center justify-center transition-all cursor-pointer text-xl border-l-2 {activeSidebar ===
-          'debug'
+          class="h-12 w-full flex items-center justify-center transition-all cursor-pointer text-xl border-l-[3px] {activeSidebar ===
+            'debug' && sidebarVisible
             ? 'border-white opacity-100 bg-white/5'
             : 'border-transparent opacity-40 hover:opacity-80'}"
           title="Run and Debug"
-          onclick={() => (activeSidebar = "debug")}>▶️</button
+          onclick={() => toggleSidebar("debug")}>▶️</button
         >
       </div>
       <div class="mt-auto flex flex-col gap-4 opacity-40 pb-4">
-        <button class="text-lg hover:opacity-100">👤</button>
-        <button class="text-lg hover:opacity-100">⚙️</button>
+        <button class="text-lg hover:opacity-100 transition-opacity">👤</button>
+        <button class="text-lg hover:opacity-100 transition-opacity">⚙️</button>
       </div>
     </nav>
 
     <!-- VS Code Sidebar (Explorer) -->
-    <aside
-      class="w-64 bg-[#252526] border-r border-white/5 flex flex-col overflow-hidden shrink-0"
-    >
-      <div class="p-3 flex items-center justify-between">
-        <span class="text-[11px] font-bold uppercase tracking-wider opacity-60">
-          {#if activeSidebar === "files"}Explorer{:else if activeSidebar === "git"}Source
-            Control{:else}{activeSidebar}{/if}
-        </span>
-        <button class="opacity-40 hover:opacity-100">•••</button>
-      </div>
-
-      <!-- Content Area -->
-      <div class="flex-1 overflow-hidden flex flex-col">
-        {#if activeSidebar === "files"}
-          <div
-            class="flex items-center px-4 py-1 bg-white/5 gap-1 cursor-pointer"
+    {#if sidebarVisible}
+      <aside
+        class="w-64 bg-[#252526] border-r border-black/20 flex flex-col overflow-hidden shrink-0"
+      >
+        <div class="p-3 pl-5 flex items-center justify-between">
+          <span
+            class="text-[11px] font-medium uppercase tracking-wider opacity-60"
           >
-            <span class="text-[10px] opacity-40">▼</span>
+            {#if activeSidebar === "files"}Explorer{:else if activeSidebar === "git"}Source
+              Control{:else}{activeSidebar}{/if}
+          </span>
+          <button class="opacity-40 hover:opacity-100 pr-2">•••</button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-hidden flex flex-col">
+          {#if activeSidebar === "files"}
+            <div
+              class="flex items-center px-1 py-1 bg-white/[0.03] gap-1 cursor-pointer"
+            >
+              <span class="text-[10px] opacity-40 ml-1">▼</span>
+              <span
+                class="text-[11px] font-bold uppercase tracking-tight opacity-70"
+                >Aether Project</span
+              >
+            </div>
+
+            <div class="flex-1 overflow-auto py-1">
+              {#if fileTree.length === 0}
+                <div class="p-6 flex flex-col items-center gap-2 opacity-30">
+                  <span class="loading loading-spinner loading-xs"></span>
+                </div>
+              {:else}
+                <ul class="menu menu-xs p-0 gap-0">
+                  {#each fileTree as file}
+                    <li class="group">
+                      <button
+                        class="rounded-none px-4 py-1 transition-all text-[#cccccc] hover:text-white hover:bg-white/[0.05] border-l-2 border-transparent text-[13px] gap-2 items-center"
+                        class:active-file={selectedFile === file}
+                        onclick={() => {
+                          selectedFile = file;
+                          if (channel) {
+                            channel
+                              .push("editor:read", { path: file.path })
+                              .receive(
+                                "ok",
+                                (resp) => (fileContent = resp.content),
+                              );
+                          }
+                        }}
+                      >
+                        <span class="text-xs opacity-40 shrink-0"
+                          >{file.is_dir ? "📁" : "📄"}</span
+                        >
+                        <span class="truncate">{file.name}</span>
+                      </button>
+                    </li>
+                  {/each}
+                </ul>
+              {/if}
+            </div>
+          {:else if activeSidebar === "git"}
+            <div class="p-4">
+              <GitPanel {channel} />
+            </div>
+          {:else}
+            <div class="p-8 text-center opacity-20 italic text-sm">
+              Section arriving soon...
+            </div>
+          {/if}
+        </div>
+
+        <!-- Collapsible: Outline (Placeholder) -->
+        <div class="bg-white/2 border-t border-black/20">
+          <div
+            class="flex items-center px-4 py-1 gap-1 cursor-pointer hover:bg-white/5"
+          >
+            <span class="text-[10px] opacity-40">▶</span>
             <span
-              class="text-[11px] font-bold uppercase tracking-tight opacity-80"
-              >Aether Project</span
+              class="text-[11px] font-bold uppercase tracking-tight opacity-60"
+              >Outline</span
             >
           </div>
-
-          <div class="flex-1 overflow-auto py-2">
-            {#if fileTree.length === 0}
-              <div class="p-6 flex flex-col items-center gap-2 opacity-30">
-                <span class="loading loading-spinner loading-xs"></span>
-              </div>
-            {:else}
-              <ul class="menu menu-xs p-0 gap-0">
-                {#each fileTree as file}
-                  <li class="group">
-                    <button
-                      class="rounded-none px-4 py-1 transition-all text-white/50 hover:text-white hover:bg-white/5 border-l-2 border-transparent text-[13px] gap-2 items-center"
-                      class:active-file={selectedFile === file}
-                      onclick={() => {
-                        selectedFile = file;
-                        if (channel) {
-                          channel
-                            .push("editor:read", { path: file.path })
-                            .receive(
-                              "ok",
-                              (resp) => (fileContent = resp.content),
-                            );
-                        }
-                      }}
-                    >
-                      <span class="text-xs opacity-40 shrink-0"
-                        >{file.is_dir ? "📁" : "📄"}</span
-                      >
-                      <span class="truncate">{file.name}</span>
-                    </button>
-                  </li>
-                {/each}
-              </ul>
-            {/if}
-          </div>
-        {:else if activeSidebar === "git"}
-          <div class="p-4">
-            <GitPanel {channel} />
-          </div>
-        {:else}
-          <div class="p-8 text-center opacity-20 italic">
-            Section arriving soon...
-          </div>
-        {/if}
-      </div>
-
-      <!-- Collapsible: Outline (Placeholder) -->
-      <div class="bg-white/2 border-t border-white/5">
-        <div
-          class="flex items-center px-4 py-1 gap-1 cursor-pointer hover:bg-white/5"
-        >
-          <span class="text-[10px] opacity-40">▶</span>
-          <span
-            class="text-[11px] font-bold uppercase tracking-tight opacity-80"
-            >Outline</span
-          >
         </div>
-      </div>
 
-      <!-- Collapsible: Timeline (Placeholder) -->
-      <div class="bg-white/2 border-t border-white/5">
-        <div
-          class="flex items-center px-4 py-1 gap-1 cursor-pointer hover:bg-white/5"
-        >
-          <span class="text-[10px] opacity-40">▶</span>
-          <span
-            class="text-[11px] font-bold uppercase tracking-tight opacity-80"
-            >Timeline</span
+        <!-- Collapsible: Timeline (Placeholder) -->
+        <div class="bg-white/2 border-t border-black/20">
+          <div
+            class="flex items-center px-4 py-1 gap-1 cursor-pointer hover:bg-white/5"
           >
+            <span class="text-[10px] opacity-40">▶</span>
+            <span
+              class="text-[11px] font-bold uppercase tracking-tight opacity-60"
+              >Timeline</span
+            >
+          </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    {/if}
 
     <!-- VS Code Editor & Panel Central Area -->
     <div class="flex-1 flex flex-col min-w-0">
       <!-- Editor Tabs -->
       {#if selectedFile}
         <div
-          class="flex items-center bg-[#181818] h-9 min-h-[2.25rem] overflow-x-auto no-scrollbar"
+          class="flex items-center bg-[#252526] h-9 min-h-[2.25rem] overflow-x-auto no-scrollbar"
         >
           <div
-            class="flex items-center bg-[#1e1e1e] h-full px-4 gap-2 border-r border-[#12151c] border-t-2 border-primary"
+            class="flex items-center bg-[#1e1e1e] h-full px-4 gap-2 border-r border-black/20 border-t border-t-primary"
           >
-            <span class="text-xs text-primary">📄</span>
-            <span class="text-[12px] whitespace-nowrap"
+            <span class="text-xs text-primary opacity-60">📄</span>
+            <span class="text-[13px] whitespace-nowrap text-[#cccccc]"
               >{selectedFile.name}</span
             >
-            <button class="ml-2 opacity-40 hover:opacity-100 text-[10px]"
+            <button class="ml-2 opacity-20 hover:opacity-100 text-[10px]"
               >✕</button
             >
           </div>
+        </div>
+
+        <!-- Breadcrumbs -->
+        <div
+          class="h-6 flex items-center px-4 bg-[#1e1e1e] border-b border-black/10 text-[11px] opacity-40 gap-1"
+        >
+          <span>Aether</span>
+          <span>›</span>
+          <span class="font-bold"
+            >{selectedFile.path.split("/").join(" › ")}</span
+          >
         </div>
       {/if}
 

@@ -17,10 +17,17 @@
                 theme: theme || "vs-dark",
                 automaticLayout: true,
                 minimap: { enabled: false },
-                fontSize: 14,
-                fontFamily:
-                    "'JetBrains Mono', 'Fira Code', Consolas, monospace",
+                fontSize: 13,
+                lineHeight: 20,
+                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                fontLigatures: true,
+                padding: { top: 10, bottom: 10 },
                 scrollBeyondLastLine: false,
+                renderLineHighlight: "all",
+                scrollbar: {
+                    vertical: "hidden",
+                    horizontal: "hidden",
+                },
             });
 
             model = editor.getModel();
@@ -130,4 +137,13 @@
     }
 </script>
 
-<div class="w-full h-full overflow-hidden" bind:this={editorContainer}></div>
+<div class="editor-container" bind:this={editorContainer}></div>
+
+<style>
+    .editor-container {
+        width: 100%;
+        height: 100%;
+        min-height: 400px;
+        border: 1px solid #333;
+    }
+</style>

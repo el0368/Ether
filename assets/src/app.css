@@ -1,19 +1,30 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-/* Aether IDE Custom Styles */
-:root {
-  --sidebar-width: 16rem;
+@theme {
+  --color-primary: #3b82f6;
+  --color-sidebar: #12151c;
 }
 
-html,
 body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
+  background-color: #0d0f14;
+  color: #e2e8f0;
+  font-family: ui-sans-serif, system-ui, sans-serif;
   overflow: hidden;
 }
 
 #app {
   height: 100%;
+}
+
+.glass-panel {
+  background: rgba(18, 21, 28, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.active-file {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: white !important;
+  border-left-color: #3b82f6 !important;
 }

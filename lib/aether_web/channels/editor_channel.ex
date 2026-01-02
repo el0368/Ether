@@ -185,4 +185,66 @@ defmodule AetherWeb.EditorChannel do
       {:error, reason} -> {:reply, {:error, %{reason: inspect(reason)}}, socket}
     end
   end
+
+  # Window Management
+
+  @impl true
+  def handle_in("window:minimize", _payload, socket) do
+    if pid = GenServer.whereis(:main_window), do: Desktop.Window.iconize(pid, true)
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_in("window:maximize", _payload, socket) do
+    if pid = GenServer.whereis(:main_window), do: Desktop.Window.maximize(pid)
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_in("window:restore", _payload, socket) do
+    if pid = GenServer.whereis(:main_window), do: Desktop.Window.restore(pid)
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_in("window:close", _payload, socket) do
+    Desktop.Window.quit()
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_in("window:move", %{"x" => x, "y" => y}, socket) do
+    if pid = GenServer.whereis(:main_window), do: Desktop.Window.move(pid, x, y)
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_in("window:drag_start", %{"x" => x, "y" => y}, socket) do
+    if pid = GenServer.whereis(:main_window) do
+      frame = Desktop.Window.frame(pid)
+      # Get screen position of the frame
+      {wx, wy} = :wxWindow.getScreenPosition(frame)
+      {:reply, :ok, assign(socket, :drag_start, {x, y, wx, wy})}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_in("window:drag_move", %{"x" => x, "y" => y}, socket) do
+    case socket.assigns[:drag_start] do
+      {sx, sy, wx, wy} ->
+        dx = x - sx
+        dy = y - sy
+
+        if pid = GenServer.whereis(:main_window) do
+          Desktop.Window.move(pid, wx + dx, wy + dy)
+        end
+
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
 end

@@ -6,17 +6,22 @@ defmodule Aether.Desktop do
   
   def start_link(_opts \\ []) do
     # Start the Desktop.Window process
-    # This provides a real WebView (Edge/WebKit) pointing to our URL
-    Desktop.Window.start_link(
-      app: :aether,
-      id: :main_window,
-      title: "Aether IDE",
-      size: {1280, 800},
-      url: "http://localhost:4000",
-      menubar: nil,
-      style: Bitwise.bor(Desktop.Wx.wxNO_BORDER(), Bitwise.bor(Desktop.Wx.wxRESIZE_BORDER(), Desktop.Wx.wxCLIP_CHILDREN())),
-      # Ensure we can debug the webview
-      debugging: true
-    )
+    # For now we are just starting the window
+    {:ok, pid} =
+      Desktop.Window.start_link(
+        app: :aether,
+        id: :main_window,
+        title: "Aether IDE",
+        size: {1280, 800},
+        url: "http://localhost:4000",
+        menubar: nil,
+        style: Bitwise.bor(Desktop.Wx.wxNO_BORDER(), Desktop.Wx.wxCLIP_CHILDREN()),
+        # Ensure we can debug the webview
+        debugging: true
+      )
+
+    # Register the main window process so we can find it from channels
+    Process.register(pid, :main_window)
+    {:ok, pid}
   end
 end

@@ -57,8 +57,48 @@
   import SearchPanel from "./components/SearchPanel.svelte";
   import Terminal from "./components/Terminal.svelte";
   import MonacoEditor from "./components/MonacoEditor.svelte";
-
   import CommandPalette from "./components/CommandPalette.svelte";
+
+  // Window Management Functions
+  function minimizeWindow() {
+    if (channel) channel.push("window:minimize", {});
+  }
+
+  function toggleMaximize() {
+    if (channel) channel.push("window:maximize", {});
+  }
+
+  function closeWindow() {
+    if (channel) channel.push("window:close", {});
+  }
+
+  // Dragging Implementation
+  let isDragging = false;
+
+  function handleDragStart(e) {
+    if (e.target.closest("button") || e.target.closest("span")) return;
+    if (e.button !== 0) return; // Only left click
+
+    if (channel) {
+      channel.push("window:drag_start", { x: e.screenX, y: e.screenY });
+      isDragging = true;
+
+      const handleDragging = (e) => {
+        if (isDragging) {
+          channel.push("window:drag_move", { x: e.screenX, y: e.screenY });
+        }
+      };
+
+      const handleDragEnd = () => {
+        isDragging = false;
+        window.removeEventListener("mousemove", handleDragging);
+        window.removeEventListener("mouseup", handleDragEnd);
+      };
+
+      window.addEventListener("mousemove", handleDragging);
+      window.addEventListener("mouseup", handleDragEnd);
+    }
+  }
 
   // Derived state
   let statusText = $derived(connected ? "🟢 Connected" : "🔴 Disconnected");
@@ -129,32 +169,33 @@
   >
     <!-- Top Row: Title & Window Controls -->
     <div
-      class="h-8 flex items-center justify-between pl-3 pr-0"
+      class="h-8 flex items-center justify-between pl-3 pr-0 cursor-default active:cursor-grabbing"
       style="-webkit-app-region: drag;"
+      onmousedown={handleDragStart}
     >
       <div
-        class="flex items-center gap-2 text-[11px] font-bold opacity-40 uppercase tracking-widest"
+        class="flex items-center gap-2 text-[11px] font-bold opacity-40 uppercase tracking-widest pointer-events-none"
       >
         <span>⚡</span>
         <span>Aether IDE</span>
       </div>
 
-      <!-- Window Controls Mockup -->
+      <!-- Window Controls -->
       <div
         class="flex items-center h-full"
         style="-webkit-app-region: no-drag;"
       >
         <button
           class="h-8 w-11 hover:bg-white/10 flex items-center justify-center transition-colors text-xs opacity-60"
-          >─</button
+          onclick={minimizeWindow}>─</button
         >
         <button
           class="h-8 w-11 hover:bg-white/10 flex items-center justify-center transition-colors text-[9px] opacity-60"
-          >◻</button
+          onclick={toggleMaximize}>◻</button
         >
         <button
           class="h-8 w-11 hover:bg-rose-600 flex items-center justify-center transition-colors text-sm opacity-60 hover:opacity-100"
-          >✕</button
+          onclick={closeWindow}>✕</button
         >
       </div>
     </div>

@@ -25,6 +25,9 @@ defmodule Aether.Application do
       Aether.Agents.GitAgent,
       Aether.Agents.CommandAgent,
 
+      # Phase 6: LSP
+      Aether.Agents.LSPAgent,
+
       # Start to serve requests, typically the last entry
       AetherWeb.Endpoint
     ]

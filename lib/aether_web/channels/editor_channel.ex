@@ -156,4 +156,25 @@ defmodule AetherWeb.EditorChannel do
       {:error, reason} -> {:reply, {:error, %{reason: inspect(reason)}}, socket}
     end
   end
+  # Phase 6: LSP
+
+  @impl true
+  def handle_in("lsp:did_open", %{"path" => path, "text" => text}, socket) do
+    Aether.Agents.LSPAgent.did_open(path, text)
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_in("lsp:did_change", %{"path" => path, "text" => text}, socket) do
+    Aether.Agents.LSPAgent.did_change(path, text)
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_in("lsp:completion", %{"path" => path, "line" => line, "column" => col}, socket) do
+    case Aether.Agents.LSPAgent.completion(path, line, col) do
+      {:ok, items} -> {:reply, {:ok, %{items: items}}, socket}
+      {:error, reason} -> {:reply, {:error, %{reason: inspect(reason)}}, socket}
+    end
+  end
 end

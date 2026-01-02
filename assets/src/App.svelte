@@ -108,10 +108,17 @@
   let showPalette = $state(false);
   let activeSidebar = $state("files");
   let sidebarVisible = $state(true);
+  let recentFiles = $state([]);
 
   function handleGlobalKeydown(e) {
     if (e.ctrlKey && e.key === "p") {
       e.preventDefault();
+      // Fetch recent files when opening palette
+      if (channel) {
+        channel.push("editor:recent", {}).receive("ok", (resp) => {
+          recentFiles = resp.files || [];
+        });
+      }
       showPalette = true;
     } else if (e.ctrlKey && e.shiftKey && e.key === "f") {
       e.preventDefault();
@@ -539,6 +546,7 @@
 <CommandPalette
   isOpen={showPalette}
   items={fileTree}
+  {recentFiles}
   onSelect={(file) => openFile(file)}
   onClose={() => (showPalette = false)}
 />

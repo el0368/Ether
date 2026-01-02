@@ -31,6 +31,16 @@ defmodule AetherWeb.EditorChannel do
   end
 
   @impl true
+  def handle_in("editor:recent", _payload, socket) do
+    case Aether.Agents.FileServerAgent.get_recent_files() do
+      {:ok, files} ->
+        {:reply, {:ok, %{files: files}}, socket}
+      {:error, reason} ->
+        {:reply, {:error, %{reason: inspect(reason)}}, socket}
+    end
+  end
+
+  @impl true
   def handle_in("editor:save", %{"path" => path, "content" => content}, socket) do
     case Aether.Agents.FileServerAgent.write_file(path, content) do
       :ok ->

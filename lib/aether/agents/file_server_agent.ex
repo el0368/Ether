@@ -30,12 +30,16 @@ defmodule Aether.Agents.FileServerAgent do
     GenServer.call(@name, {:search, query})
   end
 
+  def get_recent_files do
+    GenServer.call(@name, :get_recent)
+  end
+
   # Server Callbacks
 
   @impl true
-  def init(state) do
+  def init(_state) do
     Logger.info("FileServerAgent started")
-    {:ok, state}
+    {:ok, %{recent_files: []}}
   end
 
   @impl true
@@ -47,7 +51,13 @@ defmodule Aether.Agents.FileServerAgent do
           Logger.error("Failed to read #{path}: #{inspect(reason)}")
           {:error, reason}
       end
-    {:reply, result, state}
+    
+    # Track this file as recently opened
+    new_recent = 
+      [path | Enum.reject(state.recent_files, &(&1 == path))]
+      |> Enum.take(20)
+    
+    {:reply, result, %{state | recent_files: new_recent}}
   end
 
   @impl true
@@ -91,6 +101,14 @@ defmodule Aether.Agents.FileServerAgent do
   def handle_call({:search, query}, _from, state) do
     results = perform_search(".", query)
     {:reply, {:ok, results}, state}
+  end
+
+  @impl true
+  def handle_call(:get_recent, _from, state) do
+    recent = Enum.map(state.recent_files, fn path ->
+      %{name: Path.basename(path), path: path}
+    end)
+    {:reply, {:ok, recent}, state}
   end
 
   defp perform_search(dir, query) do

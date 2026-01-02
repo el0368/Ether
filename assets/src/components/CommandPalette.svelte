@@ -1,12 +1,16 @@
 <script>
-    let { isOpen, items = [], onSelect, onClose } = $props();
+    let { isOpen, items = [], recentFiles = [], onSelect, onClose } = $props();
 
     let query = $state("");
     let selectedIndex = $state(0);
     let container;
 
     let filteredItems = $derived(() => {
-        if (!query) return items;
+        if (!query) {
+            // When no query, show recent files first, then all items
+            const recent = recentFiles.map((f) => ({ ...f, isRecent: true }));
+            return [...recent, ...items].slice(0, 15);
+        }
         return items
             .filter((item) =>
                 item.name.toLowerCase().includes(query.toLowerCase()),
@@ -32,6 +36,8 @@
 
     $effect(() => {
         if (isOpen) {
+            selectedIndex = 0;
+            query = "";
             setTimeout(() => {
                 const input = document.getElementById("command-palette-input");
                 if (input) input.focus();
@@ -69,15 +75,25 @@
                         selectedIndex
                             ? 'bg-primary text-white'
                             : 'hover:bg-white/5 text-[#cccccc]'}"
+                        role="option"
+                        tabindex="0"
+                        aria-selected={idx === selectedIndex}
                         onclick={() => onSelect(item)}
+                        onkeydown={(e) => e.key === "Enter" && onSelect(item)}
                     >
                         <span class="opacity-40"
-                            >{item.is_dir ? "📁" : "📄"}</span
+                            >{item.isRecent
+                                ? "🕐"
+                                : item.is_dir
+                                  ? "📁"
+                                  : "📄"}</span
                         >
                         <div class="flex flex-col">
                             <span class="font-medium">{item.name}</span>
                             <span class="text-[10px] opacity-40"
-                                >{item.path}</span
+                                >{item.path}{item.isRecent
+                                    ? " • recently opened"
+                                    : ""}</span
                             >
                         </div>
                     </div>

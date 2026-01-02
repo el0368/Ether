@@ -25,6 +25,20 @@
           // Request initial file tree
           ch.push("filetree:list", { path: "." }).receive("ok", (resp) => {
             fileTree = resp.files || [];
+
+            // Auto-select README.md if found
+            const readme = fileTree.find(
+              (f) => f.name.toLowerCase() === "readme.md",
+            );
+            if (readme) {
+              selectedFile = readme;
+              ch.push("editor:read", { path: readme.path }).receive(
+                "ok",
+                (r) => {
+                  fileContent = r.content;
+                },
+              );
+            }
           });
         })
         .receive("error", (resp) => {
@@ -128,15 +142,13 @@
         <div class="tabs tabs-boxed bg-base-200 p-1">
           <button class="tab tab-active">{selectedFile.name}</button>
         </div>
-        <div class="flex-1 overflow-hidden relative">
+        <div class="flex-1 overflow-hidden relative h-full min-h-0">
           <MonacoEditor
             value={fileContent}
             path={selectedFile.path}
             {channel}
             onChange={(val) => {
               fileContent = val;
-              // Debounce save or just let LSP handle did_change
-              // Real saving would go here
             }}
           />
         </div>

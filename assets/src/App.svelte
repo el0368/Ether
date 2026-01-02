@@ -177,7 +177,7 @@
         class="flex items-center gap-2 text-[11px] font-bold opacity-40 uppercase tracking-widest pointer-events-none"
       >
         <span>⚡</span>
-        <span>Aether IDE</span>
+        <span>Ether IDE</span>
       </div>
 
       <!-- Window Controls -->

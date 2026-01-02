@@ -11,7 +11,7 @@ defmodule Aether.Desktop do
       Desktop.Window.start_link(
         app: :aether,
         id: :main_window,
-        title: "Aether IDE",
+        title: "Ether IDE",
         size: {1280, 800},
         url: "http://localhost:4000",
         menubar: nil,

@@ -39,10 +39,31 @@ defmodule Aether.Agents.LSPAgent do
   end
 
   def handle_cast({:did_change, path, text}, state) do
-    # In a real LSP, we would parse and compile here to get diagnostics
-    # For now, we just update the state
     new_docs = Map.put(state.documents, path, text)
+    
+    # Run diagnostics
+    diagnostics = diagnose(text)
+    
+    # Broadcast diagnostics to all editors
+    AetherWeb.Endpoint.broadcast("editor:lobby", "lsp:diagnostics", %{path: path, diagnostics: diagnostics})
+
     {:noreply, %{state | documents: new_docs}}
+  end
+
+  defp diagnose(text) do
+    case Code.string_to_quoted(text) do
+      {:ok, _ast} -> []
+      {:error, {meta, message, _token}} ->
+        line = meta[:line] || 1
+        [
+          %{
+            from: %{line: line, col: 1},
+            to: %{line: line, col: 1000},
+            severity: :error,
+            message: message
+          }
+        ]
+    end
   end
 
   def handle_call({:completion, path, line, column}, _from, state) do

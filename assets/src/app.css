@@ -1,12 +1,13 @@
-/* @import "tailwindcss"; */
-/* @plugin "daisyui"; */
+@import "tailwindcss";
+@plugin "daisyui";
 
 /* Aether IDE Custom Styles */
 :root {
   --sidebar-width: 16rem;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;

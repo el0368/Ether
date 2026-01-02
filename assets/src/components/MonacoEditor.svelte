@@ -76,7 +76,34 @@
         }
     });
 
-    // Watch for external value changes (e.g. file switching)
+    // Listen for diagnostics from backend
+    $effect(() => {
+        if (channel && editor) {
+            const ref = channel.on("lsp:diagnostics", (payload) => {
+                if (payload.path === path) {
+                    const markers = payload.diagnostics.map((diag) => ({
+                        startLineNumber: diag.from.line,
+                        startColumn: diag.from.col,
+                        endLineNumber: diag.to.line,
+                        endColumn: diag.to.col,
+                        message: diag.message,
+                        severity: monaco.MarkerSeverity.Error,
+                    }));
+                    monaco.editor.setModelMarkers(
+                        editor.getModel(),
+                        "owner",
+                        markers,
+                    );
+                }
+            });
+
+            return () => {
+                // channel.off("lsp:diagnostics", ref) // handling off might differ in Phoenix
+            };
+        }
+    });
+
+    // Watch for external value changes
     $effect(() => {
         if (editor && value !== editor.getValue()) {
             // Avoid loop if we just typed it

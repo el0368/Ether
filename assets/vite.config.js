@@ -1,9 +1,13 @@
 import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 import path from 'path'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-    plugins: [svelte()],
+    plugins: [
+        tailwindcss(),
+        svelte()
+    ],
     build: {
         outDir: '../priv/static/assets',
         emptyOutDir: true,

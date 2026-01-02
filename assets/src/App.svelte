@@ -5,8 +5,13 @@
   // Reactive state using $state rune
   let connected = $state(false);
   let fileTree = $state([]);
-  let selectedFile = $state(null);
-  let fileContent = $state("");
+
+  // Multi-pane / Split View State
+  let editorGroups = $state([{ file: null, content: "" }]);
+  let activeGroupIndex = $state(0);
+
+  // Helper to get active state
+  let activeGroup = $derived(editorGroups[activeGroupIndex]);
 
   // Channel reference
   let channel = $state(null);
@@ -26,16 +31,16 @@
           ch.push("filetree:list", { path: "." }).receive("ok", (resp) => {
             fileTree = resp.files || [];
 
-            // Auto-select README.md if found
+            // Auto-select README.md if found in the first pane
             const readme = fileTree.find(
               (f) => f.name.toLowerCase() === "readme.md",
             );
             if (readme) {
-              selectedFile = readme;
+              editorGroups[0].file = readme;
               ch.push("editor:read", { path: readme.path }).receive(
                 "ok",
                 (r) => {
-                  fileContent = r.content;
+                  editorGroups[0].content = r.content;
                 },
               );
             }
@@ -72,17 +77,31 @@
       e.preventDefault();
       activeSidebar = "search";
       sidebarVisible = true;
+    } else if (e.ctrlKey && e.key === "\\") {
+      // VS Code split shortcut Ctrl+\
+      e.preventDefault();
+      splitEditor();
     }
   }
 
   function openFile(file) {
     showPalette = false;
-    selectedFile = file;
+    let group = editorGroups[activeGroupIndex];
+    group.file = file;
     if (channel) {
       channel
         .push("editor:read", { path: file.path })
-        .receive("ok", (resp) => (fileContent = resp.content));
+        .receive("ok", (resp) => (group.content = resp.content));
     }
+  }
+
+  function splitEditor() {
+    const current = editorGroups[activeGroupIndex];
+    editorGroups.push({
+      file: current.file,
+      content: current.content,
+    });
+    activeGroupIndex = editorGroups.length - 1;
   }
 
   function toggleSidebar(section) {
@@ -95,8 +114,7 @@
   }
 
   function handleRefactorSuccess(newCode) {
-    fileContent = newCode;
-    // Ideally we would also save the file here
+    editorGroups[activeGroupIndex].content = newCode;
   }
 </script>
 
@@ -293,73 +311,126 @@
     {/if}
 
     <!-- VS Code Editor & Panel Central Area -->
-    <div class="flex-1 flex flex-col min-w-0">
-      <!-- Editor Tabs -->
-      {#if selectedFile}
-        <div
-          class="flex items-center bg-[#252526] h-9 min-h-[2.25rem] overflow-x-auto no-scrollbar"
-        >
+    <div class="flex-1 flex flex-col min-w-0 bg-[#0d0f14]">
+      <div class="flex-1 flex overflow-hidden">
+        {#each editorGroups as group, idx}
+          <!-- Pane -->
           <div
-            class="flex items-center bg-[#1e1e1e] h-full px-4 gap-2 border-r border-black/20 border-t border-t-primary"
+            class="flex-1 flex flex-col min-w-0 border-r border-white/5 last:border-r-0 relative group/pane {idx ===
+            activeGroupIndex
+              ? 'bg-[#1e1e1e]'
+              : 'opacity-80'}"
+            onclick={() => (activeGroupIndex = idx)}
           >
-            <span class="text-xs text-primary opacity-60">📄</span>
-            <span class="text-[13px] whitespace-nowrap text-[#cccccc]"
-              >{selectedFile.name}</span
+            <!-- Editor Tabs -->
+            <div
+              class="flex items-center bg-[#252526] h-9 min-h-[2.25rem] overflow-x-auto no-scrollbar justify-between"
             >
-            <button class="ml-2 opacity-20 hover:opacity-100 text-[10px]"
-              >✕</button
-            >
-          </div>
-        </div>
-
-        <!-- Breadcrumbs -->
-        <div
-          class="h-6 flex items-center px-4 bg-[#1e1e1e] border-b border-black/10 text-[11px] opacity-40 gap-1"
-        >
-          <span>Aether</span>
-          <span>›</span>
-          <span class="font-bold"
-            >{selectedFile.path.split("/").join(" › ")}</span
-          >
-        </div>
-      {/if}
-
-      <section class="flex-1 flex flex-col bg-[#0d0f14] min-h-0 relative">
-        {#if selectedFile}
-          <div class="flex-1 overflow-hidden relative h-full min-h-0">
-            {#if selectedFile.is_dir}
-              <div
-                class="flex h-full items-center justify-center text-white/10 bg-[#0d0f14]"
-              >
-                <div class="text-center">
-                  <div class="text-8xl mb-4 font-black opacity-5">📁</div>
-                </div>
+              <div class="flex items-center h-full">
+                {#if group.file}
+                  <div
+                    class="flex items-center {idx === activeGroupIndex
+                      ? 'bg-[#1e1e1e] border-t border-t-primary'
+                      : 'bg-[#2d2d2d]'} h-full px-4 gap-2 border-r border-black/20"
+                  >
+                    <span class="text-xs text-primary opacity-60">📄</span>
+                    <span class="text-[13px] whitespace-nowrap text-[#cccccc]"
+                      >{group.file.name}</span
+                    >
+                    <button
+                      class="ml-2 opacity-20 hover:opacity-100 text-[10px]"
+                      onclick={(e) => {
+                        e.stopPropagation();
+                        if (editorGroups.length > 1) {
+                          editorGroups.splice(idx, 1);
+                          activeGroupIndex = Math.min(
+                            activeGroupIndex,
+                            editorGroups.length - 1,
+                          );
+                        } else {
+                          group.file = null;
+                          group.content = "";
+                        }
+                      }}>✕</button
+                    >
+                  </div>
+                {/if}
               </div>
-            {:else if !fileContent && selectedFile}
-              <div class="flex h-full items-center justify-center bg-[#0d0f14]">
-                <span
-                  class="loading loading-ring loading-lg text-primary opacity-20"
-                ></span>
+
+              <!-- Actions -->
+              <div class="flex items-center px-2 gap-2">
+                <button
+                  class="opacity-40 hover:opacity-100 text-xs p-1 hover:bg-white/5 rounded"
+                  title="Split Editor Right"
+                  onclick={(e) => {
+                    e.stopPropagation();
+                    splitEditor();
+                  }}>◫</button
+                >
+                <button
+                  class="opacity-40 hover:opacity-100 text-xs p-1 hover:bg-white/5 rounded"
+                  >•••</button
+                >
               </div>
-            {:else}
-              <MonacoEditor
-                value={fileContent}
-                path={selectedFile.path}
-                {channel}
-                onChange={(val) => {
-                  fileContent = val;
-                }}
-              />
-            {/if}
-          </div>
-        {:else}
-          <div class="flex-1 flex items-center justify-center bg-[#1e1e1e]">
-            <div class="text-center opacity-20">
-              <span class="text-9xl">⚡</span>
             </div>
+
+            <!-- Breadcrumbs -->
+            {#if group.file}
+              <div
+                class="h-6 flex items-center px-4 bg-[#1e1e1e] border-b border-black/10 text-[11px] opacity-40 gap-1"
+              >
+                <span>Aether</span>
+                <span>›</span>
+                <span class="font-bold"
+                  >{group.file.path.split("/").join(" › ")}</span
+                >
+              </div>
+            {/if}
+
+            <!-- Main Editor Area -->
+            <section class="flex-1 flex flex-col bg-[#0d0f14] min-h-0 relative">
+              {#if group.file}
+                <div class="flex-1 overflow-hidden relative h-full min-h-0">
+                  {#if group.file.is_dir}
+                    <div
+                      class="flex h-full items-center justify-center text-white/10 bg-[#0d0f14]"
+                    >
+                      <div class="text-center">
+                        <div class="text-8xl mb-4 font-black opacity-5">📁</div>
+                      </div>
+                    </div>
+                  {:else if !group.content}
+                    <div
+                      class="flex h-full items-center justify-center bg-[#0d0f14]"
+                    >
+                      <span
+                        class="loading loading-ring loading-lg text-primary opacity-20"
+                      ></span>
+                    </div>
+                  {:else}
+                    <MonacoEditor
+                      value={group.content}
+                      path={group.file.path}
+                      {channel}
+                      onChange={(val) => {
+                        group.content = val;
+                      }}
+                    />
+                  {/if}
+                </div>
+              {:else}
+                <div
+                  class="flex-1 flex items-center justify-center bg-[#1e1e1e]"
+                >
+                  <div class="text-center opacity-20">
+                    <span class="text-9xl">⚡</span>
+                  </div>
+                </div>
+              {/if}
+            </section>
           </div>
-        {/if}
-      </section>
+        {/each}
+      </div>
 
       <!-- VS Code Panel (Terminal) -->
       <div class="flex flex-col h-64 shrink-0 transition-all">
@@ -405,7 +476,15 @@
     <div class="flex items-center gap-4">
       <div class="opacity-80">Line 1, Col 1</div>
       <div class="opacity-80">UTF-8</div>
-      <div class="px-2 hover:bg-white/10 cursor-pointer">Elixir</div>
+      <div class="px-2 hover:bg-white/10 cursor-pointer">
+        {#if activeGroup.file}
+          {activeGroup.file.name.split(".").pop() === "ex"
+            ? "Elixir"
+            : activeGroup.file.name.split(".").pop().toUpperCase()}
+        {:else}
+          Plain Text
+        {/if}
+      </div>
       <div class="flex items-center gap-1">
         <span>🔔</span>
       </div>

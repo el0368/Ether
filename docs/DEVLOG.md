@@ -210,4 +210,36 @@ Since the Hybrid Engine was blocked by toolchain incompatibility, the plan was t
 2. Re-configure `ignite.bat` with new paths.
 3. Fire the engine.
 
+---
+
+## Session 7: The Brain Upgrade (Agents Online)
+**Date**: 2026-01-02
+**Phase**: Phase 4 - Advanced Agents
+
+### 🧠 The Pivot to Pure Elixir Integration
+With the Native/Zig engine paused (Safe Mode), we shifted focus to the "Brain" of the IDE. We successfully implemented three core agents using **Pure Elixir** to ensure stability and cross-platform compatibility.
+
+### 🤖 New Capabilities (The Triad)
+1.  **RefactorAgent (The Architect)**
+    *   **Tech**: `Sourceror` (AST Manipulation).
+    *   **Power**: Can safely rename variables and refactor code structure programmatically.
+    *   **Status**: ✅ Unit Tested & Verified.
+
+2.  **GitAgent (The Historian)**
+    *   **Tech**: System Wrapper (`System.cmd("git")`).
+    *   **Power**: detailed control over version control (Status, Add, Commit).
+    *   **Status**: ✅ Unit Tested & Verified.
+
+3.  **CommandAgent (The Executor)**
+    *   **Tech**: `Task.async` + Timeout handling.
+    *   **Power**: Safe execution of arbitrary shell commands (`mix`, `ping`) with crash protection.
+    *   **Status**: ✅ Verified with error/timeout handling.
+
+### 🔮 Future Roadmap (The Integration)
+Now that the "Brain" is active, the next step is **Integration**:
+-   Connect Agents to `EditorChannel`.
+-   Build the UI to command these agents.
+-   "The Agent that codes itself."
+
+
 

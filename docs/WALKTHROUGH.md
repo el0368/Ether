@@ -261,4 +261,31 @@ We executed the **Ignition Protocol** (`scripts/ignite.bat`) but encountered per
     - `Bridge`: Active (Elixir Fallback).
     - `UI`: Fully Functional.
 
+---
+
+## Session 7: The "Brain" Upgrade (Phase 4)
+**Date**: 2026-01-02
+
+### 1. Advanced Agents (Pure Elixir)
+**Goal**: Implement the core intelligence of the IDE without relying on unstable native NIFs.
+**Implementation**:
+1.  **RefactorAgent**:
+    -   Using `Sourceror` for safe AST manipulation.
+    -   Capability: `rename_variable/3`.
+    -   Status: ✅ Tested.
+2.  **GitAgent**:
+    -   Wraps `System.cmd("git")`.
+    -   Capabilities: `status/1`, `add/2`, `commit/2`.
+    -   Status: ✅ Tested.
+3.  **CommandAgent**:
+    -   Wraps `System.cmd` in `Task.async`.
+    -   Capabilities: Timeout handling, Exit code parsing.
+    -   Status: ✅ Tested.
+
+### 2. Status
+-   **Architecture**: Pure Elixir + Jido Agents.
+-   **Stability**: Unbreakable (No NIFs).
+-   **Ready For**: Integration with `EditorChannel` / UI.
+
+
 

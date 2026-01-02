@@ -73,7 +73,8 @@ defmodule Aether.MixProject do
       # {:zigler, "~> 0.15.0", runtime: false},
       
       # Agent Framework & Intelligence
-      {:jido, "~> 1.0.0"}
+      {:jido, "~> 1.0.0"},
+      {:sourceror, "~> 1.0"}
       # {:instructor, "~> 0.1.0"}
     ]
   end

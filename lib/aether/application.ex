@@ -19,6 +19,12 @@ defmodule Aether.Application do
       Aether.Agents.FormatAgent,
       # Quality Assurance
       Aether.Agents.QualityAgent,
+      
+      # Advanced Agents (Phase 4)
+      Aether.Agents.RefactorAgent,
+      Aether.Agents.GitAgent,
+      Aether.Agents.CommandAgent,
+
       # Start to serve requests, typically the last entry
       AetherWeb.Endpoint
     ]

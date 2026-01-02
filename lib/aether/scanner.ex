@@ -24,13 +24,17 @@ defmodule Aether.Scanner do
         items
         |> Enum.map(&Path.join(path, &1))
         |> Enum.map(fn full_path ->
-          if File.dir?(full_path) do
-            list_recursive(full_path)
-          else
-            full_path
-          end
+          expand_path(full_path)
         end)
       {:error, _} -> []
+    end
+  end
+
+  defp expand_path(full_path) do
+    if File.dir?(full_path) do
+      list_recursive(full_path)
+    else
+      full_path
     end
   end
 end

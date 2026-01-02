@@ -89,6 +89,10 @@ The project runs in "Safe Mode" where all native (Zig) dependencies are disabled
 - **Build**: No C compiler required.
 
 ### Ignition Protocol (Activating Zig)
+> [!WARNING]
+> **Blocked on Windows**: This protocol currently fails due to ABI/Tooling mismatch (Zigler 0.15 vs Erlang 26-28).
+> Proceed with caution only if debugging the toolchain itself.
+
 To attempt native activation:
 
 1. **Uncomment Zigler**: In `mix.exs` and `config/config.exs`.
@@ -100,4 +104,29 @@ To attempt native activation:
 ```elixir
 Aether.Native.Bridge.scan(".")
 # => {:ok, [...]} (from Zig)
+```
+
+---
+
+## Agent Usage (Phase 4)
+
+### RefactorAgent
+Safely rename variables:
+```elixir
+code = "def hello, do: :world"
+{:ok, new_code} = Aether.Agents.RefactorAgent.rename_variable(code, "hello", "greet")
+```
+
+### GitAgent
+Control version control:
+```elixir
+Aether.Agents.GitAgent.status()
+Aether.Agents.GitAgent.add(".", ["mix.exs"])
+Aether.Agents.GitAgent.commit(".", "feat: awesome change")
+```
+
+### CommandAgent
+Run system commands safely:
+```elixir
+Aether.Agents.CommandAgent.exec("echo", ["hello"])
 ```

@@ -7,7 +7,7 @@ defmodule Aether.ScannerTest do
     files = Scanner.scan(".")
     
     assert is_list(files)
-    assert length(files) > 0
+    assert files != []
     
     # Check if mix.exs exists in the list (since we are in project root)
     mix_file = Enum.find(files, fn f -> String.ends_with?(f, "mix.exs") end)

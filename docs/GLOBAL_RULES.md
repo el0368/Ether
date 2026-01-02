@@ -8,11 +8,10 @@
 
 ## Core Principles
 
-### 1. The Unbreakable Zig Protocol
-Native Implemented Functions (NIFs) are allowed **ONLY** via Zig and **ONLY** if they follow the Unbreakable Protocol:
-- Managed binary (`local_zig: true`)
-- No global state.
-- Memory safety via BEAM allocator.
+### 1. The Unbreakable Zig Protocol (Experimental)
+Native Implemented Functions (NIFs) are currently **Experimental** on Windows due to toolchain constraints.
+- **Default**: Safe Mode (Pure Elixir).
+- **Native**: Allowed **ONLY** if it follows the Unbreakable Protocol (no global state, memory safety).
 
 ### 2. Agent Architecture
 All IDE functionality is implemented as GenServer agents:
@@ -20,7 +19,10 @@ All IDE functionality is implemented as GenServer agents:
 - `TestingAgent` - Test runner
 - `LintAgent` - Code quality
 - `FormatAgent` - Code formatting
-- (Future) `RefactorAgent`, `DocAgent`, `CIAgent`, `CommanderAgent`
+- **Advanced Agents (Phase 4)**:
+    - `RefactorAgent` (Sourceror)
+    - `GitAgent` (System Wrapper)
+    - `CommandAgent` (Task.async)
 
 ### 3. Windows Compatibility
 - Use `.bat` scripts for launching

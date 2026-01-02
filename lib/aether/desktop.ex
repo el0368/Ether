@@ -15,8 +15,6 @@ defmodule Aether.Desktop do
         size: {1280, 800},
         url: "http://localhost:4000",
         menubar: nil,
-        # Try just RESIZE_BORDER for frameless - hopefully WebView still renders
-        style: Desktop.Wx.wxRESIZE_BORDER(),
         debugging: true
       )
 

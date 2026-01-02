@@ -163,81 +163,42 @@
   onkeydown={handleGlobalKeydown}
   tabindex="-1"
 >
-  <!-- VS Code Top Menu Bar (Custom Title Bar) -->
+  <!-- VS Code Menu Bar -->
   <header
-    class="flex flex-col bg-[#181818] border-b border-white/[0.05] shrink-0 select-none"
+    class="flex items-center bg-[#181818] border-b border-white/[0.05] shrink-0 select-none h-7 px-2 gap-1 text-[12px] opacity-70"
   >
-    <!-- Top Row: Title & Window Controls -->
-    <div
-      class="h-8 flex items-center justify-between pl-3 pr-0 cursor-default active:cursor-grabbing"
-      style="-webkit-app-region: drag;"
-      onmousedown={handleDragStart}
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
+      >File</span
     >
-      <div
-        class="flex items-center gap-2 text-[11px] font-bold opacity-40 uppercase tracking-widest pointer-events-none"
-      >
-        <span>⚡</span>
-        <span>Ether IDE</span>
-      </div>
-
-      <!-- Window Controls -->
-      <div
-        class="flex items-center h-full"
-        style="-webkit-app-region: no-drag;"
-      >
-        <button
-          class="h-8 w-11 hover:bg-white/10 flex items-center justify-center transition-colors text-xs opacity-60"
-          onclick={minimizeWindow}>─</button
-        >
-        <button
-          class="h-8 w-11 hover:bg-white/10 flex items-center justify-center transition-colors text-[9px] opacity-60"
-          onclick={toggleMaximize}>◻</button
-        >
-        <button
-          class="h-8 w-11 hover:bg-rose-600 flex items-center justify-center transition-colors text-sm opacity-60 hover:opacity-100"
-          onclick={closeWindow}>✕</button
-        >
-      </div>
-    </div>
-
-    <!-- Bottom Row: Navigation Menus -->
-    <div
-      class="h-7 flex items-center px-2 gap-1 text-[12px] opacity-70 border-t border-white/[0.01]"
-      style="-webkit-app-region: no-drag;"
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
+      >Edit</span
     >
-      <span
-        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-        >File</span
-      >
-      <span
-        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-        >Edit</span
-      >
-      <span
-        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-        >Selection</span
-      >
-      <span
-        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-        >View</span
-      >
-      <span
-        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-        >Go</span
-      >
-      <span
-        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-        >Run</span
-      >
-      <span
-        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-        >Terminal</span
-      >
-      <span
-        class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-        >Help</span
-      >
-    </div>
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
+      >Selection</span
+    >
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
+      >View</span
+    >
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
+      >Go</span
+    >
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
+      >Run</span
+    >
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
+      >Terminal</span
+    >
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
+      >Help</span
+    >
   </header>
 
   <!-- Main Workspace -->

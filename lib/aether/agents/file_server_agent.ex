@@ -26,6 +26,10 @@ defmodule Aether.Agents.FileServerAgent do
     GenServer.call(@name, {:list, path})
   end
 
+  def search(query) do
+    GenServer.call(@name, {:search, query})
+  end
+
   # Server Callbacks
 
   @impl true
@@ -81,5 +85,47 @@ defmodule Aether.Agents.FileServerAgent do
           {:error, reason}
       end
     {:reply, result, state}
+  end
+
+  @impl true
+  def handle_call({:search, query}, _from, state) do
+    results = perform_search(".", query)
+    {:reply, {:ok, results}, state}
+  end
+
+  defp perform_search(dir, query) do
+    case File.ls(dir) do
+      {:ok, entries} ->
+        Enum.flat_map(entries, fn entry ->
+          path = Path.join(dir, entry)
+          cond do
+            String.starts_with?(entry, ".") -> []
+            entry == "_build" or entry == "deps" or entry == "assets/node_modules" -> []
+            File.dir?(path) -> perform_search(path, query)
+            is_text_file(path) -> search_in_file(path, query)
+            true -> []
+          end
+        end)
+      _ -> []
+    end
+  end
+
+  defp is_text_file(path) do
+    ext = Path.extname(path)
+    ext in [".ex", ".exs", ".js", ".svelte", ".css", ".md", ".json", ".html", ".heex"]
+  end
+
+  defp search_in_file(path, query) do
+    case File.read(path) do
+      {:ok, content} ->
+        content
+        |> String.split("\n")
+        |> Enum.with_index(1)
+        |> Enum.filter(fn {line, _} -> String.contains?(line, query) end)
+        |> Enum.map(fn {line, index} ->
+          %{path: path, line: index, content: String.trim(line)}
+        end)
+      _ -> []
+    end
   end
 end

@@ -177,4 +177,12 @@ defmodule AetherWeb.EditorChannel do
       {:error, reason} -> {:reply, {:error, %{reason: inspect(reason)}}, socket}
     end
   end
+
+  @impl true
+  def handle_in("search:global", %{"query" => query}, socket) do
+    case Aether.Agents.FileServerAgent.search(query) do
+      {:ok, results} -> {:reply, {:ok, %{results: results}}, socket}
+      {:error, reason} -> {:reply, {:error, %{reason: inspect(reason)}}, socket}
+    end
+  end
 end

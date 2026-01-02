@@ -49,16 +49,41 @@
 
   import RefactorModal from "./components/RefactorModal.svelte";
   import GitPanel from "./components/GitPanel.svelte";
+  import SearchPanel from "./components/SearchPanel.svelte";
   import Terminal from "./components/Terminal.svelte";
   import MonacoEditor from "./components/MonacoEditor.svelte";
+
+  import CommandPalette from "./components/CommandPalette.svelte";
 
   // Derived state
   let statusText = $derived(connected ? "🟢 Connected" : "🔴 Disconnected");
 
   // UI State
   let showRefactor = $state(false);
+  let showPalette = $state(false);
   let activeSidebar = $state("files");
   let sidebarVisible = $state(true);
+
+  function handleGlobalKeydown(e) {
+    if (e.ctrlKey && e.key === "p") {
+      e.preventDefault();
+      showPalette = true;
+    } else if (e.ctrlKey && e.shiftKey && e.key === "f") {
+      e.preventDefault();
+      activeSidebar = "search";
+      sidebarVisible = true;
+    }
+  }
+
+  function openFile(file) {
+    showPalette = false;
+    selectedFile = file;
+    if (channel) {
+      channel
+        .push("editor:read", { path: file.path })
+        .receive("ok", (resp) => (fileContent = resp.content));
+    }
+  }
 
   function toggleSidebar(section) {
     if (activeSidebar === section && sidebarVisible) {
@@ -75,7 +100,11 @@
   }
 </script>
 
-<div class="app-container bg-[#1e1e1e] text-[#cccccc] select-none font-sans">
+<div
+  class="app-container bg-[#1e1e1e] text-[#cccccc] select-none font-sans"
+  onkeydown={handleGlobalKeydown}
+  tabindex="-1"
+>
   <!-- VS Code Top Menu Bar -->
   <header
     class="h-9 bg-[#181818] flex items-center px-3 border-b border-white/[0.03] shrink-0"
@@ -205,17 +234,7 @@
                       <button
                         class="rounded-none px-4 py-1 transition-all text-[#cccccc] hover:text-white hover:bg-white/[0.05] border-l-2 border-transparent text-[13px] gap-2 items-center"
                         class:active-file={selectedFile === file}
-                        onclick={() => {
-                          selectedFile = file;
-                          if (channel) {
-                            channel
-                              .push("editor:read", { path: file.path })
-                              .receive(
-                                "ok",
-                                (resp) => (fileContent = resp.content),
-                              );
-                          }
-                        }}
+                        onclick={() => openFile(file)}
                       >
                         <span class="text-xs opacity-40 shrink-0"
                           >{file.is_dir ? "📁" : "📄"}</span
@@ -231,6 +250,13 @@
             <div class="p-4">
               <GitPanel {channel} />
             </div>
+          {:else if activeSidebar === "search"}
+            <SearchPanel
+              {channel}
+              onSelectFile={(file) => {
+                openFile(file);
+              }}
+            />
           {:else}
             <div class="p-8 text-center opacity-20 italic text-sm">
               Section arriving soon...
@@ -394,6 +420,13 @@
   {channel}
   onClose={() => (showRefactor = false)}
   onSuccess={handleRefactorSuccess}
+/>
+
+<CommandPalette
+  isOpen={showPalette}
+  items={fileTree}
+  onSelect={(file) => openFile(file)}
+  onClose={() => (showPalette = false)}
 />
 
 <style>

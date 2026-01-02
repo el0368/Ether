@@ -34,14 +34,33 @@
     }
   })
   
+  import RefactorModal from "./components/RefactorModal.svelte"
+  import GitPanel from "./components/GitPanel.svelte"
+  import Terminal from "./components/Terminal.svelte"
+
   // Derived state
   let statusText = $derived(connected ? "🟢 Connected" : "🔴 Disconnected")
+  
+  // UI State
+  let showRefactor = $state(false)
+  let activeSidebar = $state("files")
+  
+  function handleRefactorSuccess(newCode) {
+    fileContent = newCode
+    // Ideally we would also save the file here
+  }
 </script>
 
 <div class="app-container">
   <header class="navbar bg-base-200 px-4">
-    <div class="flex-1">
+    <div class="flex-1 gap-2">
       <span class="text-xl font-bold">⚡ Aether IDE</span>
+      {#if selectedFile}
+        <div class="divider divider-horizontal"></div>
+        <button class="btn btn-sm btn-ghost" onclick={() => showRefactor = true}>
+          🔨 Refactor
+        </button>
+      {/if}
     </div>
     <div class="flex-none">
       <span class="badge badge-ghost">{statusText}</span>
@@ -49,30 +68,48 @@
   </header>
   
   <main class="flex flex-1 overflow-hidden">
-    <!-- Sidebar: File Tree -->
-    <aside class="w-64 bg-base-200 border-r border-base-300 overflow-auto">
-      <div class="p-2 text-sm font-semibold text-base-content/70">
-        EXPLORER
+    <!-- Sidebar -->
+    <aside class="w-64 bg-base-200 border-r border-base-300 flex flex-col overflow-hidden">
+      <div class="tabs tabs-boxed bg-base-200 p-2 rounded-none">
+        <button 
+          class="tab flex-1 {activeSidebar === 'files' ? 'tab-active' : ''}" 
+          onclick={() => activeSidebar = 'files'}
+        >Files</button>
+        <button 
+          class="tab flex-1 {activeSidebar === 'git' ? 'tab-active' : ''}" 
+          onclick={() => activeSidebar = 'git'}
+        >Git</button>
       </div>
-      {#if fileTree.length === 0}
-        <div class="p-4 text-sm text-base-content/50">
-          Loading files...
-        </div>
-      {:else}
-        <ul class="menu menu-xs">
-          {#each fileTree as file}
-            <li>
-              <button 
-                class="truncate"
-                class:active={selectedFile === file}
-                onclick={() => selectedFile = file}
-              >
-                {file.is_dir ? '📁' : '📄'} {file.name}
-              </button>
-            </li>
-          {/each}
-        </ul>
-      {/if}
+      
+      <div class="flex-1 overflow-auto">
+        {#if activeSidebar === 'files'}
+          {#if fileTree.length === 0}
+            <div class="p-4 text-sm text-base-content/50">Loading files...</div>
+          {:else}
+            <ul class="menu menu-xs">
+              {#each fileTree as file}
+                <li>
+                  <button 
+                    class="truncate"
+                    class:active={selectedFile === file}
+                    onclick={() => {
+                       selectedFile = file
+                       if (channel) {
+                         channel.push("editor:read", {path: file.path})
+                           .receive("ok", resp => fileContent = resp.content)
+                       }
+                    }}
+                  >
+                    {file.is_dir ? '📁' : '📄'} {file.name}
+                  </button>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+        {:else if activeSidebar === 'git'}
+          <GitPanel channel={channel} />
+        {/if}
+      </div>
     </aside>
     
     <!-- Main Editor Area -->
@@ -81,8 +118,8 @@
         <div class="tabs tabs-boxed bg-base-200 p-1">
           <button class="tab tab-active">{selectedFile.name}</button>
         </div>
-        <div class="flex-1 p-4 font-mono text-sm">
-          <pre>{fileContent || 'Select a file to view its contents'}</pre>
+        <div class="flex-1 p-4 font-mono text-sm overflow-auto">
+          <pre>{fileContent || 'Loading...'}</pre>
         </div>
       {:else}
         <div class="flex-1 flex items-center justify-center text-base-content/50">
@@ -94,8 +131,21 @@
         </div>
       {/if}
     </section>
+    </section>
   </main>
+  
+  <!-- Bottom Panel: Terminal -->
+  <Terminal channel={channel} />
 </div>
+
+<RefactorModal 
+  isOpen={showRefactor}
+  code={fileContent}
+  oldName="variable" 
+  channel={channel}
+  onClose={() => showRefactor = false}
+  onSuccess={handleRefactorSuccess}
+/>
 
 <style>
   .app-container {
@@ -107,6 +157,7 @@
   
   main {
     flex: 1;
+    display: flex;
     overflow: hidden;
   }
 </style>

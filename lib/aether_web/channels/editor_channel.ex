@@ -115,4 +115,45 @@ defmodule AetherWeb.EditorChannel do
         {:reply, {:error, result}, socket}
     end
   end
+  # Advanced Agents (Phase 4/5)
+
+  @impl true
+  def handle_in("refactor:rename", %{"code" => code, "old_name" => old, "new_name" => new}, socket) do
+    case Aether.Agents.RefactorAgent.rename_variable(code, old, new) do
+      {:ok, result} -> {:reply, {:ok, %{code: result}}, socket}
+      {:error, reason} -> {:reply, {:error, %{reason: inspect(reason)}}, socket}
+    end
+  end
+
+  @impl true
+  def handle_in("git:status", _payload, socket) do
+    case Aether.Agents.GitAgent.status() do
+      {:ok, result} -> {:reply, {:ok, %{status: result}}, socket}
+      {:error, reason} -> {:reply, {:error, %{reason: inspect(reason)}}, socket}
+    end
+  end
+
+  @impl true
+  def handle_in("git:add", %{"path" => path, "files" => files}, socket) do
+    case Aether.Agents.GitAgent.add(path, files) do
+      {:ok, result} -> {:reply, {:ok, %{output: result}}, socket}
+      {:error, reason} -> {:reply, {:error, %{reason: inspect(reason)}}, socket}
+    end
+  end
+
+  @impl true
+  def handle_in("git:commit", %{"path" => path, "message" => msg}, socket) do
+    case Aether.Agents.GitAgent.commit(path, msg) do
+      {:ok, result} -> {:reply, {:ok, %{output: result}}, socket}
+      {:error, reason} -> {:reply, {:error, %{reason: inspect(reason)}}, socket}
+    end
+  end
+
+  @impl true
+  def handle_in("cmd:exec", %{"cmd" => cmd, "args" => args}, socket) do
+    case Aether.Agents.CommandAgent.exec(cmd, args) do
+      {:ok, result} -> {:reply, {:ok, %{output: result}}, socket}
+      {:error, reason} -> {:reply, {:error, %{reason: inspect(reason)}}, socket}
+    end
+  end
 end

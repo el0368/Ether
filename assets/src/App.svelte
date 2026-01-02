@@ -251,7 +251,7 @@
                     <li class="group">
                       <button
                         class="rounded-none px-4 py-1 transition-all text-[#cccccc] hover:text-white hover:bg-white/[0.05] border-l-2 border-transparent text-[13px] gap-2 items-center"
-                        class:active-file={selectedFile === file}
+                        class:active-file={activeGroup.file === file}
                         onclick={() => openFile(file)}
                       >
                         <span class="text-xs opacity-40 shrink-0"
@@ -494,7 +494,7 @@
 
 <RefactorModal
   isOpen={showRefactor}
-  code={fileContent}
+  code={activeGroup.content}
   oldName="variable"
   {channel}
   onClose={() => (showRefactor = false)}

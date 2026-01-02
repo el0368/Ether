@@ -8,8 +8,11 @@
 
 ## Core Principles
 
-### 1. No NIFs
-Native Implemented Functions (Zig/Rust/C) are **forbidden**. Use pure Elixir.
+### 1. The Unbreakable Zig Protocol
+Native Implemented Functions (NIFs) are allowed **ONLY** via Zig and **ONLY** if they follow the Unbreakable Protocol:
+- Managed binary (`local_zig: true`)
+- No global state.
+- Memory safety via BEAM allocator.
 
 ### 2. Agent Architecture
 All IDE functionality is implemented as GenServer agents:

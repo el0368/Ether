@@ -100,3 +100,33 @@ Removed `:phoenix_live_view` from `compilers` in `mix.exs`.
 2. **Svelte 5 Runes** - `$state`, `$derived`, `$effect` for frontend.
 3. **Instructor-First** - Structured LLM outputs via Ecto schemas.
 4. **One Runtime** - Only Erlang/Elixir required.
+
+---
+
+## 8. Zigler 0.15.2 on Windows (Header Missing)
+
+### Problem
+`C import failed: erl_nif_win.h file not found`
+
+### Context
+Attempted to re-integrate Zig using Zigler 0.15.2. Compilation of NIFs failed specifically on Windows because the required Erlang NIF header file for Windows was not found in the expected include path within the `_build` directory.
+
+### Resolution
+**Reverted to Pure Elixir**. While the "Unbreakable Zig Protocol" (local binary management) solved the PATH and Version issues, the internal tooling of Zigler 0.15.x seems to have a regression or configuration gap for Windows headers. We prioritized stability over raw performance for the `Scanner` module.
+
+---
+
+## 9. Dependency Conflict: Jido vs Credo
+
+### Problem
+`Mix` failed to resolve dependencies:
+```
+deps/ex_dbug/mix.exs: {:credo, ..., optional: false}
+mix.exs: {:credo, ..., only: [:dev, :test]}
+```
+
+### Root Cause
+The `jido` library pulls in `ex_dbug`, which requires `credo` as a runtime dependency (not optional). However, our root project defined `credo` as `only: [:dev, :test]`. Elixir's dependency resolution forbids a transitive dependency from being "more available" than the root definition allows.
+
+### Resolution
+Removed `only: [:dev, :test]` from the `credo` definition in `mix.exs`, making it available in all environments. This satisfied `ex_dbug`'s requirement.

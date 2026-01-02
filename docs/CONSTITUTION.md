@@ -4,11 +4,25 @@
 
 ---
 
-## 1. The Prime Directive: Pure Elixir Reflexes
+## 1. The Unbreakable Zig Protocol
+To ensure Zig is safe, stable, and requires zero manual setup, we follow these four "Unbreakable" laws.
 
-- **NO NIFs**: Native Implemented Functions (Zig/Rust/C) are forbidden. The complexity cost of cross-compilation exceeds the performance benefit for this stage.
-- **Concurrency First**: Replace raw speed with concurrency. Use `Task.async_stream`, `GenStage`, or `Flow` instead of dropping to C.
-- **IO**: Use `File.stream!` and binary pattern matching for high-performance IO.
+1.  **Automated Binary Management (The Zero-Setup Law)**
+    *   Never install Zig globally. Use `local_zig: true` in config.
+    *   Run `mix zig.get` after `mix deps.get`.
+
+2.  **Version Locking (The Stability Law)**
+    *   Lock `zigler` to `~> 0.15.0`.
+
+3.  **The "BEAM Citizen" Philosophy (The Safety Law)**
+    *   **No `std.os.exit()`**: Never exit from Zig.
+    *   **Use beam Allocator**: Always use `@import("beam").allocator`.
+    *   **Avoid Infinite Loops**: Long running tasks must be Dirty Schedulers.
+
+4.  **Reflex Isolation (The Structural Law)**
+    *   **Pure Logic**: Elixir (The Brain).
+    *   **Pure Speed**: Zig (The Reflexes).
+    *   **The Bridge**: Use `~Z` sigil or `.zig` files.
 
 ---
 

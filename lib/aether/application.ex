@@ -14,10 +14,11 @@ defmodule Aether.Application do
       {Phoenix.PubSub, name: Aether.PubSub},
       # Aether Agents - File Operations
       Aether.Agents.FileServerAgent,
-      # Aether Agents - Development Lifecycle
       Aether.Agents.TestingAgent,
       Aether.Agents.LintAgent,
       Aether.Agents.FormatAgent,
+      # Quality Assurance
+      Aether.Agents.QualityAgent,
       # Start to serve requests, typically the last entry
       AetherWeb.Endpoint
     ]

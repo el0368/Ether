@@ -11,6 +11,9 @@ config :aether,
   ecto_repos: [Aether.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+# Unbreakable Zig Protocol: Local binary management
+# config :zigler, local_zig: true
+
 # Configure the endpoint
 config :aether, AetherWeb.Endpoint,
   url: [host: "localhost"],

@@ -64,11 +64,15 @@ defmodule Aether.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
       # Development Lifecycle
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7", runtime: false},
       # Desktop Application
       {:desktop, "~> 1.5"},
       {:wx, "~> 1.1", hex: :bridge, targets: [:windows, :macos, :linux]},
-      {:burrito, "~> 1.2"}
+      # {:zigler, "~> 0.15.0"},
+      {:burrito, "~> 1.2"},
+      
+      # Agent Framework
+      {:jido, "~> 1.0.0"}
     ]
   end
 

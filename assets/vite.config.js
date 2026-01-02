@@ -9,7 +9,7 @@ export default defineConfig({
         svelte()
     ],
     build: {
-        outDir: '../priv/static/assets',
+        outDir: '../priv/static',
         emptyOutDir: true,
         manifest: false,
         rollupOptions: {

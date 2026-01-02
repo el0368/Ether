@@ -125,11 +125,43 @@
 >
   <!-- VS Code Top Menu Bar (Custom Title Bar) -->
   <header
-    class="h-9 bg-[#181818] flex items-center px-3 border-b border-white/[0.03] shrink-0 justify-between select-none"
-    style="-webkit-app-region: drag;"
+    class="flex flex-col bg-[#181818] border-b border-white/[0.05] shrink-0 select-none"
   >
+    <!-- Top Row: Title & Window Controls -->
     <div
-      class="flex items-center gap-4 text-[13px] opacity-70"
+      class="h-8 flex items-center justify-between pl-3 pr-0"
+      style="-webkit-app-region: drag;"
+    >
+      <div
+        class="flex items-center gap-2 text-[11px] font-bold opacity-40 uppercase tracking-widest"
+      >
+        <span>⚡</span>
+        <span>Aether IDE</span>
+      </div>
+
+      <!-- Window Controls Mockup -->
+      <div
+        class="flex items-center h-full"
+        style="-webkit-app-region: no-drag;"
+      >
+        <button
+          class="h-8 w-11 hover:bg-white/10 flex items-center justify-center transition-colors text-xs opacity-60"
+          >─</button
+        >
+        <button
+          class="h-8 w-11 hover:bg-white/10 flex items-center justify-center transition-colors text-[9px] opacity-60"
+          >◻</button
+        >
+        <button
+          class="h-8 w-11 hover:bg-rose-600 flex items-center justify-center transition-colors text-sm opacity-60 hover:opacity-100"
+          >✕</button
+        >
+      </div>
+    </div>
+
+    <!-- Bottom Row: Navigation Menus -->
+    <div
+      class="h-7 flex items-center px-2 gap-1 text-[12px] opacity-70 border-t border-white/[0.01]"
       style="-webkit-app-region: no-drag;"
     >
       <span
@@ -163,28 +195,6 @@
       <span
         class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
         >Help</span
-      >
-    </div>
-
-    <div
-      class="absolute left-1/2 -translate-x-1/2 text-[12px] opacity-40 font-medium pointer-events-none"
-    >
-      Aether - Antigravity - Task [Administrator]
-    </div>
-
-    <!-- Window Controls Mockup (Visible in Frameless mode) -->
-    <div class="flex items-center h-full" style="-webkit-app-region: no-drag;">
-      <button
-        class="h-full w-12 hover:bg-white/10 flex items-center justify-center transition-colors text-xs opacity-60"
-        >─</button
-      >
-      <button
-        class="h-full w-12 hover:bg-white/10 flex items-center justify-center transition-colors text-[10px] opacity-60"
-        >◻</button
-      >
-      <button
-        class="h-full w-12 hover:bg-rose-600 flex items-center justify-center transition-colors text-sm opacity-60 hover:opacity-100"
-        >✕</button
       >
     </div>
   </header>

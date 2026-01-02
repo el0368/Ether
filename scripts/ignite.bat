@@ -18,8 +18,8 @@ if %ERRORLEVEL% neq 0 (
 )
 
 :: 📦 IGNITION SEQUENCE
-echo 🧪 [Init] Setting Erlang 26 Environment...
-set "PATH=C:\Program Files\Erlang OTP\262516\bin;%PATH%"
+echo 🧪 [Init] Setting Erlang/Elixir 26 Environment...
+set "PATH=C:\Program Files\Elixir\26\bin;C:\Program Files\Erlang OTP\262516\bin;%PATH%"
 set "LIB=C:\Program Files\Erlang OTP\262516\usr\lib;%LIB%"
 
 echo 📦 [1/3] Fetching Dependencies...

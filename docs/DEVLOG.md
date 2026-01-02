@@ -186,3 +186,28 @@ https://github.com/el0368/Aether.git
 - **Engine**: **Safe Mode** (Pure Elixir).
 - **Documentation**: Fully synchronized (Technical Journal updated).
 
+---
+
+## Session 6: Roadmap Review & The Final Ignition (2026-01-02)
+
+### 🗺️ The Original Roadmap vs. Reality
+**Phase 1: Foundation (Completed)**
+- ✅ Phoenix + Svelte 5 + Agent System.
+**Phase 2: Desktop Shell (Completed)**
+- ✅ Native Window (wxWidgets) + Menus.
+**Phase 3: The Industrial Hybrid Engine (Types of Failure)**
+- *Attempt 1-3 (Ghost Header)*: File not found (`erl_nif_win.h`). Fixed with shim.
+- *Attempt 4 (Deep Ignition)*: Linker error (`TWinDynNifCallbacks`). ABI mismatch (OTP 27/28 vs Zig).
+- *Attempt 5 (Re-Ignition)*: Version lock. Elixir-OTP-28 refused to run on Erlang 26.
+
+### 🚦 Decision Point (The Pivot)
+Since the Hybrid Engine was blocked by toolchain incompatibility, the plan was to pause native dev.
+**However**, the Engineer has installed **Elixir for Erlang 26**.
+**Action**: We are attempting **One Last Ignition** with the correct version-aligned stack (Elixir-OTP-26 + Erlang 26 + Zigler 0.15).
+
+### 🔮 Next Steps
+1. Verify new Elixir installation (`C:\Program Files\Elixir\26\bin`).
+2. Re-configure `ignite.bat` with new paths.
+3. Fire the engine.
+
+

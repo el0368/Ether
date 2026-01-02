@@ -11,12 +11,12 @@
 **Solution:** Manually created shim header `#include "erl_nif.h"`.
 **Outcome:** Reduced errors from 2 to 1.
 **Critical Failure:** `cimport.zig:3244:80: error: no field named 'NAME' in struct 'cimport.TWinDynNifCallbacks'`.
-**Meaning:** Zig's C-translator failed to parse the `WinDynNifCallbacks` struct logic in `erl_nif.h` (OTP 27), likely due to macro complexity or `erl_nif_api_funcs.h` inclusion order. This is a fundamental ABI/Tooling mismatch.
+**Meaning:** Zig's C-translator failed to parse the `WinDynNifCallbacks` struct logic in `erl_nif.h` (OTP 27 AND OTP 26), likely due to macro complexity or `erl_nif_api_funcs.h` inclusion order. This is a fundamental ABI/Tooling mismatch.
 
-### 12-B. The Elixir Version Lock (Erlang Downgrade)
-**Problem:** Attempted to bypass ABI mismatch by forcing `erl.exe` (OTP 26) into PATH.
-**Failure:** `Error! Failed to load module 'elixir' because it requires a more recent Erlang/OTP version`.
-**Lesson:** The installed Elixir (`elixir-otp-28`) is compiled specifically for OTP 28. "Re-Ignition" via downgrade is impossible without reinstalling Elixir itself.
+### 12-B. The Elixir Version Lock (Final Attempt)
+**Action:** Re-aligned stack to Elixir 1.19 (OTP 26) + Erlang 26 (erts-14.2) + Zigler 0.15.2.
+**Outcome:** **Failed** with the exact same `TWinDynNifCallbacks` error.
+**Conclusion:** Zigler 0.15.2 is fundamentally incompatible with Windows Erlang Headers (25/26/27/28) due to macro parsing issues in `translate-c`. Native Windows dev is blocked.
 
 ### 13. Dependency Hell & NMake
 **Problem:** Missing `nmake` prevented native builds.

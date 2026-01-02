@@ -15,8 +15,7 @@ defmodule Aether.Desktop do
         size: {1280, 800},
         url: "http://localhost:4000",
         menubar: nil,
-        style: Bitwise.bor(Desktop.Wx.wxNO_BORDER(), Desktop.Wx.wxCLIP_CHILDREN()),
-        # Ensure we can debug the webview
+        # Removed custom style - wxNO_BORDER breaks Edge WebView rendering
         debugging: true
       )
 

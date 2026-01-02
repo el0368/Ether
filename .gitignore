@@ -35,3 +35,9 @@ aether-*.tar
 npm-debug.log
 /assets/node_modules/
 
+ 
+# Zig Artifacts 
+.zig-cache/ 
+zig-out/ 
+**/zig-out/ 
+/priv/native/*.dll

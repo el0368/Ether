@@ -3,35 +3,31 @@ defmodule Aether.Native.Scanner do
   The Native Reflex for Aether. 
   Bridges the Elixir Brain to the high-speed Zig Directory Walker.
   
-  ⚠️ CURRENTLY DISABLED DUE TO WINDOWS COMPILATION ISSUES ⚠️
+  Uses Manual Native Integration (build_nif.bat) to load the NIF.
   """
   
-  # use Zig, 
-  #   otp_app: :aether
+  # Trigger NIF loading when module is loaded
+  @on_load :load_nif
 
-  # ~Z"""
-  # const beam = @import("beam");
-  # const std = @import("std");
-
-  # /// Flawless Directory Scanner
-  # /// Uses the BEAM allocator to ensure zero-leak stability.
-  # pub fn scan_directory(path: []const u8) !beam.term {
-  #     // Industrial Safety: We handle the path as a slice
-  #     var dir = std.fs.cwd().openDir(path, .{ .iterate = true }) catch |err| {
-  #         return beam.make_error_pair(@errorName(err));
-  #     };
-  #     defer dir.close();
-
-  #     // Placeholder for high-speed indexing logic
-  #     return beam.make_ok_pair(beam.make_slice(path));
-  # }
-  # """
-
-  # --- Client API ---
-  
-  def scan(_path) do
-    # This calls the Zig code above seamlessly
-    # scan_directory(path)
-    {:error, :native_disabled}
+  def load_nif do
+    # Path to priv/native/scanner_nif (without .dll extension)
+    path = :code.priv_dir(:aether)
+    |> Path.join("native/scanner_nif")
+    |> String.to_charlist()
+    
+    # Load the NIF. If it fails, log it but don't crash code loading immediately?
+    # standard pattern:
+    case :erlang.load_nif(path, 0) do
+      :ok -> :ok
+      {:error, reason} -> 
+        require Logger
+        Logger.warning("Native Scanner failed to load: #{inspect(reason)}")
+        # Return :ok so module loads, but falls back to nif_error
+        :ok
+    end
   end
+
+  # Fallback function: If NIF is loaded, this is replaced.
+  # If not, this error triggers the Bridge (if configured to catch) or crashes.
+  def scan(_path), do: :erlang.nif_error(:nif_not_loaded)
 end

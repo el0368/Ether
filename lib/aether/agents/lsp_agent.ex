@@ -30,6 +30,10 @@ defmodule Aether.Agents.LSPAgent do
     GenServer.call(__MODULE__, {:completion, path, line, column}, 30_000)
   end
 
+  def document_symbols(path) do
+    GenServer.call(__MODULE__, {:document_symbols, path}, 10_000)
+  end
+
   # Callbacks
 
   def handle_cast({:did_open, path, text}, state) do
@@ -93,6 +97,44 @@ defmodule Aether.Agents.LSPAgent do
 
     {:reply, {:ok, suggestions}, state}
   end
+
+  def handle_call({:document_symbols, path}, _from, state) do
+    text = Map.get(state.documents, path)
+    
+    symbols =
+      if text do
+        extract_symbols(text)
+      else
+        []
+      end
+    
+    {:reply, {:ok, symbols}, state}
+  end
+
+  defp extract_symbols(text) do
+    case Code.string_to_quoted(text) do
+      {:ok, ast} ->
+        extract_from_ast(ast, [])
+      {:error, _} ->
+        []
+    end
+  end
+
+  defp extract_from_ast({:defmodule, meta, [{:__aliases__, _, parts}, _]}, acc) do
+    name = Enum.join(parts, ".")
+    [%{name: "module #{name}", kind: :module, line: meta[:line] || 1} | acc]
+  end
+
+  defp extract_from_ast({kind, meta, [{name, _, _args} | _]}, acc) when kind in [:def, :defp] do
+    label = if kind == :defp, do: "(private) #{name}", else: "#{name}"
+    [%{name: label, kind: :function, line: meta[:line] || 1} | acc]
+  end
+
+  defp extract_from_ast({_, _, children}, acc) when is_list(children) do
+    Enum.reduce(children, acc, &extract_from_ast/2)
+  end
+
+  defp extract_from_ast(_, acc), do: acc
 
   def child_spec(opts) do
     %{

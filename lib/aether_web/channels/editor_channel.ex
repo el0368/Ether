@@ -196,6 +196,14 @@ defmodule AetherWeb.EditorChannel do
     end
   end
 
+  @impl true
+  def handle_in("lsp:symbols", %{"path" => path}, socket) do
+    case Aether.Agents.LSPAgent.document_symbols(path) do
+      {:ok, symbols} -> {:reply, {:ok, %{symbols: symbols}}, socket}
+      {:error, reason} -> {:reply, {:error, %{reason: inspect(reason)}}, socket}
+    end
+  end
+
   # Window Management
 
   @impl true

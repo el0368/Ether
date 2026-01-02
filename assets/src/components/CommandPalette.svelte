@@ -1,11 +1,30 @@
 <script>
-    let { isOpen, items = [], recentFiles = [], onSelect, onClose } = $props();
+    let {
+        isOpen,
+        items = [],
+        recentFiles = [],
+        symbols = [],
+        mode = "files",
+        onSelect,
+        onClose,
+    } = $props();
 
     let query = $state("");
     let selectedIndex = $state(0);
     let container;
 
     let filteredItems = $derived(() => {
+        if (mode === "symbols") {
+            // Show symbols with optional filtering
+            if (!query) return symbols;
+            return symbols
+                .filter((s) =>
+                    s.name.toLowerCase().includes(query.toLowerCase()),
+                )
+                .slice(0, 15);
+        }
+
+        // Files mode
         if (!query) {
             // When no query, show recent files first, then all items
             const recent = recentFiles.map((f) => ({ ...f, isRecent: true }));
@@ -82,11 +101,15 @@
                         onkeydown={(e) => e.key === "Enter" && onSelect(item)}
                     >
                         <span class="opacity-40"
-                            >{item.isRecent
-                                ? "🕐"
-                                : item.is_dir
-                                  ? "📁"
-                                  : "📄"}</span
+                            >{item.kind === "function"
+                                ? "ƒ"
+                                : item.kind === "module"
+                                  ? "◆"
+                                  : item.isRecent
+                                    ? "🕐"
+                                    : item.is_dir
+                                      ? "📁"
+                                      : "📄"}</span
                         >
                         <div class="flex flex-col">
                             <span class="font-medium">{item.name}</span>

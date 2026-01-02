@@ -106,18 +106,33 @@
   // UI State
   let showRefactor = $state(false);
   let showPalette = $state(false);
+  let paletteMode = $state("files"); // "files" | "symbols"
   let activeSidebar = $state("files");
   let sidebarVisible = $state(true);
   let recentFiles = $state([]);
+  let documentSymbols = $state([]);
 
   function handleGlobalKeydown(e) {
     if (e.ctrlKey && e.key === "p") {
       e.preventDefault();
+      paletteMode = "files";
       // Fetch recent files when opening palette
       if (channel) {
         channel.push("editor:recent", {}).receive("ok", (resp) => {
           recentFiles = resp.files || [];
         });
+      }
+      showPalette = true;
+    } else if (e.ctrlKey && e.shiftKey && e.key === "O") {
+      e.preventDefault();
+      paletteMode = "symbols";
+      // Fetch symbols for current file
+      if (channel && activeGroup.file) {
+        channel
+          .push("lsp:symbols", { path: activeGroup.file.path })
+          .receive("ok", (resp) => {
+            documentSymbols = resp.symbols || [];
+          });
       }
       showPalette = true;
     } else if (e.ctrlKey && e.shiftKey && e.key === "f") {
@@ -547,7 +562,20 @@
   isOpen={showPalette}
   items={fileTree}
   {recentFiles}
-  onSelect={(file) => openFile(file)}
+  symbols={documentSymbols}
+  mode={paletteMode}
+  onSelect={(item) => {
+    if (paletteMode === "symbols" && item.line) {
+      // Navigate to symbol line in Monaco
+      showPalette = false;
+      // Broadcast a custom event to scroll Monaco to line
+      window.dispatchEvent(
+        new CustomEvent("goto-line", { detail: { line: item.line } }),
+      );
+    } else {
+      openFile(item);
+    }
+  }}
   onClose={() => (showPalette = false)}
 />
 

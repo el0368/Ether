@@ -121,6 +121,23 @@
         }
     });
 
+    // Listen for goto-line events from Go to Symbol feature
+    $effect(() => {
+        if (editor) {
+            const handleGotoLine = (e) => {
+                const line = e.detail?.line;
+                if (line) {
+                    editor.revealLineInCenter(line);
+                    editor.setPosition({ lineNumber: line, column: 1 });
+                    editor.focus();
+                }
+            };
+            window.addEventListener("goto-line", handleGotoLine);
+            return () =>
+                window.removeEventListener("goto-line", handleGotoLine);
+        }
+    });
+
     function mapKind(kindAtom) {
         // Map ElixirSense kinds/atoms to monaco.languages.CompletionItemKind
         // Keyword = 14, Function = 2, Module = 9

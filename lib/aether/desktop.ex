@@ -13,7 +13,7 @@ defmodule Aether.Desktop do
       title: "Aether IDE",
       size: {1280, 800},
       url: "http://localhost:4000",
-      menubar: Aether.Desktop.MenuBar,
+      menubar: nil,
       # Ensure we can debug the webview
       debugging: true
     )

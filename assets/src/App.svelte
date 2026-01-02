@@ -123,11 +123,15 @@
   onkeydown={handleGlobalKeydown}
   tabindex="-1"
 >
-  <!-- VS Code Top Menu Bar -->
+  <!-- VS Code Top Menu Bar (Custom Title Bar) -->
   <header
-    class="h-9 bg-[#181818] flex items-center px-3 border-b border-white/[0.03] shrink-0"
+    class="h-9 bg-[#181818] flex items-center px-3 border-b border-white/[0.03] shrink-0 justify-between select-none"
+    style="-webkit-app-region: drag;"
   >
-    <div class="flex items-center gap-4 text-[13px] opacity-70">
+    <div
+      class="flex items-center gap-4 text-[13px] opacity-70"
+      style="-webkit-app-region: no-drag;"
+    >
       <span
         class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
         >File</span
@@ -161,8 +165,27 @@
         >Help</span
       >
     </div>
-    <div class="flex-1 text-center text-[12px] opacity-40 font-medium">
+
+    <div
+      class="absolute left-1/2 -translate-x-1/2 text-[12px] opacity-40 font-medium pointer-events-none"
+    >
       Aether - Antigravity - Task [Administrator]
+    </div>
+
+    <!-- Window Controls Mockup (Visible in Frameless mode) -->
+    <div class="flex items-center h-full" style="-webkit-app-region: no-drag;">
+      <button
+        class="h-full w-12 hover:bg-white/10 flex items-center justify-center transition-colors text-xs opacity-60"
+        >─</button
+      >
+      <button
+        class="h-full w-12 hover:bg-white/10 flex items-center justify-center transition-colors text-[10px] opacity-60"
+        >◻</button
+      >
+      <button
+        class="h-full w-12 hover:bg-rose-600 flex items-center justify-center transition-colors text-sm opacity-60 hover:opacity-100"
+        >✕</button
+      >
     </div>
   </header>
 

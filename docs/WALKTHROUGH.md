@@ -238,4 +238,27 @@ Aether.Agents.FileServerAgent.list_files(path)
 - **Mode**: **Safe Mode** (Native disabled via config).
 - **Stability**: **Guaranteed**.
 
+---
+
+## Session 5: Ignition Protocol & Environment Hardening
+**Date**: 2026-01-02
+
+### 1. The "Ghost Header" Solution
+**Goal**: bridge Zigler's expectation of `erl_nif_win.h` with modern Erlang's structure.
+- **Implementation**: Created `erl_nif_win.h` shim in Erlang include directory.
+- **Result**: Successfully resolved the "file not found" error, but compilation moved to a linking error.
+
+### 2. Self-Healing Terminal
+**Goal**: Prevent "nmake not found" errors forever.
+- **Implementation**: Updated `start_dev.bat` to auto-detect missing tools and source `VsDevCmd.bat`.
+- **Result**: ✅ Verified. Script now auto-upgrades the shell to a Developer Environment.
+
+### 3. Final Status (Safe Mode)
+We executed the **Ignition Protocol** (`scripts/ignite.bat`) but encountered persistent linking issues in the Zig/Windows ABI.
+- **Decision**: Revert to Safe Mode.
+- **Current State**: 
+    - `Mix`: Zigler disabled.
+    - `Bridge`: Active (Elixir Fallback).
+    - `UI`: Fully Functional.
+
 

@@ -164,3 +164,25 @@ https://github.com/el0368/Aether.git
 - `lib/aether/native/bridge.ex`: The redundancy layer.
 - `lib/aether/native/scanner.ex`: The dormant Zig implementation.
 
+---
+
+## Session 5: 2026-01-02 (Post-Ignition State)
+
+### The Ghost Header & Ignition Protocol
+- **Action**: Attempted to bridge the incompatibility between `Zigler 0.15.0` and modern Erlang by creating a "Ghost Header" (`erl_nif_win.h`) that includes the correct `erl_nif.h`.
+- **Action**: Hardened the environment by updating `start_dev.bat` to "Self-Heal" (auto-detect missing `nmake` and source Visual Studio build tools).
+- **Action**: Executed `scripts/ignite.bat` to verify the full native build chain.
+
+### Result
+- **Partial Success**: The self-healing terminal works perfectly; compilation tools are correctly loaded. The "Ghost Header" reduced errors.
+- **Verification Failure**: Zig build still failed with `native 1 errors` (linking issue).
+- **Final Decision (Safe Mode)**: 
+    - Re-disabled `zigler` dependency.
+    - Reverted `native/scanner.ex` to return `{:error, :native_disabled}`.
+    - Confirmed `Aether.Native.Bridge` is handling the fallback gracefully.
+
+### Current Status
+- **Environment**: **Hardened** (Ready for future attempts).
+- **Engine**: **Safe Mode** (Pure Elixir).
+- **Documentation**: Fully synchronized (Technical Journal updated).
+

@@ -78,3 +78,26 @@ mix clean
 mix deps.get
 mix compile
 ```
+
+---
+
+## Hybrid Engine Management
+
+### Safe Mode (Default)
+The project runs in "Safe Mode" where all native (Zig) dependencies are disabled.
+- **Scanner**: Uses pure Elixir implementation.
+- **Build**: No C compiler required.
+
+### Ignition Protocol (Activating Zig)
+To attempt native activation:
+
+1. **Uncomment Zigler**: In `mix.exs` and `config/config.exs`.
+2. **Run Ignition Script**:
+```bash
+.\scripts\ignite.bat
+```
+3. **Verify**:
+```elixir
+Aether.Native.Bridge.scan(".")
+# => {:ok, [...]} (from Zig)
+```

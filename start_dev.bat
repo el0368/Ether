@@ -35,7 +35,10 @@ echo 🛡️ [Path] System Zig excluded. Developer environment active.
 :: 📦 DEPENDENCY & TOOLING SYNC
 echo 📦 [Aether] Syncing dependencies...
 call mix deps.get
-call mix zig.get
+call mix zig.get 2>nul
+if %ERRORLEVEL% neq 0 (
+    echo ⚠️ [Aether] Zig engine disabled (Safe Mode). Skipping binary fetch.
+)
 
 :: 🚀 LAUNCH IEX SESSION
 echo 🚀 [Aether] Launching Brain...

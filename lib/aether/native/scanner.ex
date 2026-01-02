@@ -8,6 +8,7 @@ defmodule Aether.Native.Scanner do
   
   # use Zig, 
   #   otp_app: :aether
+  #   # libs: ["erts"] <-- Invalid option, removing to allow compile. Linking handled by LIB env var.
 
   # ~Z"""
   # const beam = @import("beam");

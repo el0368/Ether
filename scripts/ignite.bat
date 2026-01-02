@@ -18,6 +18,9 @@ if %ERRORLEVEL% neq 0 (
 )
 
 :: 📦 IGNITION SEQUENCE
+echo 🧪 [Init] Setting Deep Ignition Linker Paths...
+set "LIB=C:\Program Files\Erlang OTP\erts-16.2\lib;%LIB%"
+
 echo 📦 [1/3] Fetching Dependencies...
 call mix deps.get
 echo 📦 [2/3] Fetching Zig Engine...

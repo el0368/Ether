@@ -9,7 +9,9 @@
 **Problem:** Zigler compilation failed with `erl_nif_win.h not found`.
 **Discovery:** Modern Erlang (OTP 25+) consolidated logic, removing this file. Zigler still expects it.
 **Solution:** Manually created shim header `#include "erl_nif.h"`.
-**Outcome:** Reduced errors from 2 to 1, but did not fully resolve compilation.
+**Outcome:** Reduced errors from 2 to 1.
+**Critical Failure:** `cimport.zig:3244:80: error: no field named 'NAME' in struct 'cimport.TWinDynNifCallbacks'`.
+**Meaning:** Zig's C-translator failed to parse the `WinDynNifCallbacks` struct logic in `erl_nif.h` (OTP 27), likely due to macro complexity or `erl_nif_api_funcs.h` inclusion order. This is a fundamental ABI/Tooling mismatch.
 
 ### 12. Dependency Hell & NMake
 **Problem:** Missing `nmake` prevented native builds.

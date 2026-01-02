@@ -1,5 +1,5 @@
 # Aether IDE - Lessons Learned & Problem Log
-**Date:** 2026-01-01
+**Date:** 2026-01-02
 **Purpose:** Record all problems encountered during initial development for future reference.
 
 ---
@@ -21,8 +21,11 @@ The project used `Zigler` (Elixir-Zig bridge) for high-performance file scanning
 3. **Windows Quirks**: Zigler searched for `zig` (Linux style) instead of `zig.exe` (Windows style).
 4. **Build Caching**: Old compilation artifacts in `_build/` persisted incorrect Zig paths even after config changes.
 
-### Final Resolution
+### Status: Failed (Reverted)
+
+### Solution
 **Removed Zig entirely. Switched to Pure Elixir stack.**
+We prioritized stability over raw performance for the MVP.
 
 ---
 
@@ -31,13 +34,17 @@ The project used `Zigler` (Elixir-Zig bridge) for high-performance file scanning
 ### Problem
 `Postgrex.Error: FATAL 28P01 (invalid_password)`
 
-### Resolution
+### Status: Success
+
+### Solution
 Updated `config/dev.exs` with correct local password.
 
 ### Additional Issue
 `FATAL 3D000 database "aether_dev" does not exist`
 
-### Resolution
+### Status: Success
+
+### Solution
 Added `mix ecto.create` to launch script.
 
 ---
@@ -48,7 +55,9 @@ Added `mix ecto.create` to launch script.
 `Could not start watcher "npm"` - Executable not found  
 `(stop) :eacces` - Access denied when trying to run `npm.cmd`
 
-### Resolution
+### Status: Success
+
+### Solution
 1. Added `C:\Program Files\nodejs` to PATH in `start_dev.bat`.
 2. Changed watcher config: `cmd: ["/c", "npm", "run", "dev", cd: ...]`
 
@@ -59,7 +68,9 @@ Added `mix ecto.create` to launch script.
 ### Problem
 `ArgumentError: no 'app' html template defined for AetherWeb.LayoutView`
 
-### Resolution
+### Status: Success
+
+### Solution
 Ensured layouts.ex has proper `app/1` function or `app.html.heex` template (but not both!).
 
 ---
@@ -69,7 +80,9 @@ Ensured layouts.ex has proper `app/1` function or `app.html.heex` template (but 
 ### Problem
 `mix.ps1 cannot be loaded because running scripts is disabled on this system`
 
-### Resolution
+### Status: Success
+
+### Solution
 Use `cmd.exe` or `.bat` scripts instead of PowerShell.
 
 ---
@@ -79,7 +92,9 @@ Use `cmd.exe` or `.bat` scripts instead of PowerShell.
 ### Problem
 `FunctionClauseError` during compilation.
 
-### Resolution
+### Status: Success
+
+### Solution
 Removed `livebook` from `mix.exs`. Not critical for MVP.
 
 ---
@@ -89,7 +104,9 @@ Removed `livebook` from `mix.exs`. Not critical for MVP.
 ### Problem
 `The task "compile.phoenix_live_view" could not be found`
 
-### Resolution
+### Status: Success
+
+### Solution
 Removed `:phoenix_live_view` from `compilers` in `mix.exs`.
 
 ---
@@ -111,8 +128,11 @@ Removed `:phoenix_live_view` from `compilers` in `mix.exs`.
 ### Context
 Attempted to re-integrate Zig using Zigler 0.15.2. Compilation of NIFs failed specifically on Windows because the required Erlang NIF header file for Windows was not found in the expected include path within the `_build` directory.
 
-### Resolution
-**Reverted to Pure Elixir**. While the "Unbreakable Zig Protocol" (local binary management) solved the PATH and Version issues, the internal tooling of Zigler 0.15.x seems to have a regression or configuration gap for Windows headers. We prioritized stability over raw performance for the `Scanner` module.
+### Status: Failed (Safe Mode Active)
+
+### Solution
+**Reverted to Pure Elixir**. 
+While the "Unbreakable Zig Protocol" (local binary management) solved the PATH and Version issues, the internal tooling of Zigler 0.15.x seems to have a regression or configuration gap for Windows headers. We prioritized stability over raw performance for the `Scanner` module.
 
 ---
 
@@ -128,7 +148,9 @@ mix.exs: {:credo, ..., only: [:dev, :test]}
 ### Root Cause
 The `jido` library pulls in `ex_dbug`, which requires `credo` as a runtime dependency (not optional). However, our root project defined `credo` as `only: [:dev, :test]`. Elixir's dependency resolution forbids a transitive dependency from being "more available" than the root definition allows.
 
-### Resolution
+### Status: Success
+
+### Solution
 Removed `only: [:dev, :test]` from the `credo` definition in `mix.exs`, making it available in all environments. This satisfied `ex_dbug`'s requirement.
 
 ---
@@ -137,6 +159,8 @@ Removed `only: [:dev, :test]` from the `credo` definition in `mix.exs`, making i
 
 ### Problem
 Native dependencies (NIFs) introduce a risk of crashing the entire VM or failing to compile on certain environments (e.g., missing C headers on Windows).
+
+### Status: Success
 
 ### Solution
 Implement a **Bridge Module** (`Aether.Native.Bridge`) that:

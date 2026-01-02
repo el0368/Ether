@@ -1,0 +1,80 @@
+Compiling 26 files (.ex)
+    warning: cannot import Phoenix.HTML.sigil_E/2 because it is undefined or private
+    │
+  5 │   use Desktop.Menu
+    │   ~~~~~~~~~~~~~~~~
+    │
+    └─ lib/aether/desktop/menu_bar.ex:5: Aether.Desktop.MenuBar (module)
+
+    warning: cannot import Phoenix.HTML.sigil_e/2 because it is undefined or private
+    │
+  5 │   use Desktop.Menu
+    │   ~~~~~~~~~~~~~~~~
+    │
+    └─ lib/aether/desktop/menu_bar.ex:5: Aether.Desktop.MenuBar (module)
+
+    warning: variable "assigns" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 32 │   def render(assigns) do
+    │              ~~~~~~~
+    │
+    └─ lib/aether/desktop/menu_bar.ex:32:14: Aether.Desktop.MenuBar.render/1
+
+
+18:25:42.695 [info] searching for zig in c:/Users/Administrator/AppData/Local/zigler/Cache/zig-x86_64-windows-0.15.2/zig.exe
+
+18:25:42.704 [info] zig expected (via cache) in c:/Users/Administrator/AppData/Local/zigler/Cache/zig-x86_64-windows-0.15.2/zig.exe
+
+18:25:42.704 [debug] running command: c:/Users/Administrator/AppData/Local/zigler/Cache/zig-x86_64-windows-0.15.2/zig.exe fmt c:/Users/ADMINI~1/AppData/Local/Temp/Elixir.Aether.Native.Scanner/build.zig
+
+18:25:42.729 [debug] wrote build.zig to c:/Users/ADMINI~1/AppData/Local/Temp/Elixir.Aether.Native.Scanner/build.zig
+
+18:25:42.764 [info] searching for zig in c:/Users/Administrator/AppData/Local/zigler/Cache/zig-x86_64-windows-0.15.2/zig.exe
+
+18:25:42.764 [info] zig expected (via cache) in c:/Users/Administrator/AppData/Local/zigler/Cache/zig-x86_64-windows-0.15.2/zig.exe
+
+18:25:42.764 [debug] running command: c:/Users/Administrator/AppData/Local/zigler/Cache/zig-x86_64-windows-0.15.2/zig.exe build -Dzigler-mode=sema
+
+18:25:43.104 [info] searching for zig in c:/Users/Administrator/AppData/Local/zigler/Cache/zig-x86_64-windows-0.15.2/zig.exe
+
+18:25:43.104 [info] zig expected (via cache) in c:/Users/Administrator/AppData/Local/zigler/Cache/zig-x86_64-windows-0.15.2/zig.exe
+
+18:25:43.104 [debug] running command: c:/Users/Administrator/AppData/Local/zigler/Cache/zig-x86_64-windows-0.15.2/zig.exe fmt c:/Users/ADMINI~1/AppData/Local/Temp/Elixir.Aether.Native.Scanner/module.zig
+
+18:25:43.123 [debug] wrote module code to c:/Users/ADMINI~1/AppData/Local/Temp/Elixir.Aether.Native.Scanner/module.zig
+
+18:25:43.124 [info] searching for zig in c:/Users/Administrator/AppData/Local/zigler/Cache/zig-x86_64-windows-0.15.2/zig.exe
+
+18:25:43.124 [info] zig expected (via cache) in c:/Users/Administrator/AppData/Local/zigler/Cache/zig-x86_64-windows-0.15.2/zig.exe
+
+18:25:43.124 [debug] running command: c:/Users/Administrator/AppData/Local/zigler/Cache/zig-x86_64-windows-0.15.2/zig.exe build  --prefix c:/Users/Administrator/Documents/GitHub/Aether/_build/dev/lib/aether/priv
+
+== Compilation error in file lib/aether/native/scanner.ex ==
+** (CompileError) install
++- install Elixir.Aether.Native.Scanner
+   +- compile lib Elixir.Aether.Native.Scanner Debug native 2 errors
+C:\Users\Administrator\Documents\GitHub\Aether\_build\dev\lib\zigler\priv\beam\erl_nif.zig:24:43: error: C import failed
+const e = if (builtin.os.tag == .windows) @cImport(@cInclude("erl_nif_win.h")) else @cImport(@cInclude("erl_nif.h"));
+                                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+referenced by:
+    TWinDynNifCallbacks: C:\Users\Administrator\Documents\GitHub\Aether\_build\dev\lib\zigler\priv\beam\erl_nif.zig:95:33
+    nif_init: module.zig:98:36
+    4 reference(s) hidden; use '-freference-trace=6' to see all references
+.zig-cache\o\f405b1c251427f1ca835498ad247f06a\cimport.h:1:10: error: 'erl_nif_win.h' file not found
+#include <erl_nif_win.h>
+         ^
+error: the following command failed with 2 compilation errors:
+"C:\\Users\\Administrator\\AppData\\Local\\zigler\\Cache\\zig-x86_64-windows-0.15.2\\zig.exe" build-lib -fllvm -fno-error-tracing -ODebug --dep beam --dep erl_nif --dep nif -Mroot=module.zig --dep erl_nif "-Mbeam=C:\\Users\\Administrator\\Documents\\GitHub\\Aether\\_build\\dev\\lib\\zigler\\priv\\beam\\beam.zig" -isystem "c:\\Program Files\\Erlang OTP\\262516\\erts-14.2.5.12\\include" -isystem "c:\\Users\\Administrator\\Documents\\GitHub\\Aether\\_build\\dev\\lib\\zigler\\priv\\erl_nif_win" "-Merl_nif=C:\\Users\\Administrator\\Documents\\GitHub\\Aether\\_build\\dev\\lib\\zigler\\priv\\beam\\erl_nif.zig" --dep erl_nif --dep beam --dep attributes "-Mnif=C:\\Users\\Administrator\\Documents\\GitHub\\Aether\\lib\\aether\\native\\.Elixir.Aether.Native.Scanner.zig" -Mattributes=attributes.zig -lc -femit-implib -fallow-shlib-undefined --cache-dir .zig-cache --global-cache-dir "C:\\Users\\Administrator\\AppData\\Local\\zig" --name Elixir.Aether.Native.Scanner -dynamic --version 0.1.0 --zig-lib-dir "C:\\Users\\Administrator\\AppData\\Local\\zigler\\Cache\\zig-x86_64-windows-0.15.2\\lib\\" --listen=-
+
+Build Summary: 0/3 steps succeeded; 1 failed
+install transitive failure
++- install Elixir.Aether.Native.Scanner transitive failure
+   +- compile lib Elixir.Aether.Native.Scanner Debug native 2 errors
+
+error: the following build command failed with exit code 1:
+.zig-cache\o\cfa04f8803eaafbbb0b1ec152ad10028\build.exe C:\Users\Administrator\AppData\Local\zigler\Cache\zig-x86_64-windows-0.15.2\zig.exe C:\Users\Administrator\AppData\Local\zigler\Cache\zig-x86_64-windows-0.15.2\lib C:\Users\ADMINI~1\AppData\Local\Temp\Elixir.Aether.Native.Scanner .zig-cache C:\Users\Administrator\AppData\Local\zig --seed 0xb270e401 -Z54de453e0d9e1f64 --prefix c:/Users/Administrator/Documents/GitHub/Aether/_build/dev/lib/aether/priv
+    (zigler 0.15.2) lib/zig/command.ex:30: Zig.Command.run_zig/2
+    (zigler 0.15.2) lib/zig/command.ex:151: Zig.Command.compile!/1
+    (zigler 0.15.2) lib/zig/compiler.ex:150: Zig.Compiler.compile/3
+    (zigler 0.15.2) expanding macro: Zig.Compiler.__before_compile__/1
+    lib/aether/native/scanner.ex:1: Aether.Native.Scanner (module)

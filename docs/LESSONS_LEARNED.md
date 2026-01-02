@@ -13,7 +13,12 @@
 **Critical Failure:** `cimport.zig:3244:80: error: no field named 'NAME' in struct 'cimport.TWinDynNifCallbacks'`.
 **Meaning:** Zig's C-translator failed to parse the `WinDynNifCallbacks` struct logic in `erl_nif.h` (OTP 27), likely due to macro complexity or `erl_nif_api_funcs.h` inclusion order. This is a fundamental ABI/Tooling mismatch.
 
-### 12. Dependency Hell & NMake
+### 12-B. The Elixir Version Lock (Erlang Downgrade)
+**Problem:** Attempted to bypass ABI mismatch by forcing `erl.exe` (OTP 26) into PATH.
+**Failure:** `Error! Failed to load module 'elixir' because it requires a more recent Erlang/OTP version`.
+**Lesson:** The installed Elixir (`elixir-otp-28`) is compiled specifically for OTP 28. "Re-Ignition" via downgrade is impossible without reinstalling Elixir itself.
+
+### 13. Dependency Hell & NMake
 **Problem:** Missing `nmake` prevented native builds.
 **Solution:** Updated `start_dev.bat` to source `VsDevCmd.bat`.
 **Outcome:** Successfully loaded build tools, but Zigler build still failed with generic "native errors".

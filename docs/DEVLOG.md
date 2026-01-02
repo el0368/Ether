@@ -241,5 +241,71 @@ Now that the "Brain" is active, the next step is **Integration**:
 -   Build the UI to command these agents.
 -   "The Agent that codes itself."
 
+---
 
+## Session 8: The VS Code Experience & Advanced Features (2026-01-02)
+**Date**: 2026-01-02 (22:00+)
+**Phase**: Phase 10 - Advanced Editor Features
 
+### 🖼️ Frameless Window Experiment (Attempted & Reverted)
+- **Goal**: Achieve a true frameless window like VS Code/Discord.
+- **Approach**: Patched `elixir-desktop` to expose `wxNO_BORDER` and other constants.
+- **Discovery**: Edge WebView does **not render content** when `wxNO_BORDER` or `wxRESIZE_BORDER` styles are applied on Windows.
+- **Resolution**: Reverted to default `wxDEFAULT_FRAME_STYLE` to ensure the IDE is usable.
+- **Takeaway**: For true frameless on Windows, a different approach (e.g., Tauri, raw Win32 API) is needed.
+
+### ✅ Gray Screen Fix
+- **Problem**: Desktop app showed gray screen - no UI rendered.
+- **Root Cause**: Custom `wxWidgets` styles (`wxNO_BORDER`) broke Edge WebView rendering.
+- **Fix**: Removed custom styles, reverted to native window frame.
+- **Also**: Fixed missing `GitPanel.svelte` component that was causing build errors.
+
+### ✅ Application Renaming (Aether → Ether)
+- Updated window title in `lib/aether/desktop.ex` to "Ether IDE".
+- Updated UI header in `App.svelte` to "Ether IDE".
+- Simplified menu bar (removed duplicate custom title bar row).
+
+### ✅ Recent Files Feature (Ctrl+P)
+- **Backend**: Added `get_recent_files/0` to `FileServerAgent` that tracks last 20 opened files.
+- **Channel**: Added `editor:recent` handler in `EditorChannel`.
+- **Frontend**: Updated `CommandPalette` to:
+  - Accept `recentFiles` prop
+  - Display recent files with 🕐 icon at top of list
+  - Show "• recently opened" indicator
+
+### ✅ Go to Symbol Feature (Ctrl+Shift+O)
+- **Backend**: Added `document_symbols/1` to `LSPAgent` using Elixir AST parsing.
+- **Extraction**: Parses `defmodule`, `def`, and `defp` from source code.
+- **Channel**: Added `lsp:symbols` handler in `EditorChannel`.
+- **Frontend**:
+  - Added `paletteMode` state ("files" | "symbols")
+  - Updated `CommandPalette` to support symbol mode
+  - Added symbol icons: `ƒ` for functions, `◆` for modules
+  - Added `goto-line` event listener in `MonacoEditor` to navigate to selected symbol
+
+### 🔧 Config Fix
+- Updated `assets/tsconfig.json` to fix "No inputs found" warnings:
+  - Added `allowJs: true`
+  - Changed include from `src/**/*` to `src/**/*.js`
+
+### 📊 Summary of Key Files Modified
+| File | Changes |
+|------|---------|
+| `lib/aether/desktop.ex` | Reverted to default frame style, title → "Ether IDE" |
+| `lib/aether/agents/file_server_agent.ex` | Added recent files tracking |
+| `lib/aether/agents/lsp_agent.ex` | Added document symbols extraction |
+| `lib/aether_web/channels/editor_channel.ex` | Added `editor:recent` and `lsp:symbols` handlers |
+| `assets/src/App.svelte` | Simplified menu bar, added symbol/recent files support |
+| `assets/src/components/CommandPalette.svelte` | Added mode, symbols, icons |
+| `assets/src/components/MonacoEditor.svelte` | Added goto-line listener |
+| `assets/src/components/GitPanel.svelte` | Created (was missing) |
+| `assets/tsconfig.json` | Fixed to include `.js` files |
+
+### 🚀 Current Status
+- **Window**: Native frame (frameless blocked by WebView limitation).
+- **Features**: Recent files, Go to Symbol fully operational.
+- **Build**: All Vite builds passing.
+- **Tests**: Elixir tests passing.
+- **Git**: All changes pushed to GitHub.
+
+---

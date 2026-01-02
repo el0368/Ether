@@ -21,7 +21,7 @@ defmodule Aether.Desktop do
       )
 
     # Register the main window process so we can find it from channels
-    Process.register(pid, :main_window)
+    # Process.register(pid, :main_window) -- Already registered by id: :main_window
     {:ok, pid}
   end
 end

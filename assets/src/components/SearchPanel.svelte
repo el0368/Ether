@@ -37,13 +37,13 @@
     });
 </script>
 
-<div class="flex flex-col h-full bg-[#252526] text-[#cccccc]">
+<div class="flex flex-col h-full bg-base-200 text-base-content">
     <div class="p-3">
         <div class="relative flex items-center mb-2">
             <input
                 type="text"
                 placeholder="Search"
-                class="w-full bg-[#3c3c3c] border border-white/5 px-2 py-1 text-sm outline-none focus:border-primary"
+                class="w-full bg-base-100 border border-white/5 px-2 py-1 text-sm outline-none focus:border-primary"
                 bind:value={query}
                 onkeydown={handleKeydown}
             />
@@ -71,7 +71,7 @@
             {#each Object.entries(groupedResults()) as [path, matches]}
                 <div class="mb-2">
                     <div
-                        class="flex items-center px-4 py-1 gap-1 hover:bg-white/5 cursor-pointer opacity-80"
+                        class="flex items-center px-4 py-1 gap-1 hover:bg-base-content/5 cursor-pointer opacity-80"
                         onclick={() =>
                             onSelectFile({ path, name: path.split("/").pop() })}
                     >
@@ -85,7 +85,7 @@
                     <div class="pl-8">
                         {#each matches as match}
                             <button
-                                class="w-full text-left px-2 py-1 hover:bg-white/5 text-[11px] truncate opacity-60 flex items-center gap-2 group border-l border-transparent hover:border-primary/40 transition-all font-mono"
+                                class="w-full text-left px-2 py-1 hover:bg-base-content/5 text-[11px] truncate opacity-60 flex items-center gap-2 group border-l border-transparent hover:border-primary/40 transition-all font-mono"
                                 onclick={() =>
                                     onSelectFile({
                                         path: match.path,

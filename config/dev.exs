@@ -24,9 +24,10 @@ config :aether, AetherWeb.Endpoint,
   code_reloader: true,
   debug_errors: true,
   secret_key_base: "M2N+uB8iTprrkLZREli7NUmrfizVq7ULNqucf7buEJubtWNF5EV4Y7QW8ZpxmiSA",
-  # Watchers disabled - using Vite for Svelte frontend
-  # Run `npm run dev` in /assets for live reload
-  watchers: []
+  # Watchers enabled - using Bun for Svelte frontend
+  watchers: [
+    bun: ["run", "dev", cd: Path.expand("../assets", __DIR__)]
+  ]
 
 # ## SSL Support
 #

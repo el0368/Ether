@@ -4,19 +4,17 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Create a module for the C source
-    // root_source_file is optional (can be null if only C sources)
+    // Create a module for the Zig source (Hybrid Shim)
     const mod = b.createModule(.{
+        .root_source_file = b.path("src/scanner_safe.zig"),
         .target = target,
         .optimize = optimize,
     });
     
-    // Add C source file
+    // Add C source file (Shim)
     mod.addCSourceFile(.{
-        .file = b.path("src/scanner.c"),
+        .file = b.path("src/entry.c"),
         .flags = &.{}, 
-                         // Note: might need "-std=c11" or similar if defaults are strict
-                         // But usually defaults rely on extensions which is good for erl_nif
     });
 
     const lib = b.addLibrary(.{

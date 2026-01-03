@@ -15,9 +15,9 @@
     });
 </script>
 
-<div class="p-4 text-sm">
+<div class="p-4 text-sm text-base-content">
     <div class="flex items-center gap-2 mb-4">
-        <span class="text-[#569cd6]">⎇</span>
+        <span class="text-info">⎇</span>
         <span class="font-semibold">{currentBranch}</span>
     </div>
 
@@ -27,9 +27,9 @@
         <div class="space-y-1">
             {#each status as file}
                 <div
-                    class="flex items-center gap-2 hover:bg-white/5 px-2 py-1 rounded"
+                    class="flex items-center gap-2 hover:bg-base-content/5 px-2 py-1 rounded"
                 >
-                    <span class="text-green-400">M</span>
+                    <span class="text-success">M</span>
                     <span class="truncate">{file}</span>
                 </div>
             {/each}

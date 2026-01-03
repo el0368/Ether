@@ -40,6 +40,19 @@ call scripts\build_nif.bat
 :: call mix zig.get 2>nul 
 
 :: 🚀 LAUNCH IEX SESSION
+:: 🚀 LAUNCH FRONTEND SETUP
+cd assets
+where bun >nul 2>nul
+if %ERRORLEVEL% equ 0 (
+    echo 🐇 [Frontend] Using Bun...
+    call bun install
+) else (
+    echo 🐢 [Frontend] Bun not found. Falling back to NPM...
+    call npm install
+)
+cd ..
+
+:: 🚀 LAUNCH IEX SESSION
 echo 🚀 [Aether] Launching Brain...
 iex -S mix phx.server
 

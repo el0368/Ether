@@ -50,6 +50,24 @@ We organize our "Source of Truth" using a **Time-Based Model**:
 -   **Purpose**: Automated verification that the system actually works.
 -   **Use when**: Validating code correctness (Integrity Checks).
 
+## 6. 🤝 BEAM Citizenship (NIF Best Practices)
+When writing Zig NIFs, we are doing "brain surgery" on the Erlang VM. Three laws govern our conduct:
+
+### Law 1: Time-Slicing (Politeness)
+> "Share CPU time with others."
+-   Use `enif_consume_timeslice` to yield during long loops.
+-   Goal: Keep the app responsive even during heavy background work.
+
+### Law 2: Resource Reaping (Responsibility)
+> "Clean up after yourself."
+-   Use `defer` for file handles.
+-   Register NIF Resource Destructors for external resources.
+
+### Law 3: Binary Awareness (Memory Ownership)
+> "Understand who owns the data."
+-   Large Binary Slabs may be held in RAM by small references.
+-   Use `enif_realloc_binary` to compact when extracting small data.
+
 ---
 
 > "We respect The Past, monitor The Present, and build for The Future."

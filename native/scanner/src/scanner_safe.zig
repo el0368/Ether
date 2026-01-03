@@ -22,6 +22,8 @@ const WinNifApi = extern struct {
     make_binary: *const fn (env: ?*ErlNifEnv, bin: *ErlNifBinary) callconv(.c) ERL_NIF_TERM,
     alloc_binary: *const fn (size: usize, bin: *ErlNifBinary) callconv(.c) c_int,
     release_binary: *const fn (bin: *ErlNifBinary) callconv(.c) void,
+    // BEAM Citizenship: Time-slice consumption for polite NIFs
+    consume_timeslice: *const fn (env: ?*ErlNifEnv, percent: c_int) callconv(.c) c_int,
 };
 
 // Configuration
@@ -101,7 +103,16 @@ export fn zig_scan(env: ?*ErlNifEnv, argc: c_int, argv: [*c]const ERL_NIF_TERM, 
     defer subdirs.deinit(allocator);
 
     var iterator = dir.iterate();
+    var iteration_count: usize = 0;
     while (iterator.next() catch null) |entry| {
+        iteration_count += 1;
+
+        // BEAM Citizenship: Report work every 100 iterations
+        // This allows the Erlang scheduler to balance load across cores
+        if (iteration_count % 100 == 0) {
+            _ = api.consume_timeslice(env, 1); // 1% timeslice consumed
+        }
+
         // Always add top-level entry to buffer
         const type_byte: u8 = switch (entry.kind) {
             .file => 1,

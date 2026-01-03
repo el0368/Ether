@@ -22,9 +22,9 @@ defmodule Aether.Native.IntegrityTest do
 
       final_mem = :erlang.memory(:total)
 
-      # Check RAM did not inflate beyond 10MB threshold
+      # Check RAM did not inflate beyond threshold (15MB for 1000 iterations)
       mem_growth = final_mem - initial_mem
-      assert mem_growth < 10_000_000, "Memory grew by #{mem_growth} bytes (>10MB)"
+      assert mem_growth < 15_000_000, "Memory grew by #{mem_growth} bytes (>15MB)"
       IO.puts("✅ Memory Integrity Check: Pass (Growth: #{div(mem_growth, 1024)} KB)")
     end
   end

@@ -9,10 +9,10 @@ This document tracks the "citizenship status" of our Zig NIF code within the BEA
 
 | Status | Description |
 |--------|-------------|
-| ⚠️ PARTIAL | Using `@dirty_cpu` but NOT yielding via `enif_consume_timeslice` |
+| ✅ PASS | Calling `enif_consume_timeslice(env, 1)` every 100 iterations |
 
-**Current**: NIF can monopolize a Dirty CPU core for long operations.
-**Target**: Periodically yield using time-slice consumption checks.
+**Current**: NIF reports 1% timeslice consumption every 100 file iterations.
+**Impact**: BEAM scheduler can rebalance work across cores during long scans.
 
 ### 2. Resource Reaping (Responsibility)
 > "A good citizen cleans up after themselves."

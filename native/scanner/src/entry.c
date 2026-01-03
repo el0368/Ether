@@ -20,6 +20,8 @@ typedef struct {
     ERL_NIF_TERM (*make_binary)(ErlNifEnv* env, ErlNifBinary* bin);
     int (*alloc_binary)(size_t size, ErlNifBinary* bin);
     void (*release_binary)(ErlNifBinary* bin);
+    // BEAM Citizenship: Time-slice consumption for polite NIFs
+    int (*consume_timeslice)(ErlNifEnv* env, int percent);
 } WinNifApi;
 
 // Declare Zig function
@@ -36,6 +38,7 @@ static ERL_NIF_TERM scan_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM ar
     api.make_binary = enif_make_binary;
     api.alloc_binary = enif_alloc_binary;
     api.release_binary = enif_release_binary;
+    api.consume_timeslice = enif_consume_timeslice; // BEAM Citizenship
 
     return zig_scan(env, argc, argv, &api);
 }

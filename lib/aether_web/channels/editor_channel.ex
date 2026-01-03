@@ -7,7 +7,18 @@ defmodule AetherWeb.EditorChannel do
     Logger.info("Client joined editor:lobby")
     # Trigger benchmark on startup
     Aether.Benchmark.run()
+    # Subscribe to file delta events
+    Phoenix.PubSub.subscribe(Aether.PubSub, "filetree:deltas")
+    # Start watching current directory
+    Aether.Watcher.watch(".")
     {:ok, %{status: "connected"}, socket}
+  end
+
+  # Handle file delta broadcasts from Watcher
+  @impl true
+  def handle_info({:file_delta, %{path: path, type: type}}, socket) do
+    push(socket, "filetree:delta", %{path: path, type: Atom.to_string(type)})
+    {:noreply, socket}
   end
 
   # File Operations

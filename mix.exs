@@ -72,6 +72,8 @@ defmodule Aether.MixProject do
       {:burrito, "~> 1.2"},
       # Native Reflexes (The Industrial Hybrid Engine)
       {:zigler, "~> 0.15.0", runtime: false},
+      # File Watching (Incremental Deltas)
+      {:file_system, "~> 1.0"},
       
       # Agent Framework & Intelligence
       {:jido, "~> 1.0.0"},

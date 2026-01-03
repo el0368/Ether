@@ -1,7 +1,12 @@
 [
   {
-    "timestamp": "2026-01-03T16:41:24.361000Z",
+    "timestamp": "2026-01-03T17:00:29.358000Z",
+    "elixir_ops_sec": 6196.4,
+    "zig_ops_sec": 6204.24
+  },
+  {
     "elixir_ops_sec": 9178.02,
+    "timestamp": "2026-01-03T16:41:24.361000Z",
     "zig_ops_sec": 9426.14
   },
   {

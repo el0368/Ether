@@ -14,7 +14,12 @@
             editor = monaco.editor.create(editorContainer, {
                 value: value || "",
                 language: language || "elixir",
-                theme: theme || "vs-dark",
+                theme:
+                    theme ||
+                    (document.documentElement.getAttribute("data-theme") ===
+                    "light"
+                        ? "vs"
+                        : "vs-dark"),
                 automaticLayout: true,
                 minimap: { enabled: false },
                 fontSize: 13,
@@ -133,8 +138,17 @@
                 }
             };
             window.addEventListener("goto-line", handleGotoLine);
-            return () =>
+
+            const handleThemeChange = (e) => {
+                const newTheme = e.detail === "light" ? "vs" : "vs-dark";
+                monaco.editor.setTheme(newTheme);
+            };
+            window.addEventListener("theme-changed", handleThemeChange);
+
+            return () => {
                 window.removeEventListener("goto-line", handleGotoLine);
+                window.removeEventListener("theme-changed", handleThemeChange);
+            };
         }
     });
 

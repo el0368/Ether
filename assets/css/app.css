@@ -103,3 +103,37 @@
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
 /* This file is for your main application CSS */
+
+@layer base {
+  :root {
+    /* Light Mode (Default) */
+    --color-bg-base: #ffffff;
+    --color-bg-surface: #f3f4f6;
+    --color-bg-highlight: #e5e7eb;
+    
+    --color-text-base: #1f2937;
+    --color-text-muted: #6b7280;
+    --color-text-inverted: #ffffff;
+
+    --color-border-base: #e5e7eb;
+  }
+
+  :root[class~="dark"] {
+    /* Dark Mode */
+    --color-bg-base: #1e1e1e;
+    --color-bg-surface: #252526;
+    --color-bg-highlight: #3e3e42;
+    
+    --color-text-base: #cccccc;
+    --color-text-muted: #858585;
+    --color-text-inverted: #1e1e1e;
+
+    --color-border-base: #ffffff0d;
+  }
+}
+
+body {
+    background-color: var(--color-bg-base);
+    color: var(--color-text-base);
+    transition: background-color 0.2s, color 0.2s;
+}

@@ -387,7 +387,34 @@ This replaces the previous C implementation and solves Windows linking issues us
 -   `lib/aether_web/components/layouts/root.html.heex` (Added dark bg)
 
 ### Artifacts
--   `docs/reference/RESEARCH_FRAMELESS.md` (Design Doc)- **Approach**: Patched `elixir-desktop` to expose `wxNO_BORDER` and other constants.
+-   `docs/reference/RESEARCH_FRAMELESS.md` (Design Doc)
+
+---
+
+## Session 11: Theming & Extensions (2026-01-03)
+**Date**: 2026-01-03
+**Status**: SUCCESS (Theming + UX Polish)
+
+### 🎨 Theming Engine & Light Mode
+**Goal**: Implement a robust theming system and a "White Theme" as requested.
+
+### Achievements
+-   **DaisyUI + Tailwind v4**: Integrated `daisyUI` for semantic class management (`bg-base-100`, `text-base-content`).
+-   **Dynamic Toggling**:
+    -   Added toggle button (🌓) in Custom TitleBar.
+    -   Implemented `theme-changed` event dispatch.
+    -   **Monaco Editor**: Now listens to theme changes and switches between `vs` and `vs-dark` instantly without reload.
+-   **UX Polish**:
+    -   **Icons**: Replaced text buttons (`-` `□` `x`) with **VS Code-style SVG icons**.
+    -   **Consistency**: Refactored `Terminal.svelte` and `App.svelte` (Activity Bar) to adapt to Light Mode instead of being hardcoded dark.
+
+### 📚 Extension Documentation
+-   Created `docs/guides/EXTENSIONS.md`: A guide on how to extend Ether using Elixir Agents and Svelte Components.
+
+### Status
+-   **Theming**: Fully Operational (Light/Dark).
+-   **Window**: Polished & Native-like.
+-   **Extensions**: Documented.- **Approach**: Patched `elixir-desktop` to expose `wxNO_BORDER` and other constants.
 - **Discovery**: Edge WebView does **not render content** when `wxNO_BORDER` or `wxRESIZE_BORDER` styles are applied on Windows.
 - **Resolution**: Reverted to default `wxDEFAULT_FRAME_STYLE` to ensure the IDE is usable.
 - **Takeaway**: For true frameless on Windows, a different approach (e.g., Tauri, raw Win32 API) is needed.

@@ -2,6 +2,10 @@
   // Svelte 5 Runes Mode
   let { socket } = $props();
 
+  // Initialize Theme Synchronously
+  const savedTheme = localStorage.getItem("theme") || "dark";
+  document.documentElement.setAttribute("data-theme", savedTheme);
+
   // Reactive state using $state rune
   let connected = $state(false);
   let fileTree = $state([]);
@@ -61,7 +65,6 @@
   import TitleBar from "./components/TitleBar.svelte";
 
   // Dragging Implementation (Legacy - Removed in favor of Tauri TitleBar)
-
 
   // Derived state
   let statusText = $derived(connected ? "🟢 Connected" : "🔴 Disconnected");
@@ -144,27 +147,51 @@
 </script>
 
 <div
-  class="app-container bg-[#1e1e1e] text-[#cccccc] select-none font-sans"
+  class="app-container bg-base-200 text-base-content select-none font-sans"
   onkeydown={handleGlobalKeydown}
   tabindex="-1"
 >
   <!-- Tauri TitleBar with Custom Menu -->
   <TitleBar>
-    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">File</span>
-    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">Edit</span>
-    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">Selection</span>
-    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">View</span>
-    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">Go</span>
-    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">Run</span>
-    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">Terminal</span>
-    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">Help</span>
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70"
+      >File</span
+    >
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70"
+      >Edit</span
+    >
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70"
+      >Selection</span
+    >
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70"
+      >View</span
+    >
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70"
+      >Go</span
+    >
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70"
+      >Run</span
+    >
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70"
+      >Terminal</span
+    >
+    <span
+      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70"
+      >Help</span
+    >
   </TitleBar>
 
   <!-- Main Workspace -->
   <main class="flex flex-1 overflow-hidden">
     <!-- VS Code Activity Bar (Far Left) -->
     <nav
-      class="w-12 bg-[#333333] flex flex-col items-center py-2 gap-2 shrink-0 border-r border-white/[0.03]"
+      class="w-12 bg-base-300 flex flex-col items-center py-2 gap-2 shrink-0 border-r border-white/[0.03]"
     >
       <div class="flex flex-col gap-1 w-full">
         <button
@@ -209,7 +236,7 @@
     <!-- VS Code Sidebar (Explorer) -->
     {#if sidebarVisible}
       <aside
-        class="w-64 bg-[#252526] border-r border-black/20 flex flex-col overflow-hidden shrink-0"
+        class="w-64 bg-base-300 border-r border-black/20 flex flex-col overflow-hidden shrink-0"
       >
         <div class="p-3 pl-5 flex items-center justify-between">
           <span
@@ -244,7 +271,7 @@
                   {#each fileTree as file}
                     <li class="group">
                       <button
-                        class="rounded-none px-4 py-1 transition-all text-[#cccccc] hover:text-white hover:bg-white/[0.05] border-l-2 border-transparent text-[13px] gap-2 items-center"
+                        class="rounded-none px-4 py-1 transition-all text-base-content hover:text-white hover:bg-white/[0.05] border-l-2 border-transparent text-[13px] gap-2 items-center"
                         class:active-file={activeGroup.file === file}
                         onclick={() => openFile(file)}
                       >
@@ -305,30 +332,31 @@
     {/if}
 
     <!-- VS Code Editor & Panel Central Area -->
-    <div class="flex-1 flex flex-col min-w-0 bg-[#0d0f14]">
+    <div class="flex-1 flex flex-col min-w-0 bg-base-100">
       <div class="flex-1 flex overflow-hidden">
         {#each editorGroups as group, idx}
           <!-- Pane -->
           <div
-            class="flex-1 flex flex-col min-w-0 border-r border-white/5 last:border-r-0 relative group/pane {idx ===
+            class="flex-1 flex flex-col min-w-0 border-r border-base-content/10 last:border-r-0 relative group/pane {idx ===
             activeGroupIndex
-              ? 'bg-[#1e1e1e]'
+              ? 'bg-base-200'
               : 'opacity-80'}"
             onclick={() => (activeGroupIndex = idx)}
           >
             <!-- Editor Tabs -->
             <div
-              class="flex items-center bg-[#252526] h-9 min-h-[2.25rem] overflow-x-auto no-scrollbar justify-between"
+              class="flex items-center bg-base-300 h-9 min-h-[2.25rem] overflow-x-auto no-scrollbar justify-between"
             >
               <div class="flex items-center h-full">
                 {#if group.file}
                   <div
                     class="flex items-center {idx === activeGroupIndex
-                      ? 'bg-[#1e1e1e] border-t border-t-primary'
+                      ? 'bg-base-200 border-t border-t-primary'
                       : 'bg-[#2d2d2d]'} h-full px-4 gap-2 border-r border-black/20"
                   >
                     <span class="text-xs text-primary opacity-60">📄</span>
-                    <span class="text-[13px] whitespace-nowrap text-[#cccccc]"
+                    <span
+                      class="text-[13px] whitespace-nowrap text-base-content"
                       >{group.file.name}</span
                     >
                     <button
@@ -371,7 +399,7 @@
             <!-- Breadcrumbs -->
             {#if group.file}
               <div
-                class="h-6 flex items-center px-4 bg-[#1e1e1e] border-b border-black/10 text-[11px] opacity-40 gap-1"
+                class="h-6 flex items-center px-4 bg-base-200 border-b border-black/10 text-[11px] opacity-40 gap-1"
               >
                 <span>Aether</span>
                 <span>›</span>
@@ -382,12 +410,12 @@
             {/if}
 
             <!-- Main Editor Area -->
-            <section class="flex-1 flex flex-col bg-[#0d0f14] min-h-0 relative">
+            <section class="flex-1 flex flex-col bg-base-100 min-h-0 relative">
               {#if group.file}
                 <div class="flex-1 overflow-hidden relative h-full min-h-0">
                   {#if group.file.is_dir}
                     <div
-                      class="flex h-full items-center justify-center text-white/10 bg-[#0d0f14]"
+                      class="flex h-full items-center justify-center text-white/10 bg-base-100"
                     >
                       <div class="text-center">
                         <div class="text-8xl mb-4 font-black opacity-5">📁</div>
@@ -395,7 +423,7 @@
                     </div>
                   {:else if !group.content}
                     <div
-                      class="flex h-full items-center justify-center bg-[#0d0f14]"
+                      class="flex h-full items-center justify-center bg-base-100"
                     >
                       <span
                         class="loading loading-ring loading-lg text-primary opacity-20"
@@ -414,7 +442,7 @@
                 </div>
               {:else}
                 <div
-                  class="flex-1 flex items-center justify-center bg-[#1e1e1e]"
+                  class="flex-1 flex items-center justify-center bg-base-200"
                 >
                   <div class="text-center opacity-20">
                     <span class="text-9xl">⚡</span>
@@ -429,7 +457,7 @@
       <!-- VS Code Panel (Terminal) -->
       <div class="flex flex-col h-64 shrink-0 transition-all">
         <div
-          class="flex items-center bg-[#1e1e1e] border-t border-white/5 px-4 h-9 min-h-[2.25rem] gap-4"
+          class="flex items-center bg-base-200 border-t border-base-content/10 px-4 h-9 min-h-[2.25rem] gap-4"
         >
           <span
             class="text-[11px] uppercase tracking-wider font-bold opacity-60 border-b border-primary h-full flex items-center"

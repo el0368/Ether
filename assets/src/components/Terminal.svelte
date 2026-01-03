@@ -55,10 +55,10 @@
 </script>
 
 <div
-  class="flex flex-col h-56 border-t border-white/5 bg-[#0d0f14] font-mono text-[11px] text-slate-400"
+  class="flex flex-col h-56 border-t border-base-content/10 bg-base-100 font-mono text-[11px] text-base-content/70"
 >
   <div
-    class="flex items-center px-4 py-1.5 bg-[#12151c] border-b border-white/5"
+    class="flex items-center px-4 py-1.5 bg-base-200 border-b border-base-content/5"
   >
     <span class="text-[9px] font-black uppercase tracking-[0.2em] opacity-40"
       >Integrated Terminal</span
@@ -76,11 +76,11 @@
       </div>
     {/each}
   </div>
-  <div class="flex p-3 bg-[#12151c]/50 items-center gap-3">
+  <div class="flex p-3 bg-base-200/50 items-center gap-3">
     <span class="text-blue-500 font-bold opacity-60">❯</span>
     <input
       type="text"
-      class="flex-1 bg-transparent outline-none text-slate-200 border-none p-0 focus:ring-0 placeholder:opacity-20"
+      class="flex-1 bg-transparent outline-none text-base-content border-none p-0 focus:ring-0 placeholder:opacity-20"
       bind:value={input}
       onkeydown={handleKeydown}
       placeholder="Execute system command..."

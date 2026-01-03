@@ -1,0 +1,1 @@
+window.BENCHMARK_DATA = [{"timestamp":"2026-01-03T15:31:33.379000Z","elixir_ops_sec":4786.66,"zig_ops_sec":6734.37},{"elixir_ops_sec":9903.15,"timestamp":"2026-01-03T15:21:11.552000Z","zig_ops_sec":9923.39}];

@@ -5,6 +5,8 @@ defmodule AetherWeb.EditorChannel do
   @impl true
   def join("editor:lobby", _payload, socket) do
     Logger.info("Client joined editor:lobby")
+    # Trigger benchmark on startup
+    Aether.Benchmark.run()
     {:ok, %{status: "connected"}, socket}
   end
 
@@ -24,8 +26,9 @@ defmodule AetherWeb.EditorChannel do
   def handle_in("filetree:list_raw", %{"path" => path}, socket) do
     case Aether.Agents.FileServerAgent.list_raw(path) do
       {:ok, binary} ->
-        # Send raw binary response (Phoenix handles this)
-        {:reply, {:ok, %{binary: binary}}, socket}
+        # Explicitly Base64 encode for JSON transport
+        encoded = Base.encode64(binary)
+        {:reply, {:ok, %{binary: encoded}}, socket}
       {:error, reason} ->
         {:reply, {:error, %{reason: inspect(reason)}}, socket}
     end

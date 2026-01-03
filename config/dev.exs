@@ -24,9 +24,9 @@ config :aether, AetherWeb.Endpoint,
   code_reloader: true,
   debug_errors: true,
   secret_key_base: "M2N+uB8iTprrkLZREli7NUmrfizVq7ULNqucf7buEJubtWNF5EV4Y7QW8ZpxmiSA",
-  # Watchers enabled - using Bun for Svelte frontend
+  # Watchers enabled - using Polyglot Wrapper (Bun/NPM)
   watchers: [
-    bun: ["run", "dev", cd: Path.expand("../assets", __DIR__)]
+    "cmd": ["/c", "watcher.bat", cd: Path.expand("../assets", __DIR__)]
   ]
 
 # ## SSL Support

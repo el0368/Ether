@@ -12,29 +12,17 @@ defmodule Aether.Scanner do
   def scan(path \\ ".") do
     path = Path.expand(path)
     
-    # Use a task to handle the recursion concurrently
-    path
-    |> list_recursive()
-    |> List.flatten()
-  end
-
-  defp list_recursive(path) do
-    case File.ls(path) do
-      {:ok, items} ->
-        items
-        |> Enum.map(&Path.join(path, &1))
-        |> Enum.map(fn full_path ->
-          expand_path(full_path)
-        end)
-      {:error, _} -> []
+    # Delegate strictly to the Zig/C NIF.
+    # We do NOT fallback to Elixir to ensure we catch native bugs immediately.
+    case Aether.Native.Scanner.scan(path) do
+      {:ok, files} -> 
+        files
+      {:error, reason} -> 
+        # Hard warning to ensure visibility
+        Logger.error("NIF Scan Failed: #{inspect(reason)}")
+        raise "Native Scanner Failure: #{inspect(reason)}"
     end
   end
 
-  defp expand_path(full_path) do
-    if File.dir?(full_path) do
-      list_recursive(full_path)
-    else
-      full_path
-    end
-  end
+  require Logger
 end

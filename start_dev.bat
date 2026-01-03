@@ -33,6 +33,9 @@ call mix deps.get
 
 echo 💾 [Aether] Setting up Database...
 call mix ecto.setup
+
+echo 🛠️ [Aether] Building Native Scanner...
+call scripts\build_nif.bat
 :: In Safe Mode, we skip zig.get entirely to avoid errors
 :: call mix zig.get 2>nul 
 

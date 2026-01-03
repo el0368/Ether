@@ -20,4 +20,8 @@ defmodule Aether.Scanner do
         raise "Native Scanner Failure: #{inspect(reason)}"
     end
   end
+  def scan_raw(path \\ ".") do
+    path = Path.expand(path)
+    Aether.Native.Scanner.scan_raw(path)
+  end
 end

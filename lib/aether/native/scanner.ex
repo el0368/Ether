@@ -28,6 +28,10 @@ defmodule Aether.Native.Scanner do
     end
   end
 
+  def scan_raw(path) do
+    scan_nif(path)
+  end
+
   def scan_nif(_path), do: :erlang.nif_error(:nif_not_loaded)
 
   defp decode(binary, root, acc \\ [])

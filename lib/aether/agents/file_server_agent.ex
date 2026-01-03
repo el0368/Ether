@@ -34,6 +34,10 @@ defmodule Aether.Agents.FileServerAgent do
     GenServer.call(@name, :get_recent)
   end
 
+  def list_raw(path) do
+    GenServer.call(@name, {:list_raw, path})
+  end
+
   # Server Callbacks
 
   @impl true
@@ -69,6 +73,12 @@ defmodule Aether.Agents.FileServerAgent do
           Logger.error("Failed to write #{path}: #{inspect(reason)}")
           {:error, reason}
       end
+    {:reply, result, state}
+  end
+
+  @impl true
+  def handle_call({:list_raw, path}, _from, state) do
+    result = Aether.Scanner.scan_raw(path)
     {:reply, result, state}
   end
 

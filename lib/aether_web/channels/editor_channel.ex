@@ -21,6 +21,17 @@ defmodule AetherWeb.EditorChannel do
   end
 
   @impl true
+  def handle_in("filetree:list_raw", %{"path" => path}, socket) do
+    case Aether.Agents.FileServerAgent.list_raw(path) do
+      {:ok, binary} ->
+        # Send raw binary response (Phoenix handles this)
+        {:reply, {:ok, %{binary: binary}}, socket}
+      {:error, reason} ->
+        {:reply, {:error, %{reason: inspect(reason)}}, socket}
+    end
+  end
+
+  @impl true
   def handle_in("editor:read", %{"path" => path}, socket) do
     case Aether.Agents.FileServerAgent.read_file(path) do
       {:ok, content} ->

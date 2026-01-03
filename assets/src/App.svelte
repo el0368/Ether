@@ -1,6 +1,7 @@
 <script>
   // Svelte 5 Runes Mode
   let { socket } = $props();
+  import { NifDecoder } from "./lib/nif_decoder";
 
   // Initialize Theme Synchronously
   const savedTheme = localStorage.getItem("theme") || "dark";
@@ -9,6 +10,7 @@
   // Reactive state using $state rune
   let connected = $state(false);
   let fileTree = $state([]);
+  let nifPulse = $state(false); // Visual Sentinel State
 
   // Multi-pane / Split View State
   let editorGroups = $state([{ file: null, content: "" }]);
@@ -19,6 +21,11 @@
 
   // Channel reference
   let channel = $state(null);
+
+  function triggerPulse() {
+    nifPulse = true;
+    setTimeout(() => (nifPulse = false), 500);
+  }
 
   // Connect to EditorChannel when socket is ready
   $effect(() => {
@@ -31,9 +38,28 @@
           connected = true;
           channel = ch;
 
-          // Request initial file tree
-          ch.push("filetree:list", { path: "." }).receive("ok", (resp) => {
-            fileTree = resp.files || [];
+          // Request initial file tree (Zero-Protocol)
+          triggerPulse();
+          ch.push("filetree:list_raw", { path: "." }).receive("ok", (resp) => {
+            if (resp.binary) {
+              // Decode Binary Slab
+              let buffer;
+              if (typeof resp.binary === "string") {
+                // Base64 Decode
+                const binaryString = atob(resp.binary);
+                const length = binaryString.length;
+                const bytes = new Uint8Array(length);
+                for (let i = 0; i < length; i++) {
+                  bytes[i] = binaryString.charCodeAt(i);
+                }
+                buffer = bytes;
+              } else {
+                buffer = new Uint8Array(resp.binary);
+              }
+              fileTree = NifDecoder.decode(buffer, ".");
+            } else {
+              fileTree = resp.files || [];
+            }
 
             // Auto-select README.md if found in the first pane
             const readme = fileTree.find(
@@ -63,8 +89,6 @@
   import MonacoEditor from "./components/MonacoEditor.svelte";
   import CommandPalette from "./components/CommandPalette.svelte";
   import TitleBar from "./components/TitleBar.svelte";
-
-  // Dragging Implementation (Legacy - Removed in favor of Tauri TitleBar)
 
   // Derived state
   let statusText = $derived(connected ? "🟢 Connected" : "🔴 Disconnected");
@@ -481,14 +505,15 @@
 
   <!-- VS Code Status Bar (Bottom) -->
   <footer
-    class="h-6 bg-[#007acc] flex items-center px-4 text-[11px] text-white shrink-0 justify-between"
+    class="h-6 bg-[#007acc] flex items-center px-4 text-[11px] text-white shrink-0 justify-between transition-colors duration-300"
+    class:bg-emerald-600={nifPulse}
   >
     <div class="flex items-center gap-4">
       <div
         class="flex items-center gap-1 hover:bg-white/10 px-2 h-full cursor-pointer"
       >
-        <span>🌿</span>
-        <span class="font-medium">main*</span>
+        <span>{nifPulse ? "⚡" : "🌿"}</span>
+        <span class="font-medium">elemental*</span>
       </div>
       <div class="flex items-center gap-2">
         <span>⊗ 0</span>

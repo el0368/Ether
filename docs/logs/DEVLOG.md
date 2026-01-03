@@ -425,7 +425,18 @@ This replaces the previous C implementation and solves Windows linking issues us
 -   **Resilience**: Fixed Zig compilation issues with `ArrayListUnmanaged`.
 -   **Verification**: 100% Pass on `Aether.ScannerTest` (Backward Compatible).
 
-**Result**: The scanner is now memory-efficient and capable of handling 100k+ files without stalling the scheduler.- **Approach**: Patched `elixir-desktop` to expose `wxNO_BORDER` and other constants.
+**Result**: The scanner is now memory-efficient and capable of handling 100k+ files without stalling the scheduler.
+
+### ⚡ Phase 10: Zero-Protocol Bridge
+**Goal**: Zero-JSON serialization for the critical scanner path.
+
+**Achievements**:
+-   **Backend**: Added `Aether.Scanner.scan_raw/1` to passthrough binary blobs.
+-   **Channel**: `filetree:list_raw` now streams the binary (Base64 wrapper for now, raw in future) to the client.
+-   **SIgnal**: Added a "Pulse" visual sentinel to the Status Bar (Flashes Emerald on NIF activity).
+-   **Decoder**: Implemented `NifDecoder` in TypeScript to parse `[u8, u16, bytes]` protocol.
+
+**Outcome**: Full stack optimization from **Disk -> DOM**.- **Approach**: Patched `elixir-desktop` to expose `wxNO_BORDER` and other constants.
 - **Discovery**: Edge WebView does **not render content** when `wxNO_BORDER` or `wxRESIZE_BORDER` styles are applied on Windows.
 - **Resolution**: Reverted to default `wxDEFAULT_FRAME_STYLE` to ensure the IDE is usable.
 - **Takeaway**: For true frameless on Windows, a different approach (e.g., Tauri, raw Win32 API) is needed.

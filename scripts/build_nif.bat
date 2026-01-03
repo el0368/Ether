@@ -41,8 +41,12 @@ echo [Info] Erlang Includes: %ERL_INCLUDE%
 pushd native\scanner
 if %ERRORLEVEL% neq 0 exit /b 1
 
-echo [Info] Running Zig Build...
-zig build -Doptimize=ReleaseFast "-Derl_include=%ERL_INCLUDE%"
+echo [Info] Running Hybrid Zig Build (Safe Mode)...
+:: We compile entry.c (ABI Shim) and scanner_safe.zig (Logic) together.
+:: -lc links C runtime (needed for Erlang/Windows)
+:: -dynamic produces a DLL
+:: --name scanner_nif output filename
+zig build-lib -dynamic -O ReleaseFast --name scanner_nif src/entry.c src/scanner_safe.zig -lc "-I%ERL_INCLUDE%"
 if %ERRORLEVEL% neq 0 (
     echo [Error] Zig build failed.
     popd
@@ -52,11 +56,18 @@ if %ERRORLEVEL% neq 0 (
 popd
 
 :: Deploy Artifact
+:: Zig outputs to the current directory (native\scanner) by default with build-lib? 
+:: Verify output name. usually scanner_nif.dll
+if not exist "native\scanner\scanner_nif.dll" (
+    echo [Error] DLL not found after build.
+    exit /b 1
+)
+
 if not exist "priv\native" mkdir "priv\native"
-copy /Y "native\scanner\zig-out\bin\scanner_nif.dll" "priv\native\scanner_nif.dll" >nul
+copy /Y "native\scanner\scanner_nif.dll" "priv\native\scanner_nif.dll" >nul
 if %ERRORLEVEL% neq 0 (
     echo [Error] Failed to copy artifact.
     exit /b 1
 )
 
-echo [Success] Native Scanner compiled and deployed to priv/native/scanner_nif.dll.
+echo [Success] Level 4 Scanner (Zig+C) compiled and deployed.

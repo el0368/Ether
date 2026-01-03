@@ -8,7 +8,7 @@ defmodule Aether.Scanner do
   Future-proof: This module can be swapped for a Zig NIF later without changing the API.
   """
   
-  @doc "Scans a directory recursively and returns a list of absolute paths."
+  @doc "Scans a directory recursively and returns a list of `{path, type}` tuples."
   def scan(path \\ ".") do
     path = Path.expand(path)
     

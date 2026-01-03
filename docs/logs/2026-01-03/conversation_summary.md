@@ -11,6 +11,12 @@ We successfully upgraded the `Aether.Scanner` from a dummy implementation to a p
     - Replaced the Zigler-managed build with a robust "Manual Protocol" (`scripts/build_nif.bat`) to bypass tooling incompatibilities on Windows.
     - Updated `start_dev.bat` to ensure seamless compilation.
     - Wired `Aether.Scanner` to call the NIF directly, with strict error handling (raising exceptions on native failures).
+    
+    ### Phase 2: Safe Native Zig (Level 4) - Final State
+    We further evolved the implementation to a "Level 4" architecture:
+    - **Pure Zig Logic**: Replaced `scanner.c` with `native/scanner/src/scanner_safe.zig` for memory safety.
+    - **Hybrid Shim**: Used a small C shim (`entry.c`) to bridge Erlang macros suitable for Windows, bypassing C-linking issues.
+    - **Metadata**: Now returns `[{path, type}]` tuples instead of just path strings.
 
 ## Architectural Discussion: "Self-Healing App"
 We discussed the theoretical capability of Ether to be a "Self-Healing" application for millions of users.

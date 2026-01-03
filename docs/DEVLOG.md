@@ -330,3 +330,23 @@ Now that the "Brain" is active, the next step is **Integration**:
 - **Decision**: Left `zigler` enabled.
 
 **Detailed Log**: [docs/logs/2026-01-03/zig_investigation.md](docs/logs/2026-01-03/zig_investigation.md)
+ 
+ # #   2 0 2 6 - 0 1 - 0 3 :   N a t i v e   S c a n n e r   U p g r a d e   ( L e v e l   4   -   S a f e   Z i g )  
+  
+ # # #   S u m m a r y  
+ S u c c e s s f u l l y   u p g r a d e d   t h e   ` A e t h e r . S c a n n e r `   t o   a   * * S a f e   N a t i v e   Z i g * *   i m p l e m e n t a t i o n   ( L e v e l   4 ) .  
+ T h i s   r e p l a c e s   t h e   p r e v i o u s   C   i m p l e m e n t a t i o n   a n d   s o l v e s   W i n d o w s   l i n k i n g   i s s u e s   u s i n g   a   " H y b r i d   S h i m "   a r c h i t e c t u r e .  
+  
+ # # #   A c h i e v e m e n t s  
+ -       * * S a f e   L o g i c * * :   C o r e   s c a n n i n g   l o g i c   i s   n o w   i n   ` s c a n n e r _ s a f e . z i g `   u s i n g   ` s t d . f s `   ( s a f e ,   c r o s s - p l a t f o r m ) .  
+ -       * * H y b r i d   A r c h i t e c t u r e * * :   C r e a t e d   ` e n t r y . c `   a s   a   s h i m   t o   h a n d l e   E r l a n g   N I F   A B I   m a c r o s ,   p a s s i n g   f u n c t i o n   p o i n t e r s   t o   Z i g .   T h i s   a l l o w s   c o m p i l i n g   Z i g   c o d e   w i t h o u t   l i n k i n g   a g a i n s t   ` e r l . d l l `   o r   ` w i n d o w s . h ` .  
+ -       * * R i c h   M e t a d a t a * * :   S c a n n e r   n o w   r e t u r n s   ` [ { p a t h ,   t y p e } ] `   t u p l e s   ( e . g . ,   ` [ { " f o o . t x t " ,   : f i l e } ,   { " b a r " ,   : d i r e c t o r y } ] ` ) .  
+ -       * * V e r i f i c a t i o n * * :   V e r i f i e d   w i t h   ` v e r i f y _ l e v e l 4 . b a t `   o n   a   U n i c o d e   t e s t   s e t .  
+  
+ # # #   F i l e s   C h a n g e d  
+ -       ` n a t i v e / s c a n n e r / s r c / s c a n n e r _ s a f e . z i g `   ( N E W :   L o g i c )  
+ -       ` n a t i v e / s c a n n e r / s r c / e n t r y . c `   ( N E W :   S h i m )  
+ -       ` n a t i v e / s c a n n e r / s r c / s c a n n e r . c `   ( A R C H I V E D :   ` s c a n n e r . c . o l d ` )  
+ -       ` s c r i p t s / b u i l d _ n i f . b a t `   ( U P D A T E D :   B u i l d   s c r i p t )  
+ -       ` l i b / a e t h e r / s c a n n e r . e x `   ( U P D A T E D :   A p i   d o c s )  
+ 

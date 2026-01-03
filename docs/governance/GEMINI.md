@@ -8,10 +8,11 @@
 
 ## Core Principles
 
-### 1. The Unbreakable Zig Protocol (Experimental)
-Native Implemented Functions (NIFs) are currently **Experimental** on Windows due to toolchain constraints.
-- **Default**: Safe Mode (Pure Elixir).
-- **Native**: Allowed **ONLY** if it follows the Unbreakable Protocol (no global state, memory safety).
+### 1. The Safe Native Zig Protocol (Level 4)
+We use a **Hybrid Shim Architecture** to run Safe Zig NIFs on Windows.
+- **Shim (`entry.c`)**: Handles Erlang NIF macros.
+- **Logic (`*.zig`)**: Pure Zig with `std.fs`, avoiding `windows.h`.
+- **Status**: **PRODUCTION-READY** (Level 4 Verified).
 
 ### 2. Agent Architecture
 All IDE functionality is implemented as GenServer agents:
@@ -31,9 +32,9 @@ All IDE functionality is implemented as GenServer agents:
 
 ### 4. Documentation Requirements
 After each work session:
-1. Update `docs/DEVLOG.md` - Session summary
-2. Update `docs/WALKTHROUGH.md` - Detailed steps
-3. Update `docs/AGENTS.md` - New agent APIs
+1. Update `docs/logs/DEVLOG.md` - Session summary
+2. Update `docs/reference/WALKTHROUGH.md` - Detailed steps
+3. Update `docs/reference/AGENTS.md` - New agent APIs
 
 ### 5. Commit Standards
 Use conventional commits:

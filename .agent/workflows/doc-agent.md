@@ -24,7 +24,7 @@ This agent ensures the codebase is self-documenting and documentation files are 
 **Trigger**: Significant changes to architecture or setup.
 **Steps**:
 1.  **Review**: Read `README.md`.
-2.  **Diff**: Compare with current `mix.exs` deps and `docs/DEVLOG.md` status.
+2.  **Diff**: Compare with current `mix.exs` deps and `docs/logs/DEVLOG.md` status.
 3.  **Update**:
     - Update "Features" list.
     - Update "Installation" instructions if deps changed.

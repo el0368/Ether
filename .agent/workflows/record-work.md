@@ -10,13 +10,13 @@ After completing significant work (feature, phase, bugfix), record it in the doc
 
 1. **Update DEVLOG.md** with session summary:
    ```
-   docs/DEVLOG.md
+   docs/logs/DEVLOG.md
    ```
    Add date, time, what was accomplished, and any issues.
 
 2. **Update WALKTHROUGH.md** with detailed steps:
    ```
-   docs/WALKTHROUGH.md
+   docs/reference/WALKTHROUGH.md
    ```
    Include:
    - Files created/modified

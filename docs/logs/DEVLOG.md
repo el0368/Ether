@@ -330,7 +330,7 @@ Now that the "Brain" is active, the next step is **Integration**:
 - **Finding**: The system is compiling `native/scanner/src/scanner.c` (Pure C) using the Zig toolchain, bypassing the pure Zig (`main.zig`) file. This effectively works around the `translate-c` bugs on Windows.
 - **Decision**: Left `zigler` enabled.
 
-**Detailed Log**: [docs/logs/2026-01-03/zig_investigation.md](docs/logs/2026-01-03/zig_investigation.md)
+**Detailed Log**: [2026-01-03/zig_investigation.md](2026-01-03/zig_investigation.md)
 
 ---
 
@@ -434,4 +434,4 @@ This replaces the previous C implementation and solves Windows linking issues us
 - **Finding**: The system is compiling `native/scanner/src/scanner.c` (Pure C) using the Zig toolchain, bypassing the pure Zig (`main.zig`) file. This effectively works around the `translate-c` bugs on Windows.
 - **Decision**: Left `zigler` enabled.
 
-**Detailed Log**: [docs/logs/2026-01-03/zig_investigation.md](docs/logs/2026-01-03/zig_investigation.md)
+**Detailed Log**: [2026-01-03/zig_investigation.md](2026-01-03/zig_investigation.md)

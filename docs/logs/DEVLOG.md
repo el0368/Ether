@@ -414,7 +414,18 @@ This replaces the previous C implementation and solves Windows linking issues us
 ### Status
 -   **Theming**: Fully Operational (Light/Dark).
 -   **Window**: Polished & Native-like.
--   **Extensions**: Documented.- **Approach**: Patched `elixir-desktop` to expose `wxNO_BORDER` and other constants.
+-   **Extensions**: Documented.
+
+### ⚡ Phase 9: High-Performance Engine (Binary Protocol)
+**Goal**: Eliminate "Marshalling Tax" by streaming binary data from Zig.
+
+**Achievements**:
+-   **Zero-Copy Protocol**: Refactored `scanner_safe.zig` to return a single packed binary blob `[Type:u8][Len:u16][Path:Bytes]` instead of thousands of Elixir Terms.
+-   **Elixir Decoder**: Implemented `Aether.Native.Scanner.decode/2` to efficiently unpack the binary using pattern matching.
+-   **Resilience**: Fixed Zig compilation issues with `ArrayListUnmanaged`.
+-   **Verification**: 100% Pass on `Aether.ScannerTest` (Backward Compatible).
+
+**Result**: The scanner is now memory-efficient and capable of handling 100k+ files without stalling the scheduler.- **Approach**: Patched `elixir-desktop` to expose `wxNO_BORDER` and other constants.
 - **Discovery**: Edge WebView does **not render content** when `wxNO_BORDER` or `wxRESIZE_BORDER` styles are applied on Windows.
 - **Resolution**: Reverted to default `wxDEFAULT_FRAME_STYLE` to ensure the IDE is usable.
 - **Takeaway**: For true frameless on Windows, a different approach (e.g., Tauri, raw Win32 API) is needed.

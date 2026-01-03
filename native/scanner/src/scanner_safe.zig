@@ -41,34 +41,39 @@ export fn zig_scan(env: ?*ErlNifEnv, argc: c_int, argv: [*c]const ERL_NIF_TERM, 
 
     var iterator = dir.iterate();
     
-    var list = api.make_empty_list(env);
+    var buffer = std.ArrayListUnmanaged(u8){};
+    const allocator = std.heap.page_allocator;
+    defer buffer.deinit(allocator);
 
     while (iterator.next() catch { return make_error_tuple(env, api, "iter_error"); }) |entry| {
-        // 1. Create Name Binary
-        var name_bin: ErlNifBinary = undefined;
-        if (api.alloc_binary(entry.name.len, &name_bin) == 0) {
-             return make_error_tuple(env, api, "oom");
-        }
-        std.mem.copyForwards(u8, name_bin.data[0..entry.name.len], entry.name);
-        const name_term = api.make_binary(env, &name_bin);
-
-        // 2. Create Type Atom
-        const type_str = switch (entry.kind) {
-            .file => "file",
-            .directory => "directory",
-            .sym_link => "symlink",
-            else => "other",
+        // 1. Type (1 byte)
+        const type_byte: u8 = switch (entry.kind) {
+            .file => 1,
+            .directory => 2,
+            .sym_link => 3,
+            else => 0,
         };
-        const type_atom = api.make_atom(env, type_str);
+        buffer.append(allocator, type_byte) catch return make_error_tuple(env, api, "oom");
 
-        // 3. Create Tuple {name, type}
-        const file_tuple = api.make_tuple2(env, name_term, type_atom);
+        // 2. Length (2 bytes, LE)
+        const len: u16 = @intCast(entry.name.len);
+        buffer.writer(allocator).writeInt(u16, len, .little) catch return make_error_tuple(env, api, "oom");
 
-        // 4. Prepend
-        list = api.make_list_cell(env, file_tuple, list);
+        // 3. Name (Bytes)
+        buffer.appendSlice(allocator, entry.name) catch return make_error_tuple(env, api, "oom");
     }
 
-    return api.make_tuple2(env, api.make_atom(env, "ok"), list);
+    // Allocate NIF Binary
+    var bin: ErlNifBinary = undefined;
+    if (api.alloc_binary(buffer.items.len, &bin) == 0) {
+        return make_error_tuple(env, api, "oom");
+    }
+
+    // Copy buffer to binary
+    @memcpy(bin.data[0..bin.size], buffer.items);
+
+    // Return {ok, Binary}
+    return api.make_tuple2(env, api.make_atom(env, "ok"), api.make_binary(env, &bin));
 }
 
 fn make_error_tuple(env: ?*ErlNifEnv, api: *const WinNifApi, msg: [*c]const u8) ERL_NIF_TERM {

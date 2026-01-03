@@ -20,5 +20,27 @@ defmodule Aether.Native.Scanner do
     end
   end
 
-  def scan(_path), do: :erlang.nif_error(:nif_not_loaded)
+  def scan(path) do
+    case scan_nif(path) do
+      {:ok, binary} when is_binary(binary) ->
+        {:ok, decode(binary, path)}
+      error -> error
+    end
+  end
+
+  def scan_nif(_path), do: :erlang.nif_error(:nif_not_loaded)
+
+  defp decode(binary, root, acc \\ [])
+  defp decode(<<>>, _root, acc), do: Enum.reverse(acc)
+
+  defp decode(<<type::8, len::16-little, name::binary-size(len), rest::binary>>, root, acc) do
+    type_atom = case type do
+      1 -> :file
+      2 -> :directory
+      3 -> :symlink
+      _ -> :other
+    end
+    full_path = Path.join(root, name)
+    decode(rest, root, [{full_path, type_atom} | acc])
+  end
 end

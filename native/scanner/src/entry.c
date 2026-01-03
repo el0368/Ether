@@ -41,7 +41,7 @@ static ERL_NIF_TERM scan_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM ar
 }
 
 static ErlNifFunc nif_funcs[] = {
-    {"scan", 1, scan_wrapper, ERL_NIF_DIRTY_JOB_IO_BOUND}
+    {"scan_nif", 1, scan_wrapper, ERL_NIF_DIRTY_JOB_IO_BOUND}
 };
 
 ERL_NIF_INIT(Elixir.Aether.Native.Scanner, nif_funcs, NULL, NULL, NULL, NULL)

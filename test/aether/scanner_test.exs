@@ -10,12 +10,12 @@ defmodule Aether.ScannerTest do
     assert files != []
     
     # Check if mix.exs exists in the list (since we are in project root)
-    mix_file = Enum.find(files, fn f -> String.ends_with?(f, "mix.exs") end)
+    mix_file = Enum.find(files, fn {f, _type} -> String.ends_with?(f, "mix.exs") end)
     assert mix_file
   end
 
   test "scan returns absolute paths" do
-    [first_file | _] = Scanner.scan(".")
-    assert Path.type(first_file) == :absolute
+    [{path, _type} | _] = Scanner.scan(".")
+    assert Path.type(path) == :absolute
   end
 end

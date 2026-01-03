@@ -286,32 +286,4 @@ We executed the **Ignition Protocol** (`scripts/ignite.bat`) but encountered per
 -   **Architecture**: Pure Elixir + Jido Agents.
 -   **Stability**: Unbreakable (No NIFs).
 -   **Ready For**: Integration with `EditorChannel` / UI.
-
-
-
- 
- # #   N a t i v e   S c a n n e r   ( L e v e l   4   -   S a f e   Z i g )  
-  
- T h e   ` A e t h e r . S c a n n e r `   m o d u l e   p r o v i d e s   h i g h - p e r f o r m a n c e   f i l e   s y s t e m   s c a n n i n g   u s i n g   a   H y b r i d   C / Z i g   N a t i v e   I m p l e m e n t e d   F u n c t i o n   ( N I F ) .  
-  
- # # #   F e a t u r e s  
- -       * * M e m o r y   S a f e t y * * :   C o r e   l o g i c   i m p l e m e n t e d   i n   P u r e   Z i g .  
- -       * * E n c o d i n g * * :   F u l l   U T F - 8 / U n i c o d e   s u p p o r t   v i a   W i n d o w s   W i d e   A P I s   ( s h i m m e d ) .  
- -       * * L o n g   P a t h s * * :   S u p p o r t s   p a t h s   >   2 6 0   c h a r a c t e r s .  
- -       * * M e t a d a t a * * :   R e t u r n s   ` [ { p a t h ,   t y p e } ] `   t u p l e s .  
-  
- # # #   A r c h i t e c t u r e  
- -       * * L o a d e r * * :   ` l i b / a e t h e r / n a t i v e / s c a n n e r . e x `   l o a d s   t h e   N I F   o n   a p p   s t a r t u p .  
- -       * * E n t r y   P o i n t * * :   ` n a t i v e / s c a n n e r / s r c / e n t r y . c `   ( C   S h i m ) .  
- -       * * L o g i c * * :   ` n a t i v e / s c a n n e r / s r c / s c a n n e r _ s a f e . z i g `   ( P u r e   Z i g ) .  
- -       * * B u i l d * * :   M a n u a l   s c r i p t   ` s c r i p t s / b u i l d _ n i f . b a t `   c o m p i l e s   u s i n g   ` z i g   b u i l d - l i b ` .  
-  
- # # #   U s a g e  
- ` ` ` e l i x i r  
- #   R e t u r n s   { : o k ,   [ { " f i l e . t x t " ,   : f i l e } ,   { " d i r " ,   : d i r e c t o r y } ] }  
- { : o k ,   f i l e s }   =   A e t h e r . S c a n n e r . s c a n ( " p a t h / t o / s c a n " )  
-  
- #   R a i s e s   o n   e r r o r   ( e . g . ,   p e r m i s s i o n   d e n i e d )  
- #   E r r o r   h a n d l i n g   i s   s t r i c t   ( " L e t   I t   C r a s h " )  
- ` ` `  
- 
+-   **Ready For**: Integration with `EditorChannel` / UI.

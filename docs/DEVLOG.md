@@ -212,6 +212,7 @@ Since the Hybrid Engine was blocked by toolchain incompatibility, the plan was t
 
 ---
 
+
 ## Session 7: The Brain Upgrade (Agents Online)
 **Date**: 2026-01-02
 **Phase**: Phase 4 - Advanced Agents
@@ -330,23 +331,107 @@ Now that the "Brain" is active, the next step is **Integration**:
 - **Decision**: Left `zigler` enabled.
 
 **Detailed Log**: [docs/logs/2026-01-03/zig_investigation.md](docs/logs/2026-01-03/zig_investigation.md)
- 
- # #   2 0 2 6 - 0 1 - 0 3 :   N a t i v e   S c a n n e r   U p g r a d e   ( L e v e l   4   -   S a f e   Z i g )  
-  
- # # #   S u m m a r y  
- S u c c e s s f u l l y   u p g r a d e d   t h e   ` A e t h e r . S c a n n e r `   t o   a   * * S a f e   N a t i v e   Z i g * *   i m p l e m e n t a t i o n   ( L e v e l   4 ) .  
- T h i s   r e p l a c e s   t h e   p r e v i o u s   C   i m p l e m e n t a t i o n   a n d   s o l v e s   W i n d o w s   l i n k i n g   i s s u e s   u s i n g   a   " H y b r i d   S h i m "   a r c h i t e c t u r e .  
-  
- # # #   A c h i e v e m e n t s  
- -       * * S a f e   L o g i c * * :   C o r e   s c a n n i n g   l o g i c   i s   n o w   i n   ` s c a n n e r _ s a f e . z i g `   u s i n g   ` s t d . f s `   ( s a f e ,   c r o s s - p l a t f o r m ) .  
- -       * * H y b r i d   A r c h i t e c t u r e * * :   C r e a t e d   ` e n t r y . c `   a s   a   s h i m   t o   h a n d l e   E r l a n g   N I F   A B I   m a c r o s ,   p a s s i n g   f u n c t i o n   p o i n t e r s   t o   Z i g .   T h i s   a l l o w s   c o m p i l i n g   Z i g   c o d e   w i t h o u t   l i n k i n g   a g a i n s t   ` e r l . d l l `   o r   ` w i n d o w s . h ` .  
- -       * * R i c h   M e t a d a t a * * :   S c a n n e r   n o w   r e t u r n s   ` [ { p a t h ,   t y p e } ] `   t u p l e s   ( e . g . ,   ` [ { " f o o . t x t " ,   : f i l e } ,   { " b a r " ,   : d i r e c t o r y } ] ` ) .  
- -       * * V e r i f i c a t i o n * * :   V e r i f i e d   w i t h   ` v e r i f y _ l e v e l 4 . b a t `   o n   a   U n i c o d e   t e s t   s e t .  
-  
- # # #   F i l e s   C h a n g e d  
- -       ` n a t i v e / s c a n n e r / s r c / s c a n n e r _ s a f e . z i g `   ( N E W :   L o g i c )  
- -       ` n a t i v e / s c a n n e r / s r c / e n t r y . c `   ( N E W :   S h i m )  
- -       ` n a t i v e / s c a n n e r / s r c / s c a n n e r . c `   ( A R C H I V E D :   ` s c a n n e r . c . o l d ` )  
- -       ` s c r i p t s / b u i l d _ n i f . b a t `   ( U P D A T E D :   B u i l d   s c r i p t )  
- -       ` l i b / a e t h e r / s c a n n e r . e x `   ( U P D A T E D :   A p i   d o c s )  
- 
+
+---
+
+## 2026-01-03: Native Scanner Upgrade (Level 4 - Safe Zig)
+
+### Summary
+Successfully upgraded the `Aether.Scanner` to a **Safe Native Zig** implementation (Level 4).
+This replaces the previous C implementation and solves Windows linking issues using a "Hybrid Shim" architecture.
+
+### Achievements
+-   **Safe Logic**: Core scanning logic is now in `scanner_safe.zig` using `std.fs` (safe, cross-platform).
+-   **Hybrid Architecture**: Created `entry.c` as a shim to handle Erlang NIF ABI macros, passing function pointers to Zig. This allows compiling Zig code without linking against `erl.dll` or `windows.h`.
+-   **Rich Metadata**: Scanner now returns `[{path, type}]` tuples (e.g., `[{"foo.txt", :file}, {"bar", :directory}]`).
+-   **Verification**: Verified with `verify_level4.bat` on a Unicode test set.
+
+### Files Changed
+-   `native/scanner/src/scanner_safe.zig` (NEW: Logic)
+-   `native/scanner/src/entry.c` (NEW: Shim)
+-   `native/scanner/src/scanner.c` (ARCHIVED: `scanner.c.old`)
+-   `scripts/build_nif.bat` (UPDATED: Build script)
+-   `lib/aether/scanner.ex` (UPDATED: Api docs)
+
+### Artifacts
+-   `docs/logs/2026-01-03/scanner_upgrade_report.md` (Detailed Log)- **Approach**: Patched `elixir-desktop` to expose `wxNO_BORDER` and other constants.
+- **Discovery**: Edge WebView does **not render content** when `wxNO_BORDER` or `wxRESIZE_BORDER` styles are applied on Windows.
+- **Resolution**: Reverted to default `wxDEFAULT_FRAME_STYLE` to ensure the IDE is usable.
+- **Takeaway**: For true frameless on Windows, a different approach (e.g., Tauri, raw Win32 API) is needed.
+
+### ✅ Gray Screen Fix
+- **Problem**: Desktop app showed gray screen - no UI rendered.
+- **Root Cause**: Custom `wxWidgets` styles (`wxNO_BORDER`) broke Edge WebView rendering.
+- **Fix**: Removed custom styles, reverted to native window frame.
+- **Also**: Fixed missing `GitPanel.svelte` component that was causing build errors.
+
+### ✅ Application Renaming (Aether → Ether)
+- Updated window title in `lib/aether/desktop.ex` to "Ether IDE".
+- Updated UI header in `App.svelte` to "Ether IDE".
+- Simplified menu bar (removed duplicate custom title bar row).
+
+### ✅ Recent Files Feature (Ctrl+P)
+- **Backend**: Added `get_recent_files/0` to `FileServerAgent` that tracks last 20 opened files.
+- **Channel**: Added `editor:recent` handler in `EditorChannel`.
+- **Frontend**: Updated `CommandPalette` to:
+  - Accept `recentFiles` prop
+  - Display recent files with 🕐 icon at top of list
+  - Show "• recently opened" indicator
+
+### ✅ Go to Symbol Feature (Ctrl+Shift+O)
+- **Backend**: Added `document_symbols/1` to `LSPAgent` using Elixir AST parsing.
+- **Extraction**: Parses `defmodule`, `def`, and `defp` from source code.
+- **Channel**: Added `lsp:symbols` handler in `EditorChannel`.
+- **Frontend**:
+  - Added `paletteMode` state ("files" | "symbols")
+  - Updated `CommandPalette` to support symbol mode
+  - Added symbol icons: `ƒ` for functions, `◆` for modules
+  - Added `goto-line` event listener in `MonacoEditor` to navigate to selected symbol
+
+### 🔧 Config Fix
+- Updated `assets/tsconfig.json` to fix "No inputs found" warnings:
+  - Added `allowJs: true`
+  - Changed include from `src/**/*` to `src/**/*.js`
+
+### 📊 Summary of Key Files Modified
+| File | Changes |
+|------|---------|
+| `lib/aether/desktop.ex` | Reverted to default frame style, title → "Ether IDE" |
+| `lib/aether/agents/file_server_agent.ex` | Added recent files tracking |
+| `lib/aether/agents/lsp_agent.ex` | Added document symbols extraction |
+| `lib/aether_web/channels/editor_channel.ex` | Added `editor:recent` and `lsp:symbols` handlers |
+| `assets/src/App.svelte` | Simplified menu bar, added symbol/recent files support |
+| `assets/src/components/CommandPalette.svelte` | Added mode, symbols, icons |
+| `assets/src/components/MonacoEditor.svelte` | Added goto-line listener |
+| `assets/src/components/GitPanel.svelte` | Created (was missing) |
+| `assets/tsconfig.json` | Fixed to include `.js` files |
+
+### 🚀 Current Status
+- **Window**: Native frame (frameless blocked by WebView limitation).
+- **Features**: Recent files, Go to Symbol fully operational.
+- **Build**: All Vite builds passing.
+- **Tests**: Elixir tests passing.
+- **Git**: All changes pushed to GitHub.
+
+---
+
+## Session 9: Zig NIF Ignition (2026-01-03)
+**Date**: 2026-01-03
+**Status**: SUCCESS (C-based NIF via Zig Toolchain)
+
+### 🔬 The Zig NIF Investigation
+**Context**: Re-investigated the "Unbreakable Zig Protocol" failure from 2026-01-02.
+**Goal**: Re-enable the Native Scanner and determine root cause of 2026-01-02 failure.
+
+### Actions
+- Uncommented `zigler` dependency.
+- Created `run_mix.bat` to fix PATH issues (added Elixir/Git paths).
+- Ran compilation sequence: `mix compile`.
+
+### ⚡ Results
+- **Compilation**: SUCCESS (Unexpectedly).
+- **Runtime**: SUCCESS. Output: `Native C Scanner: C:/`.
+- **Finding**: The system is compiling `native/scanner/src/scanner.c` (Pure C) using the Zig toolchain, bypassing the pure Zig (`main.zig`) file. This effectively works around the `translate-c` bugs on Windows.
+- **Decision**: Left `zigler` enabled.
+
+**Detailed Log**: [docs/logs/2026-01-03/zig_investigation.md](docs/logs/2026-01-03/zig_investigation.md)

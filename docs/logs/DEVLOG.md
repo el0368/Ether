@@ -354,7 +354,40 @@ This replaces the previous C implementation and solves Windows linking issues us
 -   `lib/aether/scanner.ex` (UPDATED: Api docs)
 
 ### Artifacts
--   `docs/logs/2026-01-03/scanner_upgrade_report.md` (Detailed Log)- **Approach**: Patched `elixir-desktop` to expose `wxNO_BORDER` and other constants.
+-   `docs/logs/2026-01-03/scanner_upgrade_report.md` (Detailed Log)
+
+---
+
+## Session 10: Tauri Shell Integration (2026-01-03)
+**Date**: 2026-01-03
+**Status**: SUCCESS (Tauri v2 Shell)
+
+### 🖥️ Native Borderless Experience
+**Goal**: Replace the limited `wxWidgets` window with a modern, fully customizable Tauri shell.
+
+### Achievements
+-   **Tauri v2 Integration**: Scaffolded `src-tauri` with Rust backend.
+-   **Architecture**:
+    -   **Frontend**: Svelte 5 via Tauri Webview.
+    -   **Backend**: Phoenix server (spawned as sidecar or external process).
+    -   **IPC**: `window.__TAURI_INTERNALS__` for window controls.
+-   **UI**:
+    -   Implemented custom `TitleBar.svelte` with native drag regions.
+    -   Replicated native window controls (Minimize, Maximize, Close).
+    -   Fixed "ghosting" artifacts by managing transparency correctly.
+-   **Fixes**:
+    -   Resolved "White Screen" on browser load by handling missing Tauri context safely.
+    -   Fixed maximize button logic conflict with double-click handler.
+    -   Ensured dark background on boot to prevent flashbangs.
+
+### Files Changed
+-   `src-tauri/*` (NEW: Rust Project)
+-   `assets/src/components/TitleBar.svelte` (NEW: Window Controls)
+-   `assets/package.json` (Added `@tauri-apps/api`)
+-   `lib/aether_web/components/layouts/root.html.heex` (Added dark bg)
+
+### Artifacts
+-   `docs/reference/RESEARCH_FRAMELESS.md` (Design Doc)- **Approach**: Patched `elixir-desktop` to expose `wxNO_BORDER` and other constants.
 - **Discovery**: Edge WebView does **not render content** when `wxNO_BORDER` or `wxRESIZE_BORDER` styles are applied on Windows.
 - **Resolution**: Reverted to default `wxDEFAULT_FRAME_STYLE` to ensure the IDE is usable.
 - **Takeaway**: For true frameless on Windows, a different approach (e.g., Tauri, raw Win32 API) is needed.

@@ -4,6 +4,7 @@ defmodule Aether.Scanner do
   
   Delegates to the Safe Native (Zig) Scanner (Level 4).
   """
+  require Logger
   
   @doc "Scans a directory recursively and returns a list of `{path, type}` tuples."
   def scan(path \\ ".") do
@@ -19,6 +20,4 @@ defmodule Aether.Scanner do
         raise "Native Scanner Failure: #{inspect(reason)}"
     end
   end
-
-  require Logger
 end

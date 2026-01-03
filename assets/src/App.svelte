@@ -58,47 +58,10 @@
   import Terminal from "./components/Terminal.svelte";
   import MonacoEditor from "./components/MonacoEditor.svelte";
   import CommandPalette from "./components/CommandPalette.svelte";
+  import TitleBar from "./components/TitleBar.svelte";
 
-  // Window Management Functions
-  function minimizeWindow() {
-    if (channel) channel.push("window:minimize", {});
-  }
+  // Dragging Implementation (Legacy - Removed in favor of Tauri TitleBar)
 
-  function toggleMaximize() {
-    if (channel) channel.push("window:maximize", {});
-  }
-
-  function closeWindow() {
-    if (channel) channel.push("window:close", {});
-  }
-
-  // Dragging Implementation
-  let isDragging = false;
-
-  function handleDragStart(e) {
-    if (e.target.closest("button") || e.target.closest("span")) return;
-    if (e.button !== 0) return; // Only left click
-
-    if (channel) {
-      channel.push("window:drag_start", { x: e.screenX, y: e.screenY });
-      isDragging = true;
-
-      const handleDragging = (e) => {
-        if (isDragging) {
-          channel.push("window:drag_move", { x: e.screenX, y: e.screenY });
-        }
-      };
-
-      const handleDragEnd = () => {
-        isDragging = false;
-        window.removeEventListener("mousemove", handleDragging);
-        window.removeEventListener("mouseup", handleDragEnd);
-      };
-
-      window.addEventListener("mousemove", handleDragging);
-      window.addEventListener("mouseup", handleDragEnd);
-    }
-  }
 
   // Derived state
   let statusText = $derived(connected ? "🟢 Connected" : "🔴 Disconnected");
@@ -185,43 +148,17 @@
   onkeydown={handleGlobalKeydown}
   tabindex="-1"
 >
-  <!-- VS Code Menu Bar -->
-  <header
-    class="flex items-center bg-[#181818] border-b border-white/[0.05] shrink-0 select-none h-7 px-2 gap-1 text-[12px] opacity-70"
-  >
-    <span
-      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-      >File</span
-    >
-    <span
-      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-      >Edit</span
-    >
-    <span
-      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-      >Selection</span
-    >
-    <span
-      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-      >View</span
-    >
-    <span
-      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-      >Go</span
-    >
-    <span
-      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-      >Run</span
-    >
-    <span
-      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-      >Terminal</span
-    >
-    <span
-      class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors"
-      >Help</span
-    >
-  </header>
+  <!-- Tauri TitleBar with Custom Menu -->
+  <TitleBar>
+    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">File</span>
+    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">Edit</span>
+    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">Selection</span>
+    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">View</span>
+    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">Go</span>
+    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">Run</span>
+    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">Terminal</span>
+    <span class="hover:bg-white/10 px-2 py-0.5 rounded cursor-pointer transition-colors text-[11px] opacity-70">Help</span>
+  </TitleBar>
 
   <!-- Main Workspace -->
   <main class="flex flex-1 overflow-hidden">

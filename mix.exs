@@ -71,7 +71,7 @@ defmodule Aether.MixProject do
       {:wx, "~> 1.1", hex: :bridge, targets: [:windows, :macos, :linux]},
       {:burrito, "~> 1.2"},
       # Native Reflexes (The Industrial Hybrid Engine)
-      # {:zigler, "~> 0.15.0", runtime: false},
+      {:zigler, "~> 0.15.0", runtime: false},
       
       # Agent Framework & Intelligence
       {:jido, "~> 1.0.0"},

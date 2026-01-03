@@ -4,7 +4,9 @@ chcp 65001 >nul
 
 echo 🌌 [Aether] Initializing Industrial Environment...
 
-:: 🛠️ AUTO-DETECT VISUAL STUDIO ENVIRONMENT
+:: 🛠️ ENVIRONMENT CONFIG
+set "PATH=C:\Program Files\nodejs;C:\Program Files\Git\cmd;C:\Elixir\elixir-otp-28\bin;C:\Program Files\Erlang OTP\bin;%PATH%"
+
 where nmake >nul 2>nul
 if %ERRORLEVEL% neq 0 (
     echo 🔍 [Aether] NMake not in PATH. Attempting to source VS Build Tools...
@@ -26,8 +28,11 @@ echo 🛡️ [Path] Developer environment active.
 cd /d "%~dp0"
 
 :: 📦 DEPENDENCY & TOOLING SYNC
-echo 📦 [Aether] Syncing dependencies...
+echo 📦 [Aether] Getting Dependencies...
 call mix deps.get
+
+echo 💾 [Aether] Setting up Database...
+call mix ecto.setup
 :: In Safe Mode, we skip zig.get entirely to avoid errors
 :: call mix zig.get 2>nul 
 

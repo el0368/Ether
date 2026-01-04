@@ -5,7 +5,10 @@
 - **Scripts:** Batch scripts for Windows (Primary OS).
 
 ## ✅ Completed
-- [x] **`start_dev.bat`:** The golden path. Kills zombies, checks deps, compiles, and launches.
+- [x] **`start_dev.bat` (Resilient Startup):** 
+  - **Zombie Cleanup:** Automatically detects and kills orphaned BEAM processes on Port 4000.
+  - **Dependency Auto-Audit:** Prompts for `mix deps.get` and `bun install` before launch.
+  - **Sequential Ignition:** Waits for the Phoenix backend to be ready via `curl` health-check before opening the Tauri window.
 - [x] **`verify_setup.bat`:** End-to-End environment verification (Elixir + Bun + Zig + Rust).
 - [x] **`check_env.bat`:** Version checking for all dependencies.
 

@@ -11,24 +11,27 @@
 -   `Aether.Agents.LSPAgent`
 
 ## 2. Native Core (Zig NIF)
-**Command**: `scripts/verify_unicode.bat`
-**Scope**: Integration/Safety tests for the NIF.
-**Coverage**:
+**Command**: `scripts/build_nif.bat` (Build Verification)
+**Run Verification**: `start_dev.bat`
+**Scope**: 
 -   ✅ NIF Loading/Binding
 -   ✅ Unicode Paths (`🚀`) inside Zig `std.fs`
--   ✅ Memory Safety (Allocation/Deallocation)
+-   ✅ Memory Safety (Allocation/Deallocation via `beam.allocator`)
 
 ## 3. Application Integration
-**Command**: `scripts/verify_app.bat`
-**Scope**: End-to-End checks ensuring the Elixir App successfully calls the NIF.
+**Command**: `verify_setup.bat`
+**Scope**: End-to-End checks ensuring the entire stack works.
 **Coverage**:
--   ✅ `Aether.Scanner` -> `Aether.Native.Scanner` delegation.
+-   ✅ Elixir Compilation
+-   ✅ NIF Presence
+-   ✅ Frontend Build
+-   ✅ Backend Startup (Port 4000)
 
 ## 4. Frontend (Svelte)
-**Command**: N/A (Manual)
-**Scope**: UI Interactions.
-**Status**: 0 Automated tests. Manual verification requires `start_desktop.bat`.
+**Command**: `cd assets && bun run check`
+**Scope**: Svelte/TS Compilation.
+**Status**: Manual verification required for UI.
 
 ## Summary
--   **Total Automatable Checks**: ~9
--   **Manual Checks**: UI/UX
+-   **Automated Verification**: `verify_setup.bat` (Covers Backend, NIF, Frontend build)
+-   **Manual Checks**: `start_dev.bat` + UI validation

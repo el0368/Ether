@@ -34,9 +34,7 @@ defmodule Aether.Agents.FileServerAgent do
     GenServer.call(@name, :get_recent)
   end
 
-  def list_raw(path) do
-    GenServer.call(@name, {:list_raw, path})
-  end
+
 
   # Server Callbacks
 
@@ -76,11 +74,7 @@ defmodule Aether.Agents.FileServerAgent do
     {:reply, result, state}
   end
 
-  @impl true
-  def handle_call({:list_raw, path}, _from, state) do
-    result = Aether.Scanner.scan_raw(path)
-    {:reply, result, state}
-  end
+
 
   @impl true
   def handle_call({:list, path}, _from, state) do

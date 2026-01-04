@@ -35,14 +35,29 @@ defmodule AetherWeb.EditorChannel do
 
   @impl true
   def handle_in("filetree:list_raw", %{"path" => path}, socket) do
-    case Aether.Agents.FileServerAgent.list_raw(path) do
-      {:ok, binary} ->
-        # Explicitly Base64 encode for JSON transport
-        encoded = Base.encode64(binary)
-        {:reply, {:ok, %{binary: encoded}}, socket}
+    # Direct async stream from NIF to this Channel Process
+    # NIF returns :ok immediately, then sends {:binary, bin} messages.
+    case Aether.Scanner.scan_raw(path) do
+      :ok ->
+        {:reply, {:ok, %{status: "streaming"}}, socket}
       {:error, reason} ->
         {:reply, {:error, %{reason: inspect(reason)}}, socket}
     end
+  end
+
+  @impl true
+  def handle_info({:binary, binary}, socket) when is_binary(binary) do
+    # Pass-through: Base64 encode for transport efficiency (vs JSON list)
+    # Ideally use raw binary frames, but Base64 is fine for now.
+    encoded = Base.encode64(binary)
+    push(socket, "filetree:chunk", %{chunk: encoded})
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:scan_completed, _status}, socket) do
+    push(socket, "filetree:done", %{})
+    {:noreply, socket}
   end
 
   @impl true

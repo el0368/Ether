@@ -308,3 +308,11 @@ We executed the **Ignition Protocol** (`scripts/ignite.bat`) but encountered per
 - **Latency**: Zero blocking on the receiver side (after NIF return/async).
 
 **Outcome**: Data flows immediately to the system, enabling progressive UI rendering.
+
+### Phase 3: Pipeline Squeeze
+**Goal**: Zero-Overhead Data Propagation.
+
+**Achievements**:
+- **Direct Channel Streaming**: NIF sends chunks directly to `EditorChannel` process.
+- **Pass-through**: Binary chunks are forwarded to the WebSocket (Base64) without being decoded into Elixir terms.
+- **Result**: CPU usage on Elixir side is negligible during large scans.

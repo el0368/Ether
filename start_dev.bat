@@ -12,7 +12,7 @@ echo.
 cd /d "%~dp0"
 
 :: 🔍 QUICK ENVIRONMENT CHECK
-echo [1/4] Checking environment...
+echo [1/5] Checking environment...
 where mix >nul 2>nul
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] Elixir/Mix not found in PATH!
@@ -21,8 +21,15 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
+:: 🧹 KILL ZOMBIE PROCESSES (Port 4000)
+echo [2/5] Cleaning up old processes...
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr :4000 ^| findstr LISTENING') do (
+    echo       Killing zombie process on port 4000 (PID: %%a)
+    taskkill /F /PID %%a >nul 2>nul
+)
+
 :: 📦 DEPENDENCY CHECK
-echo [2/4] Checking dependencies...
+echo [3/5] Checking dependencies...
 if not exist "deps" (
     echo       Installing backend dependencies...
     call cmd /c mix deps.get
@@ -36,7 +43,7 @@ if not exist "assets\node_modules" (
 )
 
 :: 🔨 COMPILE CHECK
-echo [3/4] Compiling...
+echo [4/5] Compiling...
 call cmd /c mix compile
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] Compilation failed!
@@ -45,7 +52,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 :: 🚀 LAUNCH
-echo [4/4] Launching Aether...
+echo [5/5] Launching Aether...
 echo.
 echo       Starting Backend (Port 4000)...
 

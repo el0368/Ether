@@ -4,13 +4,22 @@ This is the central index for all project plans.
 
 ## 📂 [Detailed Plans](docs/plans/)
 
--   **[⚡ Zig Native Plan](docs/plans/zig.md)**: Native extensions, NIF safety, memory management.
--   **[💧 Elixir Backend Plan](docs/plans/elixir.md)**: Agents, GenServers, Core Logic.
--   **[🔥 Phoenix Plan](docs/plans/phoenix.md)**: Channels, Presence, Telemetry.
--   **[🐘 PostgreSQL Plan](docs/plans/postgresql.md)**: Persistence, Vector Search.
+### Core Architecture
+-   **[⚡ Zig Native Plan](docs/plans/zig.md)**: Native extensions, NIF safety.
+-   **[💧 Elixir Backend Plan](docs/plans/elixir.md)**: Agents, GenServers Logic.
+-   **[🔥 Phoenix Plan](docs/plans/phoenix.md)**: Channels, Presence.
 -   **[🎨 Svelte Frontend Plan](docs/plans/svelte.md)**: UI, Runes, Virtualization.
--   **[🖌️ Tailwind CSS Plan](docs/plans/tailwind.md)**: Theme Migration, Design System.
+
+### Features & Infrastructure
+-   **[🤖 AI Agent Plan](docs/plans/ai_agent.md)**: Jido, Commander, Vector Memory.
+-   **[🐘 PostgreSQL Plan](docs/plans/postgresql.md)**: Persistence, pgvector.
+-   **[🖌️ Tailwind CSS Plan](docs/plans/tailwind.md)**: Theme Migration.
 -   **[🏗️ Infrastructure Plan](docs/plans/infrastructure.md)**: Rust/Tauri, Tooling.
+
+### Governance & Tracking
+-   **[🧪 Testing Plan](docs/plans/test.md)**: Unit, Native, and E2E strategies.
+-   **[🐛 Bug & Stability Plan](docs/plans/bug.md)**: Known issues and fixes.
+-   **[📈 Progress Log](docs/plans/progress.md)**: Changelog and Milestones.
 
 ---
 

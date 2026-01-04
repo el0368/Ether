@@ -70,7 +70,9 @@
 - **BEAM-Aware Allocation:** 
   - Replaced Zig's `GeneralPurposeAllocator` with a custom `BeamAllocator` wrapper.
   - Every byte used by Zig is now allocated via `enif_alloc`, meaning the BEAM's `:observer` can correctly track "Native Memory" usage.
-- **Timeslice Politeness:** 
-  - Injected `enif_consume_timeslice` into the recursive crawl loop. 
-  - The NIF now reports its CPU usage (1% every 100 files) to the Erlang scheduler, preventing "NIF blocking scheduler" warnings.
+- **Timeslice Politeness (BEAM Preemption):** 
+  - **The 1ms Rule:** In Erlang's preemptive multitasking, a NIF that runs longer than 1 millisecond without returning or yielding is considered "unpolite." It can block the entire scheduler thread, causing lag in other Elixir processes (like the Phoenix socket heartbeats).
+  - **The Solution:** Injected `enif_consume_timeslice` directly into the recursive hot-loop in `scanner_safe.zig`. 
+  - **Reporting Strategy:** Instead of calling the expensive API every single file, we report consumption every 100 files (estimated at 1% of a timeslice). This tells the BEAM: "I've used X% of my 1ms budget."
+  - **Preemptive Yielding:** If the scheduler sees the NIF has hit 100% of its timeslice, it can safely suspend the process or prepare for a context switch, effectively preventing the dreaded "NIF blocking scheduler" warnings in the console.
 - **Unicode Resilience:** Hardened `std.fs` usage to handle Windows UTF-16 path conversions correctly, ensuring Emojis and foreign characters don't crash the scanner.

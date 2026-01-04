@@ -12,14 +12,32 @@ defmodule AetherWeb.EditorChannel do
     # Subscribe to file delta events
     Phoenix.PubSub.subscribe(Aether.PubSub, "filetree:deltas")
     # Start watching current directory
-    Aether.Watcher.watch(".")
+    # DIAGNOSIS: Disable Watcher to see if it causes 33s flood
+    # Aether.Watcher.watch(".")
     {:ok, %{status: "connected"}, socket}
   end
+
 
   # Handle file delta broadcasts from Watcher
   @impl true
   def handle_info({:file_delta, %{path: path, type: type}}, socket) do
     push(socket, "filetree:delta", %{path: path, type: Atom.to_string(type)})
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:binary, binary}, socket) when is_binary(binary) do
+    # Pass-through: Base64 encode for transport efficiency (vs JSON list)
+    # Ideally use raw binary frames, but Base64 is fine for now.
+    encoded = Base.encode64(binary)
+    push(socket, "filetree:chunk", %{chunk: encoded})
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:scan_completed, _status}, socket) do
+    Logger.info("CH: Scan Completed in #{System.monotonic_time(:millisecond) - socket.assigns[:scan_start]}ms")
+    push(socket, "filetree:done", %{})
     {:noreply, socket}
   end
 
@@ -39,28 +57,19 @@ defmodule AetherWeb.EditorChannel do
   def handle_in("filetree:list_raw", %{"path" => path}, socket) do
     # Direct async stream from NIF to this Channel Process
     # NIF returns :ok immediately, then sends {:binary, bin} messages.
+    logger_path = Path.expand(path)
+    Logger.info("CH: Requested Raw Scan for: #{logger_path}")
+    start_time = System.monotonic_time(:millisecond)
+    
     case Aether.Scanner.scan_raw(path) do
       :ok ->
-        {:reply, {:ok, %{status: "streaming"}}, socket}
+        {:reply, {:ok, %{status: "streaming"}}, assign(socket, :scan_start, start_time)}
       {:error, reason} ->
         {:reply, {:error, %{reason: inspect(reason)}}, socket}
     end
   end
 
-  @impl true
-  def handle_info({:binary, binary}, socket) when is_binary(binary) do
-    # Pass-through: Base64 encode for transport efficiency (vs JSON list)
-    # Ideally use raw binary frames, but Base64 is fine for now.
-    encoded = Base.encode64(binary)
-    push(socket, "filetree:chunk", %{chunk: encoded})
-    {:noreply, socket}
-  end
 
-  @impl true
-  def handle_info({:scan_completed, _status}, socket) do
-    push(socket, "filetree:done", %{})
-    {:noreply, socket}
-  end
 
   @impl true
   def handle_in("editor:read", %{"path" => path}, socket) do

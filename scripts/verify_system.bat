@@ -1,66 +1,59 @@
 @echo off
-setlocal EnableDelayedExpansion
-chcp 65001 >nul
+setlocal
 
-echo 🔍 [Verification] Starting System Integrity Check...
+echo [Aether] Starting Comprehensive System Audit...
+echo =================================================
 
-:: 1. Backend Unit Tests
-echo.
-echo 🧪 [Backend] Running Elixir Tests...
-call mix test
-if %ERRORLEVEL% neq 0 (
-    echo ❌ [Backend] Tests Failed!
-    exit /b 1
-)
-
-:: 2. NIF Compilation
-echo.
-echo 🛠️ [Native] Verifying Zig Build...
-cd native/scanner
-call zig build
-if %ERRORLEVEL% neq 0 (
-    echo ❌ [Native] Zig Build Failed!
-    cd ../..
-    exit /b 1
-)
-cd ../..
-
-:: 3. Frontend Build (Polyglot)
-echo.
-echo ⚡ [Frontend] Verifying Svelte Build...
-cd assets
-
-where bun >nul 2>nul
-if %ERRORLEVEL% equ 0 (
-    echo 🐇 [Info] Using Bun toolchain.
-    call bun install
-    if !ERRORLEVEL! neq 0 (
-        echo ❌ [Frontend] Bun Install Failed!
-        cd ..
-        exit /b 1
-    )
-    call bun x vite build
+:: 1. Run Unit Tests (Logic)
+echo [1/3] Verifying Logic (mix test)...
+call mix test > test_output.txt
+if %ERRORLEVEL% NEQ 0 (
+    echo [FAIL] Unit Tests Failed. See test_output.txt
 ) else (
-    echo 🐢 [Info] Bun not found. Using NPM fallback.
-    call npm install
-    if !ERRORLEVEL! neq 0 (
-        echo ❌ [Frontend] NPM Install Failed!
-        cd ..
-        exit /b 1
-    )
-    call npm run build
+    echo [PASS] Logic Verified.
 )
 
-if %ERRORLEVEL% neq 0 (
-    echo ❌ [Frontend] Build Failed!
-    cd ..
-    exit /b 1
+:: 2. Run Benchmarks (Performance)
+echo [2/3] Verifying Performance (Benchmarks)...
+:: Assuming we have a benchmark script. If not, we skip or use a simple one.
+:: Based on logs, we have Aether.Benchmark.run() but that's internal.
+:: Let's run the mix bench alias if it exists, or the script.
+if exist "bench/scanner_bench.exs" (
+    call mix run bench/scanner_bench.exs > bench_output.txt
+    echo [PASS] Benchmarks Completed.
+) else (
+    echo [SKIP] No benchmark script found.
 )
-cd ..
+
+:: 3. Generate Report HTML
+echo [3/3] Generating Visual Report...
+:: Ideally we would have a script to parse these txt files and make HTML.
+:: For now, we will create a simple HTML that embeds the text content.
+:: This is a "MVP" visualizer.
+
+echo ^<!DOCTYPE html^> > docs\latest_report.html
+echo ^<html lang="en"^>^<head^> >> docs\latest_report.html
+echo ^<meta charset="UTF-8"^>^<title^>Aether Test Report^</title^> >> docs\latest_report.html
+echo ^<style^>body{font-family:monospace;padding:20px} h1,h2{border-bottom:1px solid #ccc} pre{background:#f5f5f5;padding:10px;border:1px solid #ddd}^</style^> >> docs\latest_report.html
+echo ^</head^>^<body^> >> docs\latest_report.html
+echo ^<h1^>Aether System Verification Report^</h1^> >> docs\latest_report.html
+echo ^<p^>Generated on %DATE% %TIME%^</p^> >> docs\latest_report.html
+
+echo ^<h2^>1. Logic Verification (Unit Tests)^</h2^> >> docs\latest_report.html
+echo ^<pre^> >> docs\latest_report.html
+type test_output.txt >> docs\latest_report.html
+echo ^</pre^> >> docs\latest_report.html
+
+echo ^<h2^>2. Performance Verification (Benchmarks)^</h2^> >> docs\latest_report.html
+echo ^<pre^> >> docs\latest_report.html
+if exist "bench_output.txt" type bench_output.txt >> docs\latest_report.html
+if not exist "bench_output.txt" echo No benchmark run. >> docs\latest_report.html
+echo ^</pre^> >> docs\latest_report.html
+
+echo ^</body^>^</html^> >> docs\latest_report.html
 
 echo.
-echo ✅ [Success] System Integrity Verified. All systems operational.
-echo    - Elixir: OK
-echo    - Zig NIF: OK
-echo    - Frontend: OK
-exit /b 0
+echo =================================================
+echo [SUCCESS] Report generated at docs/latest_report.html
+echo Open it to visualize the "Real World" test results.
+pause

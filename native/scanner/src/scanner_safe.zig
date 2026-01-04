@@ -232,6 +232,17 @@ export fn zig_scan(env: ?*ErlNifEnv, argc: c_int, argv: [*c]const ERL_NIF_TERM, 
             _ = api.consume_timeslice(env, 1);
         }
 
+        // FILTER: Ignore Heavy Directories
+        if (entry.kind == .directory) {
+            if (std.mem.eql(u8, entry.name, "node_modules") or
+                std.mem.eql(u8, entry.name, "_build") or
+                std.mem.eql(u8, entry.name, "deps") or
+                std.mem.eql(u8, entry.name, ".git") or
+                std.mem.eql(u8, entry.name, ".elixir_ls")) {
+                continue;
+            }
+        }
+
         const type_byte: u8 = switch (entry.kind) {
             .file => 1,
             .directory => 2,

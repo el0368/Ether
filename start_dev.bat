@@ -36,7 +36,11 @@ echo 💾 [Aether] Setting up Database...
 call mix ecto.setup
 
 echo 🛠️ [Aether] Building Native Scanner...
-call scripts\build_nif.bat
+if exist "priv\native\scanner_nif.dll" (
+    echo ⏩ [Aether] Native Scanner already built. Skipping...
+) else (
+    call scripts\build_nif.bat
+)
 :: In Safe Mode, we skip zig.get entirely to avoid errors
 :: call mix zig.get 2>nul 
 
@@ -53,8 +57,23 @@ if %ERRORLEVEL% equ 0 (
 )
 cd ..
 
-:: 🚀 LAUNCH IEX SESSION
-echo 🚀 [Aether] Launching Brain...
-iex -S mix phx.server
+:: 🚀 ORCHESTRATED LAUNCH
+echo 🚀 [Aether] Launching Brain (Elixir)...
+
+:: Start Backend in separate window
+start "Aether Backend" cmd /c "mix phx.server"
+
+:: Wait for Backend to be ready
+echo ⏳ Waiting for Backend to ignite...
+:loop
+curl -s http://localhost:4000 >nul
+if %ERRORLEVEL% neq 0 (
+    timeout /t 1 /nobreak >nul
+    goto loop
+)
+
+echo 🟢 Backend is ALIVE. Launching UI Shell...
+:: Assume cargo is in path, or use tauri cli if available. User said "cargo tauri dev"
+cargo tauri dev
 
 endlocal

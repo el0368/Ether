@@ -21,7 +21,7 @@ defmodule Aether.Native.Scanner do
   end
 
   def scan(path) do
-    path = String.to_charlist(path)
+    # path = String.to_charlist(path) <- INCORRECT. NIF expects Binary.
     case scan_nif(path, self()) do
       :ok -> :ok
       error -> error

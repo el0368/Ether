@@ -8,7 +8,21 @@ export default defineConfig({
         tailwindcss(),
         svelte()
     ],
+    server: {
+        port: 5173,
+        strictPort: true,
+        watch: {
+            ignored: ['**/_build/**', '**/deps/**', '**/node_modules/**', '**/.git/**']
+        }
+    },
+    optimizeDeps: {
+        include: ['phoenix', 'phoenix_live_view', 'phoenix_html'],
+        exclude: ['@tauri-apps/api']
+    },
     build: {
+        target: 'esnext',
+        minify: false,
+        sourcemap: true,
         outDir: '../priv/static',
         emptyOutDir: true,
         manifest: false,
@@ -33,4 +47,5 @@ export default defineConfig({
                 '@': path.resolve(__dirname, 'src')
             }
         }
-    })
+    }
+});

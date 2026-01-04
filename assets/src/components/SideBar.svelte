@@ -8,6 +8,7 @@
         sidebarVisible,
         fileTree,
         activeFile,
+        isLoading = false,
         channel,
         onOpenFile,
         onMenuClick,
@@ -46,7 +47,12 @@
                 </div>
 
                 <div class="flex-1 overflow-hidden flex flex-col">
-                    <FileExplorer {fileTree} {activeFile} {onOpenFile} />
+                    <FileExplorer
+                        {fileTree}
+                        {activeFile}
+                        {isLoading}
+                        {onOpenFile}
+                    />
                 </div>
             {:else if activeSidebar === "git"}
                 <div class="p-4">

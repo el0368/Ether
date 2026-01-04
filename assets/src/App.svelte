@@ -16,6 +16,7 @@
   // Reactive state
   let connected = $state(false);
   let fileTree = $state([]);
+  let isLoading = $state(true); // Shell-First: Start loading immediately
   let nifPulse = $state(false);
   let channel = $state(null);
 
@@ -98,6 +99,7 @@
           ch.on("filetree:done", () => {
             // ... existing done handler ...
             flushBatch();
+            isLoading = false; // Stop loading spinner/skeleton
             fileTree.sort((a, b) => {
               if (a.type === "directory" && b.type !== "directory") return -1;
               if (a.type !== "directory" && b.type === "directory") return 1;
@@ -247,6 +249,7 @@
       {sidebarVisible}
       {fileTree}
       activeFile={activeGroup.file}
+      {isLoading}
       {channel}
       onOpenFile={openFile}
       onMenuClick={() => {}}

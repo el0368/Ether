@@ -13,6 +13,7 @@ We use a **Hybrid Shim Architecture** to run Safe Zig NIFs on Windows.
 - **Shim (`entry.c`)**: Handles Erlang NIF macros.
 - **Logic (`*.zig`)**: Pure Zig with `std.fs`, avoiding `windows.h`.
 - **Status**: **PRODUCTION-READY** (Level 4 Verified).
+- **Strict Policy**: **NO ELIXIR FALLBACK**. If Zig fails, the system must error/crash.
 
 ### 2. Agent Architecture
 All IDE functionality is implemented as GenServer agents:

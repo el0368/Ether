@@ -21,6 +21,7 @@ This is the central index for all project plans.
 
 ### Governance & Tracking
 -   **[🧪 Testing Plan](docs/plans/test.md)**: Unit, Native, and E2E strategies.
+-   **[🔍 Zig Testing Plan](docs/plans/zig-test.md)**: Specialized native integrity testing.
 -   **[🐛 Bug & Stability Plan](docs/plans/bug.md)**: Known issues and fixes.
 -   **[📈 Progress Log](docs/plans/progress.md)**: Changelog and Milestones.
 

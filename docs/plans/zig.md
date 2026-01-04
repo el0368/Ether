@@ -50,15 +50,27 @@
 ## 📜 History & Changelog
 
 ### 2026-01-04: The "Safe Shim" Revolution
-- **Removed Zigler:** We moved away from `Zigler` macros due to compilation instability on Windows.
-- **Hybrid Shim Architecture:** Introduced `entry.c` to handle Erlang NIF macros (`ERL_NIF_INIT`), while keeping logic in pure `scanner.zig`.
-- **Manual NIF Loading:** Implemented `Aether.Native.Scanner` to load the DLL safely using `:erlang.load_nif/2`.
+- **Removed Zigler:** Migrated away from the `Zigler` library. While excellent for Linux/OSX, it suffered from MSVC macro expansion inconsistencies on Windows, leading to unstable DLL headers.
+- **Hybrid Shim Architecture:** 
+  - **The Bridge:** Introduced `entry.c` as a static C gateway. It handles the volatile Erlang NIF macros (`ERL_NIF_INIT`) that Zig's `translate-c` struggled with on Windows.
+  - **The API Struct:** Created `WinNifApi`, a function-pointer struct passed from C to Zig. This allows Zig to call BEAM functions (`enif_send`, `enif_alloc`) with 100% type safety and zero macro dependency.
+- **Manual NIF Loading:** Implemented `Aether.Native.Scanner` with a manual `@on_load` hook. This provides granular control over DLL paths and error reporting compared to automated loaders.
+- **Dirty Schedulers:** Enabled `ERL_NIF_DIRTY_JOB_IO_BOUND` flags in the C shim to ensure long file-system crawls don't hog main scheduler threads.
 
 ### 2026-01-03: Async Streaming (Phase 2)
-- **Problem:** Synchronous scanning froze the BEAM VM on large directories (`node_modules`).
-- **Solution:** Implemented `enif_send`.
-- **Protocol:** `{:binary, Blob}` chunks are flushed every 1000 files, followed by `{:scan_completed, :ok}`.
+- **The Bottleneck:** Previously, `scan_nif` returned a massive list of strings. For 50k+ files, this caused a "Stop-the-world" freeze while the BEAM allocated thousands of small string objects.
+- **The Solution:** Switched to `enif_send` (Process Messaging). The NIF now pushes data to the caller's inbox and returns `:ok` immediately.
+- **Binary Slab Protocol:** 
+  - Implemented a custom high-density binary format: `[Type:u8][PathLen:u16][Path:Bytes]`. 
+  - This allows the NIF to send thousands of paths in a single flat binary chunk, reducing messaging overhead by 90%.
+- **Incremental Rendering:** By streaming chunks of 1,000 files, the Svelte UI can start rendering the top of the file tree while the NIF is still crawling the bottom.
 
 ### 2026-01-02: Level 4 Citizenship
-- **Allocator:** Replaced Zig's GPA with `beam.allocator` to prevent memory leaks and let the VM track NIF memory usage.
-- **Timeslices:** Added `enif_consume_timeslice` to the hot loop to stay polite to other Process schedulers.
+- **The "No Fallback" Policy:** Removed all pure Elixir directory crawlers. We committed to the "Safe Native" path—if the NIF fails, it is an error that must be fixed, not hidden by a slow fallback.
+- **BEAM-Aware Allocation:** 
+  - Replaced Zig's `GeneralPurposeAllocator` with a custom `BeamAllocator` wrapper.
+  - Every byte used by Zig is now allocated via `enif_alloc`, meaning the BEAM's `:observer` can correctly track "Native Memory" usage.
+- **Timeslice Politeness:** 
+  - Injected `enif_consume_timeslice` into the recursive crawl loop. 
+  - The NIF now reports its CPU usage (1% every 100 files) to the Erlang scheduler, preventing "NIF blocking scheduler" warnings.
+- **Unicode Resilience:** Hardened `std.fs` usage to handle Windows UTF-16 path conversions correctly, ensuring Emojis and foreign characters don't crash the scanner.

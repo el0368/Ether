@@ -6,6 +6,7 @@ This is the central index for all project plans.
 
 ### Core Architecture
 -   **[⚡ Zig Native Plan](docs/plans/zig.md)**: Native extensions, NIF safety.
+-   **[🧹 Zig Refactor Plan](docs/plans/zig-refactor.md)**: Native layer cleanup and optimization.
 -   **[💧 Elixir Backend Plan](docs/plans/elixir.md)**: Agents, GenServers Logic.
 -   **[🔥 Phoenix Plan](docs/plans/phoenix.md)**: Channels, Presence.
 -   **[🎨 Svelte Frontend Plan](docs/plans/svelte.md)**: UI, Runes, Virtualization.

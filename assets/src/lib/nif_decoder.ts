@@ -12,6 +12,21 @@ export interface FileEntry {
 export class NifDecoder {
     private static decoder = new TextDecoder('utf-8');
 
+    static decodeChunk(chunk: string | Uint8Array, root: string): FileEntry[] {
+        let buffer: Uint8Array;
+        if (typeof chunk === 'string') {
+            const binaryString = atob(chunk);
+            const length = binaryString.length;
+            buffer = new Uint8Array(length);
+            for (let i = 0; i < length; i++) {
+                buffer[i] = binaryString.charCodeAt(i);
+            }
+        } else {
+            buffer = chunk;
+        }
+        return this.decode(buffer, root);
+    }
+
     static decode(buffer: Uint8Array, root: string): FileEntry[] {
         const entries: FileEntry[] = [];
         let offset = 0;
@@ -22,20 +37,24 @@ export class NifDecoder {
         const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
 
         while (offset < buffer.byteLength) {
-            if (offset + 3 > buffer.byteLength) break; // Incomplete header
+            // Check for minimum header size (1 + 2 = 3 bytes)
+            if (offset + 3 > buffer.byteLength) break;
 
-            // 1. Type (1 byte)
             const typeCode = view.getUint8(offset);
             offset += 1;
 
-            // 2. Length (2 bytes, LE)
-            const len = view.getUint16(offset, true); // true = Little Endian
+            const len = view.getUint16(offset, true);
             offset += 2;
 
-            if (offset + len > buffer.byteLength) break; // Incomplete body
+            if (offset + len > buffer.byteLength) {
+                // WARN: Incomplete chunk received?
+                // For now, break. In a perfect stream, chunks should be self-contained entries 
+                // or we need a persistent buffer state.
+                // Assuming NIF sends complete entries per chunk.
+                console.warn("Incomplete entry in chunk");
+                break;
+            }
 
-            // 3. Name (Bytes)
-            // Optimized for small strings
             const nameBytes = buffer.subarray(offset, offset + len);
             const name = this.decoder.decode(nameBytes);
             offset += len;
@@ -43,16 +62,11 @@ export class NifDecoder {
             entries.push({
                 name: name,
                 type: this.mapType(typeCode),
-                path: `${root}/${name}` // Naive join, server should handle path separators if needed or frontend normalizes
+                path: `${root}/${name}`
             });
         }
 
-        return entries.sort((a, b) => {
-            // Sort directories first
-            if (a.type === 'directory' && b.type !== 'directory') return -1;
-            if (a.type !== 'directory' && b.type === 'directory') return 1;
-            return a.name.localeCompare(b.name);
-        });
+        return entries;
     }
 
     private static mapType(code: number): FileEntry['type'] {

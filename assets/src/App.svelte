@@ -2,6 +2,7 @@
   // Svelte 5 Runes Mode
   let { socket } = $props();
   import { NifDecoder } from "./lib/nif_decoder";
+  import { applyDelta } from "./lib/delta_handler";
 
   // Initialize Theme Synchronously
   const savedTheme = localStorage.getItem("theme") || "dark";
@@ -55,32 +56,45 @@
           channel = ch;
 
           triggerPulse();
-          ch.push("filetree:list_raw", { path: "." }).receive("ok", (resp) => {
-            // Handle Binary Protocol
-            if (resp.binary) {
-              let buffer;
-              if (typeof resp.binary === "string") {
-                const binaryString = atob(resp.binary);
-                const length = binaryString.length;
-                const bytes = new Uint8Array(length);
-                for (let i = 0; i < length; i++) {
-                  bytes[i] = binaryString.charCodeAt(i);
-                }
-                buffer = bytes;
-              } else {
-                buffer = new Uint8Array(resp.binary);
-              }
-              fileTree = NifDecoder.decode(buffer, ".");
-            } else {
-              fileTree = resp.files || [];
-            }
 
-            // Auto-open README
+          // Streaming Protocol
+          ch.on("filetree:chunk", (payload) => {
+            const newFiles = NifDecoder.decodeChunk(payload.chunk, ".");
+            // Incrementally update state
+            fileTree.push(...newFiles);
+          });
+
+          ch.on("filetree:done", () => {
+            // Final Sort
+            fileTree.sort((a, b) => {
+              if (a.type === "directory" && b.type !== "directory") return -1;
+              if (a.type !== "directory" && b.type === "directory") return 1;
+              return a.name.localeCompare(b.name);
+            });
+
+            // Auto-open README if present
             const readme = fileTree.find(
               (f) => f.name.toLowerCase() === "readme.md",
             );
             if (readme) openFile(readme);
           });
+
+          // Delta Updates
+          ch.on("filetree:delta", (payload) => {
+            // Map backend types to delta handler types
+            // Backend (Watcher): :created, :deleted, :modified, :renamed
+            let type = payload.type;
+            if (type === "created") type = "add";
+            if (type === "deleted") type = "remove";
+            if (type === "modified") type = "modify";
+
+            // Apply delta (returns new array)
+            fileTree = applyDelta(fileTree, { path: payload.path, type: type });
+          });
+
+          // Trigger stream
+          fileTree = []; // Clear on load
+          ch.push("filetree:list_raw", { path: "." });
         })
         .receive("error", (resp) => console.error("Failed", resp));
     }

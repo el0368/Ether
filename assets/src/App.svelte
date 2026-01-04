@@ -2,11 +2,6 @@
   // Svelte 5 Runes Mode
   let { socket } = $props();
   import { NifDecoder } from "./lib/nif_decoder";
-  import { applyDelta } from "./lib/delta_handler";
-
-  // Initialize Theme Synchronously
-  const savedTheme = localStorage.getItem("theme") || "dark";
-  document.documentElement.setAttribute("data-theme", savedTheme);
 
   // Components
   import TitleBar from "./components/TitleBar.svelte";
@@ -68,29 +63,14 @@
 
           function flushBatch() {
             if (pendingFiles.length > 0) {
-              // Safety: concat is slower than push but safer for stack limits
-              // Svelte 5 $state array proxy handles large arrays reasonable well?
-              // Reassignment `fileTree = fileTree.concat(pendingFiles)` triggers update
-              // But let's verify if pendingFiles is HUGE. if so, chunk it?
-              // For now, let's use a safe push loop or concat.
-              // Mutating fileTree in batches.
               try {
-                // If pendingFiles is excessively large, stack overflow on ...spread
-                // Using loop is safer
                 if (pendingFiles.length > 5000) {
-                  // Reassignment is safest for huge updates
                   fileTree = [...fileTree, ...pendingFiles];
-                  // Warning: Spread here ALSO risks stack overflow if fileTree is huge?
-                  // No, invalid spread syntax `...` applies to arguments.
-                  // `[...arr]` is usually optimized but can still hit limits.
-                  // `Array.prototype.push.apply` fails on large.
-                  // Loop is safest.
                 } else {
                   fileTree.push(...pendingFiles);
                 }
               } catch (e) {
                 console.error("Batch Flush Error:", e);
-                // Fallback: Slow loop
                 for (const f of pendingFiles) {
                   fileTree.push(f);
                 }
@@ -99,16 +79,14 @@
             }
           }
 
-          // Start Batch Timer (20fps updates is enough for smooth UI without choking)
+          // Start Batch Timer
           batchTimer = setInterval(flushBatch, 50);
 
-          // Streaming Protocol
+          // Streaming Protocol & Delta Handlers (Setup Listeners)
           ch.on("filetree:chunk", (payload) => {
+            // ... existing chunk handler ...
             try {
               const newFiles = NifDecoder.decodeChunk(payload.chunk, ".");
-              // Buffer updates instead of triggering state immediately
-              // Use push loop to avoid stack limit on `push(...newFiles)` if chunk is huge
-              // Though chunk is usually 1000.
               for (let i = 0; i < newFiles.length; i++) {
                 pendingFiles.push(newFiles[i]);
               }
@@ -118,39 +96,34 @@
           });
 
           ch.on("filetree:done", () => {
-            // Flush remaining
+            // ... existing done handler ...
             flushBatch();
-
-            // Final Sort
             fileTree.sort((a, b) => {
               if (a.type === "directory" && b.type !== "directory") return -1;
               if (a.type !== "directory" && b.type === "directory") return 1;
               return a.name.localeCompare(b.name);
             });
-
-            // Auto-open README if present
             const readme = fileTree.find(
               (f) => f.name.toLowerCase() === "readme.md",
             );
             if (readme) openFile(readme);
           });
 
-          // Delta Updates
           ch.on("filetree:delta", (payload) => {
-            // Map backend types to delta handler types
-            // Backend (Watcher): :created, :deleted, :modified, :renamed
+            // ... existing delta handler ...
             let type = payload.type;
             if (type === "created") type = "add";
             if (type === "deleted") type = "remove";
             if (type === "modified") type = "modify";
-
-            // Apply delta (returns new array)
             fileTree = applyDelta(fileTree, { path: payload.path, type: type });
           });
 
-          // Trigger stream
-          fileTree = []; // Clear on load
-          ch.push("filetree:list_raw", { path: "." });
+          // LAZY IGNITION: Wait 800ms before pulling trigger
+          // This prevents "White Screen" by letting UI render first frame
+          setTimeout(() => {
+            fileTree = [];
+            ch.push("filetree:list_raw", { path: "." });
+          }, 800);
         })
         .receive("error", (resp) => console.error("Failed", resp));
 

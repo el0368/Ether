@@ -41,4 +41,11 @@ const app = mount(App, {
     }
 })
 
+// Remove Loader
+const loader = document.getElementById('app-loader');
+if (loader) {
+    loader.style.opacity = '0';
+    setTimeout(() => loader.remove(), 300);
+}
+
 export default app

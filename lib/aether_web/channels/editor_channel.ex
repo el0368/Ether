@@ -6,7 +6,9 @@ defmodule AetherWeb.EditorChannel do
   def join("editor:lobby", _payload, socket) do
     Logger.info("Client joined editor:lobby")
     # Trigger benchmark on startup
-    Aether.Benchmark.run()
+    # Trigger benchmark on startup
+    # DISABLED: Too heavy for startup, causes white screen congestion
+    # Aether.Benchmark.run()
     # Subscribe to file delta events
     Phoenix.PubSub.subscribe(Aether.PubSub, "filetree:deltas")
     # Start watching current directory

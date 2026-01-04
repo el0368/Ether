@@ -44,6 +44,12 @@ Use conventional commits:
 - `refactor:` - Code restructuring
 - `test:` - Test changes
 
+### 6. System Pressure Protocol (ADR-005)
+To prevent "White Screen" and "Startup Congestion":
+- **Lazy Ignition**: Frontend MUST wait **800ms** after socket connection before requesting heavy data.
+- **Throttling**: Scanner/Benchmarks MUST NOT auto-start on channel join.
+- **Safety Valve**: UI MUST batch high-frequency events (e.g., 20fps limit) to preventing Event Loop starvation.
+
 ## File Structure
 ```
 Aether/

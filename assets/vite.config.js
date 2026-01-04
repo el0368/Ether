@@ -14,7 +14,8 @@ export default defineConfig({
         manifest: false,
         rollupOptions: {
             input: {
-                app: path.resolve(__dirname, 'src/main.js')
+                // Point to index.html so it includes the dark mode script & loader
+                app: path.resolve(__dirname, 'index.html')
             },
             output: {
                 entryFileNames: 'js/[name].js',
@@ -26,11 +27,10 @@ export default defineConfig({
                     return 'assets/[name]-[hash][extname]'
                 }
             }
+        },
+        resolve: {
+            alias: {
+                '@': path.resolve(__dirname, 'src')
+            }
         }
-    },
-    resolve: {
-        alias: {
-            '@': path.resolve(__dirname, 'src')
-        }
-    }
-})
+    })

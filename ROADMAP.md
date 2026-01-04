@@ -12,6 +12,7 @@ This is the central index for all project plans.
 
 ### Features & Infrastructure
 -   **[🤖 AI Agent Plan](docs/plans/ai_agent.md)**: Jido, Commander, Vector Memory.
+-   **[✂️ Refactor Plan](docs/plans/refactor.md)**: Automated transformations, Sourceror.
 -   **[🦀 Rust Plan](docs/plans/rust.md)**: Tauri Shell, Windowing, Menus.
 -   **[🐘 PostgreSQL Plan](docs/plans/postgresql.md)**: Persistence, pgvector.
 -   **[🖌️ Tailwind CSS Plan](docs/plans/tailwind.md)**: Theme Migration.

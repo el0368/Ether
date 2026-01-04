@@ -6,9 +6,13 @@ defmodule AetherWeb.UserSocket do
 
   @impl true
   def connect(_params, socket, _connect_info) do
+    IO.puts("UserSocket: CONNECTED")
     {:ok, socket}
   end
 
   @impl true
-  def id(_socket), do: nil
+  def id(_socket) do
+    IO.puts("UserSocket: ID CHECK")
+    nil
+  end
 end

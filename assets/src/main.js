@@ -29,7 +29,7 @@ self.MonacoEnvironment = {
 }
 
 // Establish shared socket connection
-const socket = new Socket("/socket", {
+const socket = new Socket("ws://localhost:4000/socket", {
     params: { token: window.userToken || "dev_token" }
 })
 socket.connect()

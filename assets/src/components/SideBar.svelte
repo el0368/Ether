@@ -12,6 +12,7 @@
         channel,
         onOpenFile,
         onMenuClick,
+        onExpand,
     } = $props();
 </script>
 
@@ -48,10 +49,11 @@
 
                 <div class="flex-1 overflow-hidden flex flex-col">
                     <FileExplorer
-                        {fileTree}
+                        files={fileTree}
                         {activeFile}
                         {isLoading}
                         {onOpenFile}
+                        {onExpand}
                     />
                 </div>
             {:else if activeSidebar === "git"}

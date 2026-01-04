@@ -1,0 +1,49 @@
+# Zig Scanner Diagnosis Report
+
+**Date:** 2026-01-04
+**Component:** `Aether.Native.Scanner` (Level 4 Safe Protocol)
+
+## 1. Executive Summary
+The Zig Scanner is **Production Ready** regarding stability and safety (Level 4), but functionally limited regarding recursion. The "Antigravity" speed (<2s) is achieved partially by **efficient native code** and partially by **limiting the scan depth**.
+
+## 2. Architecture Analysis
+
+### A. The Hybrid Shim ([entry.c](file:///c:/Users/Administrator/Documents/GitHub/Ether/native/scanner/src/entry.c))
+*   **Status:** ✅ **Robust**
+*   **Mechanism:** Correctly maps `ERL_NIF_TERM` logic and memory management to a struct (`WinNifApi`) for Zig.
+*   **Citizenship:** Uses `ERL_NIF_DIRTY_JOB_IO_BOUND`, ensuring the heavy I/O does not freeze the Erlang VM schedulers.
+
+### B. The Logic Core ([scanner_safe.zig](file:///c:/Users/Administrator/Documents/GitHub/Ether/native/scanner/src/scanner_safe.zig))
+*   **Memory Safety:** ✅ **High**. Uses `BeamAllocator` (wrapping `enif_alloc`) with Zig's `defer` pattern. No obvious memory leaks found in buffers or string duplication.
+*   **Concurrency:** ⚠️ **Batch-Based (Non-Streaming)**.
+    *   Worker threads accumulate results in a local buffer and flush *once* at the end.
+    *   **Impact:** Safe from race conditions, but large sub-directories won't stream results to the UI until the entire sub-directory is scanned.
+*   **Recursion:** ⚠️ **Shallow (2-Level Limit)**.
+    *   The code iterates the `root` (Level 1) and parallelizes immediate `subdirs` (Level 2).
+    *   **It does NOT recurse deeper.** Grand-child directories (e.g., `src/components/ui`) are identified as directory entries but their *contents* are never scanned.
+    *   **Speed Factor:** This massive reduction in work helps explain the sub-second performance. If the UI needs a full tree, it must request sub-directories dynamically (Lazy Loading).
+
+## 3. Critical Findings
+
+### 🔴 The "Invisible" Stream
+Worker threads **cannot** send messages directly to the Erlang process because [entry.c](file:///c:/Users/Administrator/Documents/GitHub/Ether/native/scanner/src/entry.c) does not expose `enif_alloc_env`.
+*   **Current Behavior:** Workers accumulate data -> Main Thread sends it.
+*   **Limitation:** True parallel streaming is bottlenecked by the Main Thread's final flush.
+
+### 🟡 The "False" Recursive Promise
+The Elixir docs ([scanner.ex](file:///c:/Users/Administrator/Documents/GitHub/Ether/lib/aether/scanner.ex)) claim "Scans a directory recursively", but the Zig NIF only goes 2 levels deep.
+*   **Risk:** Users with deep project structures (`lib/aether_web/channels/...`) will see the folders but not the files inside them until (hypothetically) a separate request is made.
+
+## 4. Recommendations
+
+1.  **Acceptance:** If the UI supports "Lazy Expansion" (clicking a folder fetches its content), the current **Shallow Scan** is actually a **Feature**, not a bug. It prevents initial overload.
+2.  **Streaming Upgrade:** To support true parallel streaming, `entry.c` must expose `enif_alloc_env` so workers can construct and send their own valid Erlang messages.
+3.  **Documentation:** Update `scanner.ex` documentation to reflect that it performs a **Shallow/Depth-2 Scan**, avoiding confusion.
+
+## 5. Scorecard
+| Metric | Grade | Notes |
+| :--- | :---: | :--- |
+| **Stability** | **A+** | Hybrid Shim + Dirty Scheduler = No Crashes. |
+| **Performance** | **A** | Zero-copy binary construction, parallel batching. |
+| **Completeness** | **C** | Missing full recursion (Walker). |
+| **Safety** | **A+** | Strict "No Fallback" policy, correct memory management. |

@@ -23,11 +23,11 @@ config :aether, AetherWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "M2N+uB8iTprrkLZREli7NUmrfizVq7ULNqucf7buEJubtWNF5EV4Y7QW8ZpxmiSA",
+  secret_key_base: "M2N+uB8iTprrkLZREli7NUmrfizVq7ULNqucf7buEJubtWNF5EV4Y7QW8ZpxmiSA"
   # Watchers enabled - using Polyglot Wrapper (Bun/NPM)
-  watchers: [
-    "cmd": ["/c", "watcher.bat", cd: Path.expand("../assets", __DIR__)]
-  ]
+  # watchers: [
+  #   cmd: ["/c", "watcher.bat", cd: Path.expand("../assets", __DIR__)]
+  # ]
 
 # ## SSL Support
 #
@@ -57,8 +57,6 @@ config :aether, AetherWeb.Endpoint,
   live_reload: [
     web_console_logger: true,
     patterns: [
-      # Static assets, except user uploads
-      ~r"priv/static/(?!uploads/).*\.(js|css|png|jpeg|jpg|gif|svg)$"E,
       # Gettext translations
       ~r"priv/gettext/.*\.po$"E,
       # Router, Controllers, LiveViews and LiveComponents

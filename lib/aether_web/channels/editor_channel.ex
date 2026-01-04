@@ -27,6 +27,7 @@ defmodule AetherWeb.EditorChannel do
 
   @impl true
   def handle_info({:binary, binary}, socket) when is_binary(binary) do
+    Logger.info("CH: Received binary chunk of #{byte_size(binary)} bytes")
     # Pass-through: Base64 encode for transport efficiency (vs JSON list)
     # Ideally use raw binary frames, but Base64 is fine for now.
     encoded = Base.encode64(binary)
@@ -57,11 +58,19 @@ defmodule AetherWeb.EditorChannel do
   def handle_in("filetree:list_raw", %{"path" => path}, socket) do
     # Direct async stream from NIF to this Channel Process
     # NIF returns :ok immediately, then sends {:binary, bin} messages.
-    logger_path = Path.expand(path)
-    Logger.info("CH: Requested Raw Scan for: #{logger_path}")
+    abs_path = Path.expand(path)
+    Logger.info("CH: Requested Raw Scan for: #{abs_path}")
+    Logger.info("CH: Current working directory: #{File.cwd!()}")
+    
+    # Debug: List files using Elixir directly to compare
+    case File.ls(abs_path) do
+      {:ok, files} -> Logger.info("CH: Elixir sees #{length(files)} files in #{abs_path}")
+      {:error, reason} -> Logger.error("CH: Elixir can't read dir: #{inspect(reason)}")
+    end
+    
     start_time = System.monotonic_time(:millisecond)
     
-    case Aether.Scanner.scan_raw(path) do
+    case Aether.Scanner.scan_raw(abs_path) do
       :ok ->
         {:reply, {:ok, %{status: "streaming"}}, assign(socket, :scan_start, start_time)}
       {:error, reason} ->

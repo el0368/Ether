@@ -77,3 +77,16 @@ Frontend (Svelte)
 ```
 
 All agents are supervised under `Aether.Application`.
+
+---
+
+## Quick Start (New PC Setup)
+
+```bash
+# After cloning on any PC:
+.\check_env.bat      # Check tools installed
+mix deps.get         # Install backend deps
+cd assets && bun install && cd ..  # Frontend deps
+.\verify_setup.bat   # TEST EVERYTHING
+.\start_dev.bat      # Run if all tests pass
+```

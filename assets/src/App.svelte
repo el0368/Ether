@@ -35,6 +35,7 @@
   let paletteMode = $state("files");
   let recentFiles = $state([]);
   let documentSymbols = $state([]);
+  let expandedPaths = $state(new Set());
 
   function triggerPulse() {
     nifPulse = true;
@@ -43,9 +44,11 @@
 
   // Socket Connection
   $effect(() => {
+    console.log("App Mounted. Socket:", socket);
     let cleanUp = () => {};
 
     if (socket && !channel) {
+      console.log("Attempting to join channel...");
       // Hoist batchTimer so it's accessible to cleanUp
       let batchTimer = null;
 
@@ -85,9 +88,10 @@
 
           // Streaming Protocol & Delta Handlers (Setup Listeners)
           ch.on("filetree:chunk", (payload) => {
-            // ... existing chunk handler ...
+            console.log("Received filetree:chunk!", payload);
             try {
               const newFiles = NifDecoder.decodeChunk(payload.chunk, ".");
+              console.log("Decoded", newFiles.length, "files:", newFiles);
               for (let i = 0; i < newFiles.length; i++) {
                 pendingFiles.push(newFiles[i]);
               }
@@ -97,14 +101,12 @@
           });
 
           ch.on("filetree:done", () => {
-            // ... existing done handler ...
+            console.log("Received filetree:done! Flushing batch...");
             flushBatch();
             isLoading = false; // Stop loading spinner/skeleton
-            fileTree.sort((a, b) => {
-              if (a.type === "directory" && b.type !== "directory") return -1;
-              if (a.type !== "directory" && b.type === "directory") return 1;
-              return a.name.localeCompare(b.name);
-            });
+            // Sort by PATH to ensure tree-like structure in flat list
+            fileTree.sort((a, b) => a.path.localeCompare(b.path));
+
             const readme = fileTree.find(
               (f) => f.name.toLowerCase() === "readme.md",
             );
@@ -123,8 +125,13 @@
           // LAZY IGNITION: Wait 800ms before pulling trigger
           // This prevents "White Screen" by letting UI render first frame
           setTimeout(() => {
+            console.log("Firing filetree:list_raw request...");
             fileTree = [];
-            ch.push("filetree:list_raw", { path: "." });
+            ch.push("filetree:list_raw", { path: "." })
+              .receive("ok", (resp) => console.log("list_raw OK:", resp))
+              .receive("error", (resp) =>
+                console.error("list_raw ERROR:", resp),
+              );
           }, 800);
         })
         .receive("error", (resp) => console.error("Failed", resp));
@@ -136,6 +143,22 @@
     }
     return cleanUp;
   });
+
+  function handleExpand(file) {
+    if (expandedPaths.has(file.path)) {
+      // Collapse? For now, we only support lazy load (expand).
+      // To collapse, we would need to filter out children from fileTree.
+      // keeping it simple: do nothing or toggle Set.
+      // expandedPaths.delete(file.path);
+      // removeChildren(file.path);
+      return;
+    }
+    expandedPaths.add(file.path);
+    // Trigger Lazy Load
+    if (channel) {
+      channel.push("filetree:list_raw", { path: file.path });
+    }
+  }
 
   function openFile(file) {
     showPalette = false;
@@ -252,6 +275,7 @@
       {isLoading}
       {channel}
       onOpenFile={openFile}
+      onExpand={handleExpand}
       onMenuClick={() => {}}
     />
 

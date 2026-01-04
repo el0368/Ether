@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite build --watch",
+    "dev": "vite",
     "build": "vite build",
     "tauri": "tauri"
   },
@@ -13,6 +13,7 @@
     "@tailwindcss/vite": "^4.1.18",
     "@tauri-apps/cli": "^2.9.6",
     "autoprefixer": "^10.4.23",
+    "daisyui": "^5.5.14",
     "postcss": "^8.5.6",
     "svelte": "^5.0.0",
     "tailwindcss": "^4.1.18",

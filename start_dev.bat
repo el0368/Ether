@@ -29,11 +29,21 @@ echo 🛡️ [Path] Developer environment active.
 cd /d "%~dp0"
 
 :: 📦 DEPENDENCY & TOOLING SYNC
-echo 📦 [Aether] Getting Dependencies...
-call mix deps.get
+:: 📦 DEPENDENCY & TOOLING SYNC
+if not exist "deps" (
+    echo 📦 [Aether] Getting Dependencies...
+    call mix deps.get
+) else (
+    echo ⏩ [Aether] Deps found. Skipping fetch...
+)
 
 echo 💾 [Aether] Setting up Database...
-call mix ecto.setup
+:: Only run migration if needed (simplification: assume setup works if repo exists, 
+:: or maybe just run migrate? ecto.setup does create+migrate+seed).
+:: Let's keep ecto.setup but maybe it's slow?
+:: For dev speed, we assume DB is fine if we aren't changing schemas.
+:: Reducing content: Just run migrate to be safe but fast.
+call mix ecto.migrate
 
 echo 🛠️ [Aether] Building Native Scanner...
 if exist "priv\native\scanner_nif.dll" (
@@ -47,13 +57,17 @@ if exist "priv\native\scanner_nif.dll" (
 :: 🚀 LAUNCH IEX SESSION
 :: 🚀 LAUNCH FRONTEND SETUP
 cd assets
-where bun >nul 2>nul
-if %ERRORLEVEL% equ 0 (
-    echo 🐇 [Frontend] Using Bun...
-    call bun install
+if not exist "node_modules" (
+    where bun >nul 2>nul
+    if !ERRORLEVEL! equ 0 (
+        echo 🐇 [Frontend] Using Bun...
+        call bun install
+    ) else (
+        echo 🐢 [Frontend] Bun not found. Falling back to NPM...
+        call npm install
+    )
 ) else (
-    echo 🐢 [Frontend] Bun not found. Falling back to NPM...
-    call npm install
+    echo ⏩ [Frontend] node_modules found. Skipping install...
 )
 cd ..
 

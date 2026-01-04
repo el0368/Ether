@@ -13,6 +13,12 @@ export default defineConfig({
         strictPort: true,
         watch: {
             ignored: ['**/_build/**', '**/deps/**', '**/node_modules/**', '**/.git/**']
+        },
+        proxy: {
+            '/socket': {
+                target: 'http://127.0.0.1:4000',
+                ws: true
+            }
         }
     },
     optimizeDeps: {

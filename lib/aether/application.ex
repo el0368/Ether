@@ -9,7 +9,7 @@ defmodule Aether.Application do
   def start(_type, _args) do
     children = [
       AetherWeb.Telemetry,
-      Aether.Repo,
+      # Aether.Repo,
       {DNSCluster, query: Application.get_env(:aether, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Aether.PubSub},
       # Aether Agents - File Operations

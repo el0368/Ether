@@ -27,28 +27,44 @@ Aether is an experimental IDE designed for professional efficiency, leveraging t
 ## 🛠️ Getting Started
 
 ### Prerequisites
-*   Elixir 1.15+ & Erlang/OTP 26+
-*   Node.js 20+
+*   Elixir 1.18+ & Erlang/OTP 27+
+*   Zig 0.14+
+*   Rust 1.75+
+*   Bun 1.0+
 *   Git
 
-### Installation
-1.  Clone the repository.
-2.  Install dependencies:
-    ```bash
-    mix setup
-    ```
+### Quick Start (New PC Setup)
 
-### Running the Desktop App (Recommended)
-We provide a helper script to launch the full environment:
-```powershell
-.\start_desktop.bat
+```bash
+# 1. Clone the repository
+git clone https://github.com/el0368/Ether.git
+cd Ether
+
+# 2. Check tools are installed
+.\check_env.bat
+
+# 3. Fix any missing tools (see docs/REQUIRED_VERSIONS.md)
+
+# 4. Install dependencies
+mix deps.get
+cd assets && bun install && cd ..
+
+# 5. Verify everything works
+.\verify_setup.bat
+
+# 6. Run the application
+.\start_dev.bat
+# OR run manually:
+#   Terminal 1: .\run_backend.bat
+#   Terminal 2: cargo tauri dev
 ```
-This will compile assets, start the server, and open the Aether IDE window.
+
+> **Switching PCs?** Run `check_env.bat` first to verify tools, then `verify_setup.bat` to test everything works.
 
 ### Web-Only Development
 If you prefer developing in the browser:
 ```bash
-./start_dev.bat
+.\run_backend.bat
 ```
 Then visit: `http://localhost:4000`
 

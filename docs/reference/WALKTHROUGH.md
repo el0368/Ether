@@ -286,4 +286,17 @@ We executed the **Ignition Protocol** (`scripts/ignite.bat`) but encountered per
 -   **Architecture**: Pure Elixir + Jido Agents.
 -   **Stability**: Unbreakable (No NIFs).
 -   **Ready For**: Integration with `EditorChannel` / UI.
--   **Ready For**: Integration with `EditorChannel` / UI.
+
+---
+
+## 2026-01-04: Streaming Architecture (Phase 1)
+
+### Phase 1: Native Foundation
+**Goal**: Memory Safety & Scheduler Citizenship.
+
+**Achievements**:
+- **BeamAllocator**: Implemented a Zig Allocator that maps directly to `enif_alloc`.
+- **Timeslice**: Added cooperative scheduling (`enif_consume_timeslice`) to the recursive scanner.
+- **Clean Build**: Resolved complex VTable signature mismatches in Zig 0.15.2.
+
+**Outcome**: NIF is now safe to run on large directory trees without crashing the VM or leaking memory.

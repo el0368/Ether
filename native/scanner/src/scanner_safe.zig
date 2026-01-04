@@ -24,11 +24,62 @@ const WinNifApi = extern struct {
     release_binary: *const fn (bin: *ErlNifBinary) callconv(.c) void,
     // BEAM Citizenship: Time-slice consumption for polite NIFs
     consume_timeslice: *const fn (env: ?*ErlNifEnv, percent: c_int) callconv(.c) c_int,
+    // Raw Memory Management (for Zig Allocator)
+    alloc: *const fn (size: usize) callconv(.c) ?*anyopaque,
+    free: *const fn (ptr: ?*anyopaque) callconv(.c) void,
 };
 
 // Configuration
 const PARALLEL_THRESHOLD: usize = 50; // Subdirs to trigger parallel mode
 const MAX_THREADS: u32 = 4;
+
+// BeamAllocator Implementation
+const BeamAllocator = struct {
+    api: *const WinNifApi,
+    env: ?*ErlNifEnv,
+
+    pub fn init(api: *const WinNifApi, env: ?*ErlNifEnv) BeamAllocator {
+        return .{ .api = api, .env = env };
+    }
+
+    pub fn allocator(self: *BeamAllocator) std.mem.Allocator {
+        return .{
+            .ptr = self,
+            .vtable = &.{
+                .alloc = alloc,
+                .resize = resize,
+                .remap = remap, // Added remap
+                .free = free,
+            },
+        };
+    }
+
+    fn alloc(ctx: *anyopaque, len: usize, ptr_align: std.mem.Alignment, ret_addr: usize) ?[*]u8 {
+        _ = ptr_align; _ = ret_addr;
+        const self: *BeamAllocator = @ptrCast(@alignCast(ctx));
+        // Use enif_alloc
+        const ptr = self.api.alloc(len) orelse return null;
+        return @as([*]u8, @ptrCast(ptr));
+    }
+
+    fn resize(ctx: *anyopaque, buf: []u8, buf_align: std.mem.Alignment, new_len: usize, ret_addr: usize) bool {
+        _ = ctx; _ = buf; _ = buf_align; _ = new_len; _ = ret_addr;
+        // enif_realloc not exposed, assume no in-place resize
+        return false;
+    }
+
+    fn remap(ctx: *anyopaque, buf: []u8, buf_align: std.mem.Alignment, new_len: usize, ret_addr: usize) ?[*]u8 {
+        _ = ctx; _ = buf; _ = buf_align; _ = new_len; _ = ret_addr;
+        // Return null to indicate that the caller should perform the copy
+        return null;
+    }
+
+    fn free(ctx: *anyopaque, buf: []u8, buf_align: std.mem.Alignment, ret_addr: usize) void {
+        _ = buf_align; _ = ret_addr;
+        const self: *BeamAllocator = @ptrCast(@alignCast(ctx));
+        self.api.free(buf.ptr);
+    }
+};
 
 // Shared context for parallel scanning
 const ScanContext = struct {
@@ -94,7 +145,10 @@ export fn zig_scan(env: ?*ErlNifEnv, argc: c_int, argv: [*c]const ERL_NIF_TERM, 
     };
     defer dir.close();
 
-    const allocator = std.heap.page_allocator;
+    // Use BEAM Allocator
+    var beam_alloc = BeamAllocator.init(api, env);
+    const allocator = beam_alloc.allocator();
+    
     var buffer = std.ArrayListUnmanaged(u8){};
     defer buffer.deinit(allocator);
 
@@ -115,7 +169,7 @@ export fn zig_scan(env: ?*ErlNifEnv, argc: c_int, argv: [*c]const ERL_NIF_TERM, 
         // BEAM Citizenship: Report work every 100 iterations
         // This allows the Erlang scheduler to balance load across cores
         if (iteration_count % 100 == 0) {
-            _ = api.consume_timeslice(env, 1); // 1% timeslice consumed
+            _ = api.consume_timeslice(env, 1); // 1% timeslice consumed per 100 files
         }
 
         // Always add top-level entry to buffer
@@ -149,6 +203,8 @@ export fn zig_scan(env: ?*ErlNifEnv, argc: c_int, argv: [*c]const ERL_NIF_TERM, 
 
         // Create thread pool
         var pool: std.Thread.Pool = undefined;
+        // We use allocator for pool structure, but threads manage their own stack.
+        // std.Thread.Pool uses the passed allocator for internal queues.
         pool.init(.{ .allocator = allocator, .n_jobs = MAX_THREADS }) catch {
             // Fallback to sequential if pool fails
             for (subdirs.items) |subdir_name| {

@@ -611,3 +611,31 @@ This replaces the previous C implementation and solves Windows linking issues us
 | `docs/governance/ZIG_BEAM_AUDIT.md` | New document |
 | `test/aether/native/integrity_test.exs` | New tests |
 
+
+---
+
+## Session 14: Streaming Architecture - Phase 1 (2026-01-04)
+**Date**: 2026-01-04
+**Status**: SUCCESS
+
+### 🏗️ Phase 1: Native Foundation (Zig Level)
+**Goal**: Prepare the Native NIF for high-performance streaming by integrating deeply with the BEAM memory management and scheduler.
+
+### Achievements
+- **BeamAllocator**: Replaced `std.heap.page_allocator` with a custom `BeamAllocator` that wraps `enif_alloc`/`enif_free`.
+  - Solves memory leaks by delegating lifecycle to the BEAM.
+  - Implements Zig 0.15 `std.mem.Allocator` VTable (including `remap` support).
+- **BEAM Citizenship**:
+  - Injected `enif_consume_timeslice` into the hot recursive scanning loop.
+  - Reports 1% timeslice consumption every 100 files loops to prevent scheduler starvation.
+- **Verification**:
+  - Unlocked `scanner.dll` by terminating zero-pid artifacts.
+  - Passed `integrity_test.exs`: No memory leaks verified.
+
+### Files Changed
+- `native/scanner/src/scanner_safe.zig` (Allocator Refactor)
+- `native/scanner/src/entry.c` (Alloc Wrapper)
+- `test/aether/native/integrity_test.exs` (Tests)
+
+### Next Steps
+- Implement `enif_send` for asynchronous chunk streaming.

@@ -25,10 +25,22 @@ typedef struct {
     // Raw Memory Management (for Zig Allocator)
     void* (*alloc)(size_t size);
     void (*free)(void* ptr);
+
+    // Messaging
+    int (*get_local_pid)(ErlNifEnv* env, ERL_NIF_TERM term, void* pid);
+    int (*send)(ErlNifEnv* env, const void* to_pid, ErlNifEnv* msg_env, ERL_NIF_TERM msg);
 } WinNifApi;
 
 // Declare Zig function
 extern ERL_NIF_TERM zig_scan(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[], const WinNifApi* api);
+
+static int wrap_get_local_pid(ErlNifEnv* env, ERL_NIF_TERM term, void* pid) {
+    return enif_get_local_pid(env, term, (ErlNifPid*)pid);
+}
+
+static int wrap_send(ErlNifEnv* env, const void* to_pid, ErlNifEnv* msg_env, ERL_NIF_TERM msg) {
+    return enif_send(env, (const ErlNifPid*)to_pid, msg_env, msg);
+}
 
 static ERL_NIF_TERM scan_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     WinNifApi api;
@@ -44,12 +56,14 @@ static ERL_NIF_TERM scan_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM ar
     api.consume_timeslice = enif_consume_timeslice; // BEAM Citizenship
     api.alloc = enif_alloc;
     api.free = enif_free;
+    api.get_local_pid = wrap_get_local_pid;
+    api.send = wrap_send;
 
     return zig_scan(env, argc, argv, &api);
 }
 
 static ErlNifFunc nif_funcs[] = {
-    {"scan_nif", 1, scan_wrapper, ERL_NIF_DIRTY_JOB_IO_BOUND}
+    {"scan_nif", 2, scan_wrapper, ERL_NIF_DIRTY_JOB_IO_BOUND}
 };
 
 ERL_NIF_INIT(Elixir.Aether.Native.Scanner, nif_funcs, NULL, NULL, NULL, NULL)

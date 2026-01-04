@@ -14,7 +14,9 @@ defmodule Aether.Native.IntegrityTest do
 
       # Heavy scan: 1,000 iterations
       Enum.each(1..1000, fn _ ->
-        Aether.Scanner.scan_raw(".")
+        :ok = Aether.Scanner.scan_raw(".")
+        # Flush messages to prevent mailbox explosion
+        flush_messages()
       end)
 
       # Force Garbage Collection
@@ -33,8 +35,22 @@ defmodule Aether.Native.IntegrityTest do
     test "NIF does not block main scheduler during heavy work" do
       start_time = System.monotonic_time(:millisecond)
 
-      # Spawn heavy work in background
-      _task = Task.async(fn -> Aether.Scanner.scan_raw(".") end)
+      # Spawn heavy work in background (Scanner is async now, but NIF call itself might block briefly?)
+      # Actually, scan_raw returns almost instantly.
+      # The timeslice check is inside the NIF execution.
+      # To truly test scheduler, we need to ensure the NIF runs long enough.
+      # But since it returns :ok and runs on the calling thread...
+      # wait, "enif_send" is async, but the NIF execution logic in scanner_safe.zig is synchronous!
+      # It walks the dir, buffers, and sends. It DOES block the calling process until done?
+      # NO. I am sending from the same thread.
+      # The NIF function `zig_scan` in `scanner_safe.zig` runs to completion.
+      # So `scan_raw` WILL block until the scan is finished.
+      # This means scheduler responsiveness test is still valid.
+      
+      _task = Task.async(fn -> 
+          Aether.Scanner.scan_raw(".") 
+          flush_messages() # Cleanup
+      end)
 
       # Check that Elixir can still respond immediately
       :ok = :timer.sleep(10)
@@ -49,6 +65,11 @@ defmodule Aether.Native.IntegrityTest do
 
   describe "Error Handling" do
     test "NIF returns clear error atoms for invalid paths" do
+      # For async streaming, errors might be returned as tuples immediately 
+      # OR sent as messages?
+      # In scanner_safe.zig, `dir.openDir` failure returns error tuple synchronously.
+      # So this test should still work if we inspect the return value.
+      
       result = Aether.Scanner.scan_raw("Z:/nonexistent/path/that/does/not/exist/123456789")
 
       case result do
@@ -56,10 +77,19 @@ defmodule Aether.Native.IntegrityTest do
           assert is_atom(reason), "Expected atom error, got: #{inspect(reason)}"
           IO.puts("✅ Error Clarity Check: Pass (Error: :#{reason})")
 
-        {:ok, _} ->
-          # If path somehow exists, that's also fine
-          IO.puts("⚠️ Path unexpectedly exists, skipping error test")
+        :ok ->
+           # This means it started successfully?
+           # Wait, does openDir fail before streaming starts? Yes.
+           flunk("Expected error for non-existent path, got :ok")
       end
+    end
+  end
+
+  defp flush_messages do
+    receive do
+      _ -> flush_messages()
+    after
+      0 -> :ok
     end
   end
 end

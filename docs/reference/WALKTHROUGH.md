@@ -299,4 +299,12 @@ We executed the **Ignition Protocol** (`scripts/ignite.bat`) but encountered per
 - **Timeslice**: Added cooperative scheduling (`enif_consume_timeslice`) to the recursive scanner.
 - **Clean Build**: Resolved complex VTable signature mismatches in Zig 0.15.2.
 
-**Outcome**: NIF is now safe to run on large directory trees without crashing the VM or leaking memory.
+### Phase 2: Asynchronous Reflex
+**Goal**: Streaming Data Pipeline.
+
+**Achievements**:
+- **Protocol**: `{:binary, Blob}` chunks + `{:scan_completed, :ok}` signal.
+- **Mechanism**: Push-based streaming from Zig to Elixir Process.
+- **Latency**: Zero blocking on the receiver side (after NIF return/async).
+
+**Outcome**: Data flows immediately to the system, enabling progressive UI rendering.

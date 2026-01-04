@@ -637,5 +637,21 @@ This replaces the previous C implementation and solves Windows linking issues us
 - `native/scanner/src/entry.c` (Alloc Wrapper)
 - `test/aether/native/integrity_test.exs` (Tests)
 
-### Next Steps
-- Implement `enif_send` for asynchronous chunk streaming.
+### ⚡ Phase 2: Asynchronous Reflex
+**Goal**: Switch from "Stop-the-World" to "Firehose" streaming.
+
+**Achievements**:
+- **Messaging Shim**: Exposed `enif_send` and `enif_get_local_pid` in `entry.c` without needing `erl_nif.h` in Zig.
+- **Streaming Implementation**:
+  - Zig scanner now accepts a `dest_pid`.
+  - Buffers results into 1000-file chunks.
+  - Flushes chunks via `enif_send` (`{:binary, Bin}`).
+  - Sends `{:scan_completed, :ok}` signal on finish.
+- **Verification**:
+  - Validated with `streaming_test.exs`: Received multiple chunks and completion signal for 1500 files.
+
+### Files Changed
+- `native/scanner/src/entry.c` (Added messaging wrappers)
+- `native/scanner/src/scanner_safe.zig` (Streaming Logic)
+- `lib/aether/native/scanner.ex` (Arity Update)
+

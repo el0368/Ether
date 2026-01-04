@@ -6,12 +6,6 @@
 - [ ] **Window:** Implement Frameless Window (Acrylic/Mica transparency).
 - [ ] **Menu:** Native System Menu integration.
 
-## 🐘 PostgreSQL
-- **Role:** Persistent State (Project history, User settings, AI Memory).
-- **Status:** Temporarily Disabled to fix startup.
-- [ ] **Re-enable:** Uncomment `Aether.Repo` in supervision tree.
-- [ ] **Vector Search:** `pgvector` for AI embeddings.
-
 ## 🛠️ Tooling & Scripts
 - **Role:** Developer Experience (DX).
 - ✅ `start_dev.bat`: The golden path.

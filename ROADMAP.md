@@ -12,9 +12,10 @@ This is the central index for all project plans.
 
 ### Features & Infrastructure
 -   **[🤖 AI Agent Plan](docs/plans/ai_agent.md)**: Jido, Commander, Vector Memory.
+-   **[🦀 Rust Plan](docs/plans/rust.md)**: Tauri Shell, Windowing, Menus.
 -   **[🐘 PostgreSQL Plan](docs/plans/postgresql.md)**: Persistence, pgvector.
 -   **[🖌️ Tailwind CSS Plan](docs/plans/tailwind.md)**: Theme Migration.
--   **[🏗️ Infrastructure Plan](docs/plans/infrastructure.md)**: Rust/Tauri, Tooling.
+-   **[🏗️ Infrastructure Plan](docs/plans/infrastructure.md)**: Tooling, Distribution, CI.
 
 ### Governance & Tracking
 -   **[🧪 Testing Plan](docs/plans/test.md)**: Unit, Native, and E2E strategies.

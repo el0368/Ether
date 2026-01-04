@@ -15,7 +15,9 @@ if %ERRORLEVEL% neq 0 (
 
 :: Verify Environment
 if not defined ERL_ROOT (
-    if exist "C:\Program Files\Erlang OTP" (
+    if exist "C:\Program Files\Erlang OTP\283" (
+        set "ERL_ROOT=C:\Program Files\Erlang OTP\283"
+    ) else if exist "C:\Program Files\Erlang OTP" (
         set "ERL_ROOT=C:\Program Files\Erlang OTP"
     ) else (
         echo [Error] ERL_ROOT not found.
@@ -28,6 +30,11 @@ echo [Info] ERL_ROOT detected: %ERL_ROOT%
 :: Locate the include directory (handling version variance if needed)
 :: Using quotes in set to handle spaces
 for /d %%D in ("%ERL_ROOT%\erts-*") do set "ERTS_DIR=%%D"
+if not defined ERTS_DIR (
+    echo [Error] No ERTS directory found in %ERL_ROOT%
+    dir "%ERL_ROOT%"
+    exit /b 1
+)
 set "ERL_INCLUDE=%ERTS_DIR%\include"
 
 if not exist "%ERL_INCLUDE%\erl_nif.h" (

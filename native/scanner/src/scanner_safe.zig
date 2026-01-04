@@ -100,7 +100,12 @@ export fn zig_scan(env: ?*ErlNifEnv, argc: c_int, argv: [*c]const ERL_NIF_TERM, 
 
     // First pass: count entries and collect subdirs
     var subdirs = std.ArrayListUnmanaged([]const u8){};
-    defer subdirs.deinit(allocator);
+    defer {
+        for (subdirs.items) |subdir| {
+            allocator.free(subdir);
+        }
+        subdirs.deinit(allocator);
+    }
 
     var iterator = dir.iterate();
     var iteration_count: usize = 0;

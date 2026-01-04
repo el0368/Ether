@@ -5,7 +5,8 @@ chcp 65001 >nul
 echo 🌌 [Aether] Initializing Industrial Environment...
 
 :: 🛠️ ENVIRONMENT CONFIG
-set "PATH=C:\Program Files\nodejs;C:\Program Files\Git\cmd;C:\Elixir\elixir-otp-28\bin;C:\Program Files\Erlang OTP\bin;%PATH%"
+:: Removed hardcoded paths to rely on system PATH, or set them correctly if needed.
+:: set "PATH=C:\Program Files\nodejs;C:\Program Files\Git\cmd;C:\Elixir\elixir-otp-28\bin;C:\Program Files\Erlang OTP\bin;%PATH%"
 
 where nmake >nul 2>nul
 if %ERRORLEVEL% neq 0 (

@@ -4,7 +4,7 @@
 - **S**velte 5 (Runes: `$state`, `$derived`, `$effect`)
 - **P**hoenix 1.8+
 - **E**lixir/Erlang BEAM
-- **L**ucide Icons + Tailwind CSS + DaisyUI
+- **L**ucide Icons + Tailwind CSS
 
 ## Core Principles
 

@@ -18,4 +18,21 @@ defmodule Aether.ScannerTest do
     [{path, _type} | _] = Scanner.scan(".")
     assert Path.type(path) == :absolute
   end
+  describe "Parallel Scan" do
+    @tag :tmp_dir
+    test "scans directory with many subdirs (triggers parallel logic)", %{tmp_dir: tmp_dir} do
+      # Create 60 subdirectories to trigger PARALLEL_THRESHOLD (50)
+      for i <- 1..60 do
+        File.mkdir!(Path.join(tmp_dir, "sub_#{i}"))
+        File.write!(Path.join([tmp_dir, "sub_#{i}", "file.txt"]), "content")
+      end
+
+      # Scan
+      files = Aether.Scanner.scan(tmp_dir)
+      
+      # Verify: 60 subdirs + 60 files = 120 entries
+      # Note: logic depends on if main dir is included, usually scan returns children.
+      assert length(files) == 120
+    end
+  end
 end

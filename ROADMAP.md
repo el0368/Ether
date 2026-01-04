@@ -23,6 +23,7 @@ This is the central index for all project plans.
 -   **[🧪 Testing Plan](docs/plans/test.md)**: Unit, Native, and E2E strategies.
 -   **[🔍 Zig Testing Plan](docs/plans/zig-test.md)**: Specialized native integrity testing.
 -   **[🐛 Bug & Stability Plan](docs/plans/bug.md)**: Known issues and fixes.
+-   **[🔝 Progressive Priority](docs/plans/progressive-priority.md)**: Task tiers and execution order.
 -   **[📈 Progress Log](docs/plans/progress.md)**: Changelog and Milestones.
 
 ---

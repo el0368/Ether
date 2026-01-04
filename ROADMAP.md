@@ -4,6 +4,11 @@ This is the central index for all project plans.
 
 ## 📂 [Detailed Plans](docs/plans/)
 
+### 🎓 Aether Academy (The Education Pivot)
+-   **[📍 Academy Mission](docs/plans/academy/mission.md)**: Pivot Vision & Values.
+-   **[🏗️ Authoring Engine](docs/plans/academy/authoring_engine.md)**: The "Back-Stage" Studio.
+-   **[📝 Content Schema](docs/plans/academy/content_schema.md)**: Metadata & Exercise formats.
+
 ### Core Architecture
 -   **[⚡ Zig Native Plan](docs/plans/zig.md)**: Native extensions, NIF safety.
 -   **[🧹 Zig Refactor Plan](docs/plans/zig-refactor.md)**: Native layer cleanup and optimization.

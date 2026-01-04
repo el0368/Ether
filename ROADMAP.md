@@ -9,6 +9,7 @@ This is the central index for all project plans.
 -   **[🧹 Zig Refactor Plan](docs/plans/zig-refactor.md)**: Native layer cleanup and optimization.
 -   **[💧 Elixir Backend Plan](docs/plans/elixir.md)**: Agents, GenServers Logic.
 -   **[🔥 Phoenix Plan](docs/plans/phoenix.md)**: Channels, Presence.
+-   **[🔄 All Synchronize Plan](docs/plans/all-synchronize.md)**: Cross-layer data flow.
 -   **[🎨 Svelte Frontend Plan](docs/plans/svelte.md)**: UI, Runes, Virtualization.
 
 ### Features & Infrastructure

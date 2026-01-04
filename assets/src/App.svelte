@@ -47,7 +47,12 @@
 
   // Socket Connection
   $effect(() => {
+    let cleanUp = () => {};
+
     if (socket && !channel) {
+      // Hoist batchTimer so it's accessible to cleanUp
+      let batchTimer = null;
+
       const ch = socket.channel("editor:lobby", {});
       ch.join()
         .receive("ok", (resp) => {
@@ -57,14 +62,65 @@
 
           triggerPulse();
 
+          // UI Batching State
+          let pendingFiles = [];
+          // batchTimer used from outer scope
+
+          function flushBatch() {
+            if (pendingFiles.length > 0) {
+              // Safety: concat is slower than push but safer for stack limits
+              // Svelte 5 $state array proxy handles large arrays reasonable well?
+              // Reassignment `fileTree = fileTree.concat(pendingFiles)` triggers update
+              // But let's verify if pendingFiles is HUGE. if so, chunk it?
+              // For now, let's use a safe push loop or concat.
+              // Mutating fileTree in batches.
+              try {
+                // If pendingFiles is excessively large, stack overflow on ...spread
+                // Using loop is safer
+                if (pendingFiles.length > 5000) {
+                  // Reassignment is safest for huge updates
+                  fileTree = [...fileTree, ...pendingFiles];
+                  // Warning: Spread here ALSO risks stack overflow if fileTree is huge?
+                  // No, invalid spread syntax `...` applies to arguments.
+                  // `[...arr]` is usually optimized but can still hit limits.
+                  // `Array.prototype.push.apply` fails on large.
+                  // Loop is safest.
+                } else {
+                  fileTree.push(...pendingFiles);
+                }
+              } catch (e) {
+                console.error("Batch Flush Error:", e);
+                // Fallback: Slow loop
+                for (const f of pendingFiles) {
+                  fileTree.push(f);
+                }
+              }
+              pendingFiles = [];
+            }
+          }
+
+          // Start Batch Timer (20fps updates is enough for smooth UI without choking)
+          batchTimer = setInterval(flushBatch, 50);
+
           // Streaming Protocol
           ch.on("filetree:chunk", (payload) => {
-            const newFiles = NifDecoder.decodeChunk(payload.chunk, ".");
-            // Incrementally update state
-            fileTree.push(...newFiles);
+            try {
+              const newFiles = NifDecoder.decodeChunk(payload.chunk, ".");
+              // Buffer updates instead of triggering state immediately
+              // Use push loop to avoid stack limit on `push(...newFiles)` if chunk is huge
+              // Though chunk is usually 1000.
+              for (let i = 0; i < newFiles.length; i++) {
+                pendingFiles.push(newFiles[i]);
+              }
+            } catch (e) {
+              console.error("Chunk Error:", e);
+            }
           });
 
           ch.on("filetree:done", () => {
+            // Flush remaining
+            flushBatch();
+
             // Final Sort
             fileTree.sort((a, b) => {
               if (a.type === "directory" && b.type !== "directory") return -1;
@@ -97,7 +153,13 @@
           ch.push("filetree:list_raw", { path: "." });
         })
         .receive("error", (resp) => console.error("Failed", resp));
+
+      cleanUp = () => {
+        if (batchTimer) clearInterval(batchTimer);
+        if (channel) channel.leave();
+      };
     }
+    return cleanUp;
   });
 
   function openFile(file) {

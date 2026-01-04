@@ -13,18 +13,23 @@ export class NifDecoder {
     private static decoder = new TextDecoder('utf-8');
 
     static decodeChunk(chunk: string | Uint8Array, root: string): FileEntry[] {
-        let buffer: Uint8Array;
-        if (typeof chunk === 'string') {
-            const binaryString = atob(chunk);
-            const length = binaryString.length;
-            buffer = new Uint8Array(length);
-            for (let i = 0; i < length; i++) {
-                buffer[i] = binaryString.charCodeAt(i);
+        try {
+            let buffer: Uint8Array;
+            if (typeof chunk === 'string') {
+                const binaryString = atob(chunk);
+                const length = binaryString.length;
+                buffer = new Uint8Array(length);
+                for (let i = 0; i < length; i++) {
+                    buffer[i] = binaryString.charCodeAt(i);
+                }
+            } else {
+                buffer = chunk;
             }
-        } else {
-            buffer = chunk;
+            return this.decode(buffer, root);
+        } catch (e) {
+            console.error("NifDecoder Error:", e);
+            return [];
         }
-        return this.decode(buffer, root);
     }
 
     static decode(buffer: Uint8Array, root: string): FileEntry[] {

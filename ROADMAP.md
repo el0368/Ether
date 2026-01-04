@@ -8,6 +8,7 @@ This is the central index for all project plans.
 -   **[📍 Academy Mission](docs/plans/academy/mission.md)**: Pivot Vision & Values.
 -   **[🏗️ Authoring Engine](docs/plans/academy/authoring_engine.md)**: The "Back-Stage" Studio.
 -   **[⚡ Zig Academy Plan](docs/plans/academy/zig-academy.md)**: Native Content Engine.
+-   **[💧 Elixir Academy Plan](docs/plans/academy/elixir-academy.md)**: Curriculum Agents & Logic.
 -   **[📝 Content Schema](docs/plans/academy/content_schema.md)**: Metadata & Exercise formats.
 
 ### Core Architecture

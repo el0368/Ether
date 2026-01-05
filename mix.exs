@@ -1,9 +1,9 @@
-defmodule Aether.MixProject do
+defmodule Ether.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :aether,
+      app: :ether,
       version: "0.1.0",
       elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -20,7 +20,7 @@ defmodule Aether.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {Aether.Application, []},
+      mod: {Ether.Application, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end
@@ -85,7 +85,7 @@ defmodule Aether.MixProject do
 
   def releases do
     [
-      aether: [
+      ether: [
         steps: [:assemble, &Burrito.wrap/1],
         burrito: [
           targets: [
@@ -112,10 +112,10 @@ defmodule Aether.MixProject do
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
-      "assets.build": ["compile", "tailwind aether", "esbuild aether"],
+      "assets.build": ["compile", "tailwind ether", "esbuild ether"],
       "assets.deploy": [
-        "tailwind aether --minify",
-        "esbuild aether --minify",
+        "tailwind ether --minify",
+        "esbuild ether --minify",
         "phx.digest"
       ],
       precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"]

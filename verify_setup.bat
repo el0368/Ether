@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableDelayedExpansion
-title Aether Setup Verification
+title Ether Setup Verification
 
 :: Define ANSI Colors
 for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do (
@@ -18,7 +18,7 @@ cls
 
 echo.
 echo  ============================================
-echo   AETHER IDE - Full Setup Verification
+echo   ETHER IDE - Full Setup Verification
 echo  ============================================
 echo   This will test all parts of your project.
 echo  ============================================
@@ -48,7 +48,7 @@ if !ERRORLEVEL! NEQ 0 (
 echo [TEST 2/7] Checking NIF Scanner...
 set "SCANNER_FOUND=0"
 if exist "priv\native\scanner_nif.dll" set "SCANNER_FOUND=1"
-if exist "_build\dev\lib\aether\priv\native\scanner_nif.dll" set "SCANNER_FOUND=1"
+if exist "_build\dev\lib\ether\priv\native\scanner_nif.dll" set "SCANNER_FOUND=1"
 if exist "native\scanner\scanner_nif.dll" set "SCANNER_FOUND=1"
 
 if "!SCANNER_FOUND!"=="1" (
@@ -159,7 +159,7 @@ echo.
 if !ERRORS! GTR 0 (
     echo   %RED%STATUS: !ERRORS! TEST^(S^) FAILED%RESET%
     echo.
-    echo   Fix the issues above before running Aether.
+    echo   Fix the issues above before running Ether.
 ) else (
     echo   %GREEN%STATUS: ALL TESTS PASSED!%RESET%
     echo.

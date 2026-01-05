@@ -40,9 +40,9 @@ This document tracks the "citizenship status" of our Zig NIF code within the BEA
 
 | Test | Location | Status |
 |------|----------|--------|
-| Memory Leak Detection | `test/aether/native/integrity_test.exs` | ✅ |
-| Scheduler Blocking | `test/aether/native/integrity_test.exs` | ✅ |
-| Error Clarity | `test/aether/native/integrity_test.exs` | ✅ |
+| Memory Leak Detection | `test/ether/native/integrity_test.exs` | ✅ |
+| Scheduler Blocking | `test/ether/native/integrity_test.exs` | ✅ |
+| Error Clarity | `test/ether/native/integrity_test.exs` | ✅ |
 
 ---
 

@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-echo [Aether] Starting Comprehensive System Audit...
+echo [Ether] Starting Comprehensive System Audit...
 echo =================================================
 
 :: 1. Run Unit Tests (Logic)

@@ -128,7 +128,7 @@ async function generate() {
     <!-- Header -->
     <header class="max-w-7xl mx-auto mb-12 flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
-            <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 tracking-tight">AETHER KNOWLEDGE BASE</h1>
+            <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 tracking-tight">ETHER KNOWLEDGE BASE</h1>
             <p class="text-slate-400 mt-2 text-lg">System Intelligence & Governance Dashboard</p>
         </div>
         <div class="text-right flex flex-col items-end">

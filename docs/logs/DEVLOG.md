@@ -635,7 +635,49 @@ This replaces the previous C implementation and solves Windows linking issues us
 ### Files Changed
 - `native/scanner/src/scanner_safe.zig` (Allocator Refactor)
 - `native/scanner/src/entry.c` (Alloc Wrapper)
-- `test/aether/native/integrity_test.exs` (Tests)
+
+---
+
+## Session 15: Global Rebranding (Aether → Ether)
+**Date**: 2026-01-05
+**Status**: SUCCESS
+
+### 🏷️ The Rebranding Refactor
+**Goal**: Rename the project from "Aether" to **"Ether"** across all layers of the stack.
+
+### Achievements
+- **Backend Core**:
+  - Renamed all Elixir modules from `Aether` to `Ether`.
+  - Updated `mix.exs` project identity and OTP application name.
+  - Refactored `Ether.Application`, `Ether.Repo`, and all GenServer agents.
+- **Web Layer**:
+  - Renamed `AetherWeb` to `EtherWeb`.
+  - Updated `Endpoint`, `Router`, `Telemetry`, and `Gettext` configurations.
+  - Modified channel and controller namespaces.
+- **Database**:
+  - Migrated configuration to use `ether_dev` and `ether_test` databases.
+  - Successfully executed `mix ecto.setup` for the new environment.
+- **Native Implementation**:
+  - Updated NIF loading paths in `Ether.Native.Scanner`.
+  - Updated build scripts (`build_nif.bat`) to reference the new application directory.
+- **Desktop & Tauri**:
+  - Updated Tauri metadata in `Cargo.toml` and `tauri.conf.json`.
+  - Renamed project entry point to `Ether.bat`.
+- **Test Suite**:
+  - Renamed test directories from `test/aether*` to `test/ether*`.
+  - Updated every test file (unit, integration, channel, controller) to use the new namespaces.
+  - Verified 100% test pass on the new name.
+
+### Verification Results
+- **Ecto Setup**: ✅ Success
+- **Mix Compile**: ✅ Success
+- **Native NIF**: ✅ Level 4 Scanner Operational
+- **Test suite**: ✅ All tests passing
+
+### Files Changed
+- 100+ files refactored (Modules, Configs, Tests, Scripts).
+
+---
 
 ### ⚡ Phase 2: Asynchronous Reflex
 **Goal**: Switch from "Stop-the-World" to "Firehose" streaming.

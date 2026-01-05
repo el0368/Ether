@@ -52,12 +52,12 @@ if %ERRORLEVEL% neq 0 (
 )
 
 :: 🚀 LAUNCH
-echo [5/5] Launching Aether...
+echo [5/5] Launching Ether...
 echo.
 echo       Starting Backend (Port 4000)...
 
 :: Start Backend in separate window
-start "Aether Backend" cmd /k "cd /d %~dp0 && mix phx.server"
+start "Ether Backend" cmd /k "cd /d %~dp0 && mix phx.server"
 
 :: Wait for Backend to be ready
 echo       Waiting for Backend...

@@ -1,9 +1,8 @@
-
 # Script to verify Native Scanner NIF
 IO.puts("== Verifying Native Scanner ==")
 
 try do
-  case Aether.Native.Scanner.scan("C:/") do
+  case Ether.Native.Scanner.scan("C:/") do
     {:ok, msg} -> 
       IO.puts("SUCCESS: NIF Loaded and Executed.")
       IO.puts("Returned: #{inspect(msg)}")

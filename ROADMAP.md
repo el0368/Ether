@@ -1,10 +1,10 @@
-# 🗺️ Aether Project Roadmap
+# 🗺️ Ether Project Roadmap
 
 This is the central index for all project plans.
 
 ## 📂 [Detailed Plans](docs/plans/)
 
-### 🎓 Aether Academy (The Education Pivot)
+### 🎓 Ether Academy (The Education Pivot)
 -   **[📍 Academy Mission](docs/plans/academy/mission.md)**: Pivot Vision & Values.
 -   **[🏗️ Authoring Engine](docs/plans/academy/authoring_engine.md)**: The "Back-Stage" Studio.
 -   **[⚡ Zig Academy Plan](docs/plans/academy/zig-academy.md)**: Native Content Engine.

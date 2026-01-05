@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-echo [Aether] Building Native Scanner via Manual Protocol...
+echo [Ether] Building Native Scanner via Manual Protocol...
 
 :: Add known Zig path to environment (Bootstrap)
 set "PATH=C:\Users\Administrator\AppData\Local\zigler\Cache\zig-x86_64-windows-0.15.2;%PATH%"

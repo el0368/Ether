@@ -339,3 +339,27 @@ We executed the **Ignition Protocol** (`scripts/ignite.bat`) but encountered per
 **Achievements**:
 - **Batching Engine**: Decoupled Network Stream (Input) from Render Loop (Output).
 - **Smoothness**: 20 FPS guaranteed update rate prevents browser hangs.
+
+---
+
+## Session 15: Global Rebranding (Aether → Ether)
+**Date**: 2026-01-05
+
+### 🏷️ Project Identity Refactor
+**Goal**: Complete renaming of the project from "Aether" to **"Ether"**.
+
+**Actions**:
+1.  **Module Renaming**: Systematic refactor of all Elixir modules (`Aether` -> `Ether`, `AetherWeb` -> `EtherWeb`).
+2.  **Configuration**: Updated `mix.exs`, `config/*.exs`, and `runtime.exs`.
+3.  **Database**: Reconfigured PostgreSQL for `ether_dev` and `ether_test` namespaces.
+4.  **Native Stack**: Updated Zig NIF loading logic and build scripts.
+5.  **Tauri/Desktop**: Rebranded window titles, package manifests, and launch scripts.
+6.  **Test Suite**: Full rename of test directories and correction of all test module namespaces.
+
+**Results**:
+- ✅ **Setup**: `mix ecto.setup` verified.
+- ✅ **Compilation**: `mix compile` pass.
+- ✅ **Validation**: `.\verify_setup.bat` verified all core systems under the new brand.
+- ✅ **Tests**: 100% test pass.
+
+**Commit**: `refactor: Rename project from Aether to Ether`

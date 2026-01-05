@@ -7,28 +7,28 @@
 # General application configuration
 import Config
 
-config :aether,
-  ecto_repos: [Aether.Repo],
+config :ether,
+  ecto_repos: [Ether.Repo],
   generators: [timestamp_type: :utc_datetime]
 
 # Unbreakable Zig Protocol: Local binary management
 config :zigler, local_zig: true
 
 # Configure the endpoint
-config :aether, AetherWeb.Endpoint,
+config :ether, EtherWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
-    formats: [html: AetherWeb.ErrorHTML, json: AetherWeb.ErrorJSON],
+    formats: [html: EtherWeb.ErrorHTML, json: EtherWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: Aether.PubSub,
+  pubsub_server: Ether.PubSub,
   live_view: [signing_salt: "VaPmyk8J"]
 
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",
-  aether: [
+  ether: [
     args:
       ~w(js/app.js --bundle --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=.),
     cd: Path.expand("../assets", __DIR__),

@@ -1,6 +1,6 @@
 @echo off
 echo ============================================
-echo   Aether Environment Auditor
+echo   Ether Environment Auditor
 echo ============================================
 echo.
 

@@ -1,11 +1,11 @@
 import Config
 
 # Configure your database
-config :aether, Aether.Repo,
+config :ether, Ether.Repo,
   username: "postgres",
   password: "a",
   hostname: "localhost",
-  database: "aether_dev",
+  database: "ether_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
@@ -16,7 +16,7 @@ config :aether, Aether.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
-config :aether, AetherWeb.Endpoint,
+config :ether, EtherWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {0, 0, 0, 0}, port: 4000],
@@ -53,20 +53,20 @@ config :aether, AetherWeb.Endpoint,
 # different ports.
 
 # Reload browser tabs when matching files change.
-config :aether, AetherWeb.Endpoint,
+config :ether, EtherWeb.Endpoint,
   live_reload: [
     web_console_logger: true,
     patterns: [
       # Gettext translations
       ~r"priv/gettext/.*\.po$"E,
       # Router, Controllers, LiveViews and LiveComponents
-      ~r"lib/aether_web/router\.ex$"E,
-      ~r"lib/aether_web/(controllers|live|components)/.*\.(ex|heex)$"E
+      ~r"lib/ether_web/router\.ex$"E,
+      ~r"lib/ether_web/(controllers|live|components)/.*\.(ex|heex)$"E
     ]
   ]
 
 # Enable dev routes for dashboard and mailbox
-config :aether, dev_routes: true
+config :ether, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"

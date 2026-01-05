@@ -1,5 +1,5 @@
 @echo off
 cd /d "%~dp0"
-echo Starting Aether Backend...
+echo Starting Ether Backend...
 call cmd /c mix phx.server
 pause

@@ -66,4 +66,4 @@ static ErlNifFunc nif_funcs[] = {
     {"scan_nif", 2, scan_wrapper, ERL_NIF_DIRTY_JOB_IO_BOUND}
 };
 
-ERL_NIF_INIT(Elixir.Aether.Native.Scanner, nif_funcs, NULL, NULL, NULL, NULL)
+ERL_NIF_INIT(Elixir.Ether.Native.Scanner, nif_funcs, NULL, NULL, NULL, NULL)

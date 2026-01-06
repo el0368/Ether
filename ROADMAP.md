@@ -15,6 +15,7 @@ This is the central index for all project plans.
 
 ### Core Architecture
 -   **[⚡ Zig Native Plan](docs/plans/zig.md)**: Native extensions, NIF safety.
+-   **[🔍 Level 6 Readiness](docs/plans/LEVEL6_NATIVE_SEARCH_READINESS.md)**: Preparation for Native Search.
 -   **[🧹 Zig Refactor Plan](docs/plans/zig-refactor.md)**: Native layer cleanup and optimization.
 -   **[💧 Elixir Backend Plan](docs/plans/elixir.md)**: Agents, GenServers Logic.
 -   **[🔥 Phoenix Plan](docs/plans/phoenix.md)**: Channels, Presence.
@@ -44,6 +45,7 @@ This is the central index for all project plans.
 | :--- | :--- | :--- |
 | **Phase 1** | **Native Foundation** (Zig Memory Safety) | ✅ Complete |
 | **Phase 2** | **Async Reflex** (Streaming NIF) | ✅ Complete |
-| **Phase 3** | **Pipeline Squeeze** (Zero-Copy Transfer) | ⚠️ Partial |
+| **Phase 3** | **Native Fusion** (Hybrid Level 5) | ✅ Complete |
 | **Phase 4** | **Client Decoder** (Frontend Performance) | ✅ Complete |
 | **Phase 5** | **Theme Migration** (VS Code Style) | 🚧 In Progress |
+| **Phase 6** | **Native Intelligence** (Level 6 Search) | 📝 Planned |

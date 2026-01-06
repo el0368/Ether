@@ -30,6 +30,13 @@ pub const WinNifApi = extern struct {
     release_resource: *const fn (obj: ?*anyopaque) callconv(.c) void,
     make_resource: *const fn (env: ?*ErlNifEnv, obj: ?*anyopaque) callconv(.c) ERL_NIF_TERM,
     get_resource: *const fn (env: ?*ErlNifEnv, term: ERL_NIF_TERM, objp: *?*anyopaque) callconv(.c) c_int,
+    // Phase 3-4: Type Validation (Defensive API)
+    is_binary: *const fn (env: ?*ErlNifEnv, term: ERL_NIF_TERM) callconv(.c) c_int,
+    is_pid: *const fn (env: ?*ErlNifEnv, term: ERL_NIF_TERM) callconv(.c) c_int,
+    is_list: *const fn (env: ?*ErlNifEnv, term: ERL_NIF_TERM) callconv(.c) c_int,
+    // Phase 3-4: Memory Optimization
+    realloc: *const fn (ptr: ?*anyopaque, size: usize) callconv(.c) ?*anyopaque,
+    realloc_binary: *const fn (bin: *ErlNifBinary, size: usize) callconv(.c) c_int,
 };
 
 /// Helper to create {:error, reason} tuple

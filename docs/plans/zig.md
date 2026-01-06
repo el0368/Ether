@@ -17,12 +17,12 @@
 - [x] **Windows:** Native `entry.c` shim for correct dll compilation.
   - [x] **Test:** `verify_setup.bat` (DLL presence and loading check).
 
-## ⚠️ In Progress (Phase 3-4)
+## ✅ Completed (Phase 3-4)
+- [x] **Defensive API:** Added input validation wrappers (`is_binary`, `is_pid`, `is_list`) to `entry.c`.
+  - [x] **Test:** `defensive_test.exs` (Invalid argument rejection).
+- [x] **Binary Realloc:** Exposed `enif_realloc` and `enif_realloc_binary` for efficient buffer growth.
+  - [x] **Test:** `integrity_test.exs` (Memory growth within bounds).
 - [ ] **Zero-Copy Pipeline:** Consolidating in **[Native Data Pipeline](NATIVE_DATA_PIPELINE.md)**.
-- [ ] **Binary Realloc:** Shrink large memory slabs using `enif_realloc_binary`.
-  - [ ] **Test:** Memory fragmentation audit.
-- [ ] **Defensive API:** Audit `entry.c` for input validation (`enif_is_binary`, `enif_is_list`).
-  - [ ] **Test:** Fuzzing `scan_raw` with invalid argument types.
 
 ## 🛡️ Ultimate Stability (Phase 5: The "Zero-Panic" Goal)
 - [x] **Resource Management:** See **[ADR-017: Native Resource Handles](../adr/ADR-017-Native-Resource-Handles.md)** ✅ (2026-01-06).

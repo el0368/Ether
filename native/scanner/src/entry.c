@@ -72,6 +72,32 @@ static int wrap_get_resource(ErlNifEnv* env, ERL_NIF_TERM term, void** objp) {
 }
 
 // =============================================================================
+// Phase 3-4: Type Validation Wrappers (Defensive API)
+// =============================================================================
+static int wrap_is_binary(ErlNifEnv* env, ERL_NIF_TERM term) {
+    return enif_is_binary(env, term);
+}
+
+static int wrap_is_pid(ErlNifEnv* env, ERL_NIF_TERM term) {
+    return enif_is_pid(env, term);
+}
+
+static int wrap_is_list(ErlNifEnv* env, ERL_NIF_TERM term) {
+    return enif_is_list(env, term);
+}
+
+// =============================================================================
+// Phase 3-4: Binary Realloc (Memory Optimization)
+// =============================================================================
+static void* wrap_realloc(void* ptr, size_t size) {
+    return enif_realloc(ptr, size);
+}
+
+static int wrap_realloc_binary(ErlNifBinary* bin, size_t size) {
+    return enif_realloc_binary(bin, size);
+}
+
+// =============================================================================
 // API Struct definition matching Zig
 // =============================================================================
 typedef struct {
@@ -95,6 +121,15 @@ typedef struct {
     void (*release_resource)(void* obj);
     ERL_NIF_TERM (*make_resource)(ErlNifEnv* env, void* obj);
     int (*get_resource)(ErlNifEnv* env, ERL_NIF_TERM term, void** objp);
+    
+    // Phase 3-4: Type Validation (Defensive API)
+    int (*is_binary)(ErlNifEnv* env, ERL_NIF_TERM term);
+    int (*is_pid)(ErlNifEnv* env, ERL_NIF_TERM term);
+    int (*is_list)(ErlNifEnv* env, ERL_NIF_TERM term);
+    
+    // Phase 3-4: Memory Optimization
+    void* (*realloc)(void* ptr, size_t size);
+    int (*realloc_binary)(ErlNifBinary* bin, size_t size);
 } WinNifApi;
 
 // =============================================================================
@@ -128,6 +163,13 @@ static WinNifApi build_api(void) {
     api.release_resource = wrap_release_resource;
     api.make_resource = wrap_make_resource;
     api.get_resource = wrap_get_resource;
+    // Phase 3-4: Type Validation
+    api.is_binary = wrap_is_binary;
+    api.is_pid = wrap_is_pid;
+    api.is_list = wrap_is_list;
+    // Phase 3-4: Memory Optimization
+    api.realloc = wrap_realloc;
+    api.realloc_binary = wrap_realloc_binary;
     return api;
 }
 

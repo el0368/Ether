@@ -101,6 +101,14 @@ pub export fn zig_scan(
 ) api.ERL_NIF_TERM {
     if (argc != 2) return nif_api.make_badarg(env);
 
+    // Phase 3-4: Defensive Input Validation
+    if (nif_api.is_binary(env, argv[0]) == 0) {
+        return api.make_error_tuple(env, nif_api, "invalid_path_type");
+    }
+    if (nif_api.is_pid(env, argv[1]) == 0) {
+        return api.make_error_tuple(env, nif_api, "invalid_pid_type");
+    }
+
     // 1. Parse Path
     var path_bin: api.ErlNifBinary = undefined;
     if (nif_api.inspect_binary(env, argv[0], &path_bin) == 0) {

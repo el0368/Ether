@@ -11,7 +11,7 @@ Consolidate the "Zero-Copy", "Binary Protocol", and "Sync Loop" efforts into a s
 - **Optimization:** Use **Zero-Copy** (pass binary pointer directly) to Elixir.
 
 ### 2. Brain (Elixir Orchestrator)
-- **Role:** Receive binary blobs in `Aether.Native.Scanner`.
+- **Role:** Receive binary blobs in `Ether.Native.Scanner`.
 - **Logic:** Do NOT decode the binary in Elixir.
 - **Transport:** Pass raw binary frames over Phoenix Channels (Standardizing on `{:binary, data}`).
 

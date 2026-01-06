@@ -13,7 +13,7 @@
 - [x] **Async:** Implemented `enif_send` for non-blocking file streaming.
   - [x] **Test:** `integrity_test.exs` (Message flushing validation).
 - [x] **Unicode:** Full support for Emoji paths (`🚀`) via `lib/std`.
-  - [ ] **Test:** Add specific Unicode/Emoji path test case.
+  - [x] **Test:** `streaming_test.exs` (Unicode/Emoji stress test).
 - [x] **Windows:** Native `entry.c` shim for correct dll compilation.
   - [x] **Test:** `verify_setup.bat` (DLL presence and loading check).
 
@@ -25,8 +25,7 @@
   - [ ] **Test:** Fuzzing `scan_raw` with invalid argument types.
 
 ## 🛡️ Ultimate Stability (Phase 5: The "Zero-Panic" Goal)
-- [ ] **Resource Management:** Use `enif_make_resource` for long-lived scan states (prevent leaks if pid dies).
-  - [ ] **Test:** Kill watcher process and verify Zig destructor runs.
+- [ ] **Resource Management:** See **[ADR-017: Native Resource Handles](../adr/ADR-017-Native-Resource-Handles.md)**.
 - [ ] **Fault Tolerance:** Replace `catch return` logic with explicit `Error` types returned to Elixir.
   - [x] **Test:** `integrity_test.exs` (Error atom clarity).
 - [ ] **Thread-Safe Messaging:** Implement `enif_alloc_env` for workers to stream WITHOUT blocking the NIF.
@@ -53,7 +52,7 @@
 - **Hybrid Shim Architecture:** 
   - **The Bridge:** Introduced `entry.c` as a static C gateway. It handles the volatile Erlang NIF macros (`ERL_NIF_INIT`) that Zig's `translate-c` struggled with on Windows.
   - **The API Struct:** Created `WinNifApi`, a function-pointer struct passed from C to Zig. This allows Zig to call BEAM functions (`enif_send`, `enif_alloc`) with 100% type safety and zero macro dependency.
-- **Manual NIF Loading:** Implemented `Aether.Native.Scanner` with a manual `@on_load` hook. This provides granular control over DLL paths and error reporting compared to automated loaders.
+- **Manual NIF Loading:** Implemented `Ether.Native.Scanner` with a manual `@on_load` hook. This provides granular control over DLL paths and error reporting compared to automated loaders.
 - **Dirty Schedulers:** Enabled `ERL_NIF_DIRTY_JOB_IO_BOUND` flags in the C shim to ensure long file-system crawls don't hog main scheduler threads.
 
 ### 2026-01-03: Async Streaming (Phase 2)

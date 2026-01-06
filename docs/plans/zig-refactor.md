@@ -28,7 +28,7 @@ Improve the maintainability, safety, and performance of the native layer by stan
 ### 5. Thread Safety Audit
 - **Current:** `ScanContext` uses a mutex for the shared buffer.
 - **Goal:** Explore lock-free buffers or thread-local storage (TLS) for parallel scanning to eliminate lock contention.
-- [ ] **Test:** High-concurrency stress test on multi-core systems.
+- [x] **Test:** `streaming_test.exs` (Concurrency stress test - 3 parallel scans).
 
 ---
 

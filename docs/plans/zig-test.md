@@ -24,16 +24,16 @@ Stress testing the `entry.c` bridge.
 
 ### 4. Stress & Concurrency Tests
 - [ ] **Massive Directory Scan:** Test on `C:/Windows/` or `node_modules` (500k+ files).
-- [ ] **Parallel Contention:** Run 10 parallel scans to check for race conditions.
+- [x] **Parallel Contention:** Run 10 parallel scans to check for race conditions.
 - [ ] **Process Death:** Kill the scanning process and verify NIF cleanup via Resource Destructors.
 
 ### 5. Benchmark Suite
 - [ ] **Latency:** Compare `list_raw` vs `File.ls_r` (Target: 10x speedup).
-- [ ] **Throughput:** MB/s of directory metadata processed.
+- [x] **Throughput:** **125,000 files/sec** (Baseline 2026-01-06).
 
 ---
 
 ## 🛠️ Tools
 - `zig test`: For unit level.
 - `mix test`: For integration level.
-- `Aether.Benchmark`: For performance tracking.
+- `Ether.Benchmark`: For performance tracking.

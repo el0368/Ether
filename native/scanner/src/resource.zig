@@ -10,6 +10,7 @@ pub const ScannerResource = struct {
     created_at: i64,
     is_active: bool,
     pool: std.Thread.Pool,
+    stack: std.ArrayListUnmanaged([]const u8), // Stack of directories for re-entrant scanning
 };
 
 /// Resource destructor - called by BEAM GC when Elixir drops the reference
@@ -18,6 +19,13 @@ pub export fn zig_resource_destructor(env: ?*api.ErlNifEnv, obj: *anyopaque) voi
     const resource: *ScannerResource = @ptrCast(@alignCast(obj));
     resource.is_active = false;
     resource.pool.deinit();
+
+    // Clean up stack
+    const allocator = std.heap.page_allocator;
+    for (resource.stack.items) |path| {
+        allocator.free(path);
+    }
+    resource.stack.deinit(allocator);
     // Note: The BEAM will free the resource memory after this returns
 }
 
@@ -38,6 +46,7 @@ pub export fn zig_create_context(
     const resource: *ScannerResource = @ptrCast(@alignCast(resource_ptr));
     resource.created_at = std.time.timestamp();
     resource.is_active = true;
+    resource.stack = .{}; // Initialize empty stack
 
     // Initialize Thread Pool (Level 6)
     // Use page_allocator for long-lived thread resources

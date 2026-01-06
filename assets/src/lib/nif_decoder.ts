@@ -37,38 +37,43 @@ export class NifDecoder {
         let offset = 0;
 
         // Safety check
-        if (!buffer || buffer.byteLength === 0) return [];
+        if (!buffer || buffer.byteLength < 1) return [];
 
-        const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+        try {
+            const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
 
-        while (offset < buffer.byteLength) {
-            // Check for minimum header size (1 + 2 = 3 bytes)
-            if (offset + 3 > buffer.byteLength) break;
+            while (offset < buffer.byteLength) {
+                // Check for minimum header size (Type:u8 [1] + Len:u16 [2] = 3 bytes)
+                if (offset + 3 > buffer.byteLength) {
+                    if (offset < buffer.byteLength) {
+                        console.warn(`Trailing bytes in chunk: ${buffer.byteLength - offset}`);
+                    }
+                    break;
+                }
 
-            const typeCode = view.getUint8(offset);
-            offset += 1;
+                const typeCode = view.getUint8(offset);
+                const len = view.getUint16(offset + 1, true);
+                
+                // Advanced Safety: Validate length before moving offset
+                if (offset + 3 + len > buffer.byteLength) {
+                    console.error("Malformed entry: length exceeds buffer boundaries", { offset, len, total: buffer.byteLength });
+                    break;
+                }
 
-            const len = view.getUint16(offset, true);
-            offset += 2;
+                const nameBytes = buffer.subarray(offset + 3, offset + 3 + len);
+                const name = this.decoder.decode(nameBytes);
+                
+                // Move offset past Type(1) + Len(2) + Name(len)
+                offset += 3 + len;
 
-            if (offset + len > buffer.byteLength) {
-                // WARN: Incomplete chunk received?
-                // For now, break. In a perfect stream, chunks should be self-contained entries 
-                // or we need a persistent buffer state.
-                // Assuming NIF sends complete entries per chunk.
-                console.warn("Incomplete entry in chunk");
-                break;
+                entries.push({
+                    name: name,
+                    type: this.mapType(typeCode),
+                    path: `${root}/${name}`
+                });
             }
-
-            const nameBytes = buffer.subarray(offset, offset + len);
-            const name = this.decoder.decode(nameBytes);
-            offset += len;
-
-            entries.push({
-                name: name,
-                type: this.mapType(typeCode),
-                path: `${root}/${name}`
-            });
+        } catch (e) {
+            console.error("Critical decoding failure in NifDecoder.decode:", e);
         }
 
         return entries;
@@ -79,7 +84,9 @@ export class NifDecoder {
             case 1: return 'file';
             case 2: return 'directory';
             case 3: return 'symlink';
-            default: return 'other';
+            default: 
+                console.warn(`Unknown NIF type code: ${code}`);
+                return 'other';
         }
     }
 }

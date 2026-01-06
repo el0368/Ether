@@ -26,8 +26,8 @@ defmodule EtherWeb.EditorChannel do
   end
 
   @impl true
-  def handle_info({:binary, binary}, socket) when is_binary(binary) do
-    Logger.info("CH: Received binary chunk of #{byte_size(binary)} bytes")
+  def handle_info({:scanner_chunk, binary}, socket) when is_binary(binary) do
+    Logger.info("CH: Received scanner chunk of #{byte_size(binary)} bytes")
     # Pass-through: Base64 encode for transport efficiency (vs JSON list)
     # Ideally use raw binary frames, but Base64 is fine for now.
     encoded = Base.encode64(binary)
@@ -36,7 +36,7 @@ defmodule EtherWeb.EditorChannel do
   end
 
   @impl true
-  def handle_info({:scan_completed, _status}, socket) do
+  def handle_info({:scanner_done, _status}, socket) do
     Logger.info("CH: Scan Completed in #{System.monotonic_time(:millisecond) - socket.assigns[:scan_start]}ms")
     push(socket, "filetree:done", %{})
     {:noreply, socket}

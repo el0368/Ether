@@ -37,6 +37,9 @@ pub const WinNifApi = extern struct {
     // Phase 3-4: Memory Optimization
     realloc: *const fn (ptr: ?*anyopaque, size: usize) callconv(.c) ?*anyopaque,
     realloc_binary: *const fn (bin: *ErlNifBinary, size: usize) callconv(.c) c_int,
+    // Phase 5: Thread-Safe Messaging
+    alloc_env: *const fn () callconv(.c) ?*ErlNifEnv,
+    free_env: *const fn (env: ?*ErlNifEnv) callconv(.c) void,
 };
 
 /// Helper to create {:error, reason} tuple

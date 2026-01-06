@@ -28,33 +28,41 @@ pub fn flush_buffer(ctx: *ScanContext) void {
     defer ctx.mutex.unlock();
 
     if (ctx.buffer.items.len == 0) return;
-    send_chunk(ctx.env, ctx.nif_api, ctx.pid, ctx.buffer);
+    send_chunk(ctx.nif_api, ctx.pid, ctx.buffer);
     ctx.buffer.clearRetainingCapacity();
     ctx.entry_count = 0;
 }
 
 /// Send a binary chunk to Elixir
 pub fn send_chunk(
-    env: ?*api.ErlNifEnv,
     nif_api: *const api.WinNifApi,
     pid: *const anyopaque,
     buffer: *std.ArrayListUnmanaged(u8),
 ) void {
+    const msg_env = nif_api.alloc_env() orelse return;
+    defer nif_api.free_env(msg_env);
+
     var bin: api.ErlNifBinary = undefined;
     if (nif_api.alloc_binary(buffer.items.len, &bin) == 0) return;
     @memcpy(bin.data[0..bin.size], buffer.items);
 
-    const tag = nif_api.make_atom(env, "binary");
-    const val = nif_api.make_binary(env, &bin);
-    const msg = nif_api.make_tuple2(env, tag, val);
+    const tag = nif_api.make_atom(msg_env, "scanner_chunk");
+    const val = nif_api.make_binary(msg_env, &bin);
+    const msg = nif_api.make_tuple2(msg_env, tag, val);
 
-    _ = nif_api.send(env, pid, null, msg);
+    _ = nif_api.send(null, pid, msg_env, msg);
 }
 
 /// Send scan completion signal
-pub fn send_done(env: ?*api.ErlNifEnv, nif_api: *const api.WinNifApi, pid: *const anyopaque) void {
-    const msg = nif_api.make_tuple2(env, nif_api.make_atom(env, "scan_completed"), nif_api.make_atom(env, "ok"));
-    _ = nif_api.send(env, pid, null, msg);
+pub fn send_done(nif_api: *const api.WinNifApi, pid: *const anyopaque) void {
+    const msg_env = nif_api.alloc_env() orelse return;
+    defer nif_api.free_env(msg_env);
+
+    const tag = nif_api.make_atom(msg_env, "scanner_done");
+    const val = nif_api.make_atom(msg_env, "ok");
+    const msg = nif_api.make_tuple2(msg_env, tag, val);
+
+    _ = nif_api.send(null, pid, msg_env, msg);
 }
 
 /// Worker function for parallel scanning
@@ -122,8 +130,12 @@ pub export fn zig_scan(
         return nif_api.make_badarg(env);
     }
 
-    var dir = std.fs.cwd().openDir(path_slice, .{ .iterate = true }) catch {
-        return api.make_error_tuple(env, nif_api, "path_open_failure");
+    var dir = std.fs.cwd().openDir(path_slice, .{ .iterate = true }) catch |err| {
+        return switch (err) {
+            error.AccessDenied => api.make_error_tuple(env, nif_api, "e_acces"),
+            error.FileNotFound => api.make_error_tuple(env, nif_api, "e_noent"),
+            else => api.make_error_tuple(env, nif_api, "e_io"),
+        };
     };
     defer dir.close();
 
@@ -209,7 +221,7 @@ pub export fn zig_scan(
                 if (ctx.buffer.items.len > 1024 * 64) flush_buffer(&ctx);
             }
             flush_buffer(&ctx);
-            send_done(env, nif_api, &pid_buffer);
+            send_done(nif_api, &pid_buffer);
             return nif_api.make_atom(env, "ok");
         };
         defer pool.deinit();
@@ -217,10 +229,145 @@ pub export fn zig_scan(
         for (subdirs.items) |subdir_name| {
             pool.spawn(scanSubdirWorker, .{ &ctx, subdir_name }) catch continue;
         }
+    } else {
+        for (subdirs.items) |subdir_name| {
+            scanSubdirWorker(&ctx, subdir_name);
+        }
     }
 
     flush_buffer(&ctx);
-    send_done(env, nif_api, &pid_buffer);
+    send_done(nif_api, &pid_buffer);
+
+    return nif_api.make_atom(env, "ok");
+}
+
+/// Yieldable scan entry point (Level 5)
+pub export fn zig_scan_yieldable(
+    env: ?*api.ErlNifEnv,
+    argc: c_int,
+    argv: [*c]const api.ERL_NIF_TERM,
+    nif_api: *const api.WinNifApi,
+) api.ERL_NIF_TERM {
+    if (argc != 3) return nif_api.make_badarg(env);
+
+    // 1. Get Resource
+    var resource_ptr: ?*anyopaque = null;
+    if (nif_api.get_resource(env, argv[0], &resource_ptr) == 0) {
+        return api.make_error_tuple(env, nif_api, "invalid_resource");
+    }
+    const resource: *@import("resource.zig").ScannerResource = @ptrCast(@alignCast(resource_ptr.?));
+
+    // 2. Parse Path (only if stack is empty - initial call)
+    if (resource.stack.items.len == 0) {
+        var path_bin: api.ErlNifBinary = undefined;
+        if (nif_api.inspect_binary(env, argv[1], &path_bin) == 0) {
+            return nif_api.make_badarg(env);
+        }
+        const path_slice = path_bin.data[0..path_bin.size];
+
+        const path_copy = std.heap.page_allocator.dupe(u8, path_slice) catch return api.make_error_tuple(env, nif_api, "oom");
+        resource.stack.append(std.heap.page_allocator, path_copy) catch {
+            std.heap.page_allocator.free(path_copy);
+            return api.make_error_tuple(env, nif_api, "oom");
+        };
+    }
+
+    // 3. Parse PID
+    var pid_buffer: [128]u8 = undefined;
+    if (nif_api.get_local_pid(env, argv[2], &pid_buffer) == 0) {
+        return nif_api.make_badarg(env);
+    }
+
+    // Use page_allocator for the scan loop (needs to be persistent if interrupted)
+    const allocator = std.heap.page_allocator;
+    var beam_alloc = alloc_mod.BeamAllocator.init(nif_api, env);
+    const nif_allocator = beam_alloc.allocator();
+
+    var buffer = std.ArrayListUnmanaged(u8){};
+    defer buffer.deinit(nif_allocator);
+
+    var ctx = ScanContext{
+        .buffer = &buffer,
+        .allocator = nif_allocator,
+        .mutex = std.Thread.Mutex{},
+        .base_path = "", // Will be set per directory
+        .env = env,
+        .nif_api = nif_api,
+        .pid = &pid_buffer,
+        .entry_count = 0,
+    };
+
+    var iteration_count: usize = 0;
+    while (resource.stack.items.len > 0) {
+        const dir_path = resource.stack.items[resource.stack.items.len - 1];
+        resource.stack.items.len -= 1;
+        ctx.base_path = dir_path;
+
+        iteration_count += 1;
+        if (iteration_count % 50 == 0) {
+            if (nif_api.consume_timeslice(env, 1) != 0) {
+                // YIELD! Push directory BACK so it's processed on resume
+                resource.stack.append(allocator, dir_path) catch {
+                    allocator.free(dir_path);
+                    return api.make_error_tuple(env, nif_api, "oom");
+                };
+                return nif_api.make_tuple2(env, nif_api.make_atom(env, "cont"), argv[0]);
+            }
+        }
+
+        var dir = std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch {
+            allocator.free(dir_path);
+            continue;
+        };
+        defer dir.close();
+
+        var iterator = dir.iterate();
+        while (iterator.next() catch null) |entry| {
+            // FILTER: Standard Aether Filters
+            if (entry.kind == .directory) {
+                if (std.mem.eql(u8, entry.name, "node_modules") or
+                    std.mem.eql(u8, entry.name, ".git") or
+                    std.mem.eql(u8, entry.name, "_build") or
+                    std.mem.eql(u8, entry.name, "deps"))
+                {
+                    continue;
+                }
+            }
+
+            const type_byte: u8 = switch (entry.kind) {
+                .file => 1,
+                .directory => 2,
+                .sym_link => 3,
+                else => 0,
+            };
+            buffer.append(nif_allocator, type_byte) catch break;
+
+            const name_with_path = std.fs.path.join(nif_allocator, &[_][]const u8{ dir_path, entry.name }) catch break;
+            defer nif_allocator.free(name_with_path);
+
+            const len: u16 = @intCast(name_with_path.len);
+            buffer.writer(nif_allocator).writeInt(u16, len, .little) catch break;
+            buffer.appendSlice(nif_allocator, name_with_path) catch break;
+
+            if (entry.kind == .directory) {
+                const sub_path = allocator.dupe(u8, name_with_path) catch continue;
+                resource.stack.append(allocator, sub_path) catch {
+                    allocator.free(sub_path);
+                    continue;
+                };
+            }
+        }
+
+        // Processing of this directory is finished. Free the path.
+        allocator.free(dir_path);
+
+        if (buffer.items.len > CHUNK_SIZE) {
+            flush_buffer(&ctx);
+        }
+    }
+
+    flush_buffer(&ctx);
+    send_done(nif_api, &pid_buffer);
 
     return nif_api.make_atom(env, "ok");
 }

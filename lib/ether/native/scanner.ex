@@ -24,18 +24,49 @@ defmodule Ether.Native.Scanner do
   end
 
   # =============================================================================
-  # File Scanning (Level 5)
+  # File Scanning (Level 5 Stability)
   # =============================================================================
   
+  @doc """
+  Initiates a file scan.
+  Isolates the NIF call in a supervised Task to prevent blocking the caller.
+  """
   def scan(path) do
-    case scan_nif(path, self()) do
+    caller = self()
+    Task.start(fn ->
+      {:ok, resource} = create_context_nif()
+      case do_scan_loop(resource, path, caller) do
+        :ok -> :ok
+        {:error, reason} -> 
+          Logger.error("Scanner NIF failed: #{inspect(reason)}")
+          send(caller, {:scanner_error, reason})
+        unknown -> 
+          Logger.error("Scanner NIF returned unknown result: #{inspect(unknown)}")
+          send(caller, {:scanner_error, :unknown_native_failure})
+      end
+    end)
+    :ok
+  end
+
+  defp do_scan_loop(resource, path, pid) do
+    case scan_yield_nif(resource, path, pid) do
       :ok -> :ok
-      error -> error
+      {:cont, ^resource} ->
+        # Yielding happened! Elixir loop resumes execution
+        # The scheduler will naturally preempt this process if needed.
+        do_scan_loop(resource, path, pid)
+      {:error, _} = err -> err
+      unknown -> {:error, {:unknown_native_failure, unknown}}
     end
   end
 
+  @doc """
+  Legacy raw scan (mostly for testing).
+  Now uses the yieldable loop for consistency.
+  """
   def scan_raw(path) do
-    scan_nif(path, self())
+    {:ok, resource} = create_context_nif()
+    do_scan_loop(resource, path, self())
   end
 
 
@@ -66,7 +97,7 @@ defmodule Ether.Native.Scanner do
   def search(context, query, path), do: search_nif(context, query, path)
 
   # NIF Stubs (Fallbacks if DLL fails to load)
-  defp scan_nif(_path, _pid), do: :erlang.nif_error(:nif_not_loaded)
+  def scan_yield_nif(_ref, _path, _pid), do: :erlang.nif_error(:nif_not_loaded)
   defp create_context_nif(), do: :erlang.nif_error(:nif_not_loaded)
   defp close_context_nif(_ref), do: :erlang.nif_error(:nif_not_loaded)
   defp search_nif(_ctx, _query, _path), do: :erlang.nif_error(:nif_not_loaded)

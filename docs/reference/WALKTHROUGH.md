@@ -403,5 +403,24 @@ We executed the **Ignition Protocol** (`scripts/ignite.bat`) but encountered per
   - **Speed**: ~12,000 files/sec recursively scanned and matched.
   - **Stability**: Zero crashes or memory leaks detected under concurrency storm.
 
-**Next Steps**:
-- Begin Phase 7: Real-time File Watcher Integration.
+---
+
+## Session 21: Zero-Panic Stability (Phase 5 Hardening)
+**Date**: 2026-01-06
+**Status**: SUCCESS
+
+### 🛡️ Ultimate Stability (Level 5)
+**Goal**: Achieve crash-proof NIF execution and BEAM responsiveness under extreme load.
+
+**Achievements**:
+- **"The Airbag"**: Hardened `nif_decoder.ts` with bounds checking and defensive type mapping.
+- **"The Fuse"**: Isolated NIF calls in `Task.start` with explicit Elixir Error Atoms (e.g., `e_acces`, `e_noent`).
+- **Thread-Safe Messaging**: Updated Zig `WinNifApi` to use `enif_alloc_env` for process-independent environments (NIF isolation).
+- **Yield & Continue**: Implemented re-entrant loops in `crawler.zig` using a directory stack and `enif_consume_timeslice`.
+- **Standardized Tags**: Unified message protocol to `scanner_chunk` and `scanner_done` across the entire stack.
+
+**Verification**:
+- ✅ `verify_yield.exs` confirmed successful scan completion across 181 chunks with cooperative yielding.
+- ✅ Stress tests confirmed no crashes when stopping/starting scans rapidly.
+
+**Commit**: `feat: Implement Phase 5 Zero-Panic Stability`

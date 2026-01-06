@@ -768,4 +768,27 @@ This replaces the previous C implementation and solves Windows linking issues us
 - `test/ether/native/stress_test.exs` (New Suite)
 
 ---
+---
 
+## Session 21: 2026-01-06 (Zero-Panic Stability)
+**Phase**: Phase 5 - Zero-Panic Stability
+
+### 🛡️ Ultimate Stability (Level 5)
+Finalized the "Ultimate Stability" hardening of Native NIFs.
+
+### 🤖 Achievements
+1.  **"The Airbag"**: Frontend defensive decoding with bounds checking.
+2.  **"The Fuse"**: Backend NIF isolation using `Task.start` and explicit Error Atoms.
+3.  **Thread-Safe Messaging**: Updated Zig API to use `enif_alloc_env` for process-independent environments.
+4.  **Yield & Continue**: Implemented re-entrant loops in `crawler.zig` using a directory stack and `enif_consume_timeslice`.
+5.  **Standardized Tags**: Unified message protocol to `scanner_chunk` and `scanner_done`.
+
+### 🧪 Verification
+- Verified with `verify_yield.exs`.
+- 12/12 native tests pass.
+- Stress testing confirmed resilience to rapid interruptions.
+
+### 🚦 Current Status
+- **Native Stability**: Level 5 (Zero-Panic).
+- **Communication**: Verified chunked streaming with yielding.
+- **Ready for**: Phase 7 (MessagePack Integration).

@@ -34,10 +34,12 @@
 - [ ] **Re-entrant Loops:** Support for "Yield and Continue" (returning a reference to resume a long scan).
   - [ ] **Test:** Pause and Resume multi-million file scan.
 
-## 🚀 Future (Phase 6+)
-- [/] **Content Search:** Prototype Implemented (Sync). Next: Parallelize.
-  - [x] **Test:** `search_test.exs` (Basic match/no-match).
-  - [ ] **Test:** Speed benchmark against `rg`.
+## 🚀 Level 6: Native Intelligence (Content Search)
+- [x] **Native Content Search:** `searcher.zig`
+  - [x] **Sync Prototype:** Basic `mem.indexOf` scan.
+  - [x] **Parallel/Recursive:** `std.Thread.Pool` + `WaitGroup` for directory crawling.
+  - [x] **API:** `Scanner.search(ctx, query, path)` returns `{:ok, [matches]}`.
+- [ ] **Search Indexing:** (Future) In-memory trie or bloom filter?
 - [ ] **File Watcher:** Implement `ReadDirectoryChangesW` (Windows) as a persistent NIF Resource.
 - [ ] **Tree-Sitter:** Embed syntax parsing for instant code intelligence.
   - [ ] **Test:** Parsing accuracy for large Elixir modules.

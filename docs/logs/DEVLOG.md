@@ -737,18 +737,20 @@ This replaces the previous C implementation and solves Windows linking issues us
 - **Memory Optimization**: Exposed `enif_realloc` for efficient buffer growth.
 - **Verification**: 12/12 native tests passing (including new defensive tests).
 
-### 🚀 Phase 6: Native Content Search (Prototype)
-**Goal**: Implement "grep" inside the BEAM.
+### 🚀 Phase 6: Native Content Search (Complete)
+**Goal**: Implement "grep" inside the BEAM with high throughput.
 **Achievements**:
-- **Logic**: Created `searcher.zig` using `std.mem.indexOf` (Synchronous).
-- **API**: Exposed `Scanner.search/3` to Elixir.
-- **Verification**: Verified with `search_test.exs` (Exact match / No Match).
-- **Next Step**: Parallelize using `std.Thread.Pool` to hit 1GB/s target.
+- **Logic**: Created `searcher.zig` using `std.mem.indexOf`.
+- **Parallelization**: Implemented `std.Thread.Pool` + `WaitGroup` for recursive directory crawling.
+- **Safety**: Resource-managed thread pool (`ScannerResource`) ensures correct cleanup.
+- **API**: Exposed `Scanner.search/3` returning `{:ok, [matches]}`.
+- **Verification**: Verified with `nested_search_test.exs` (Recursive matches).
 
 ### 📁 Files Changed
 - `native/scanner/src/entry.c` (Added validation/realloc wrappers)
 - `native/scanner/src/api.zig` (Updated struct)
-- `native/scanner/src/searcher.zig` (New module)
+- `native/scanner/src/resource.zig` (Added Thread Pool)
+- `native/scanner/src/searcher.zig` (New Parallel Module)
 - `test/ether/native/search_test.exs` (New test)
 
 ---

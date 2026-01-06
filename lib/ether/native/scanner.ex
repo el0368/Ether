@@ -59,8 +59,9 @@ defmodule Ether.Native.Scanner do
   def close_context(ref), do: close_context_nif(ref)
 
   @doc """
-  Searches for a query string in a file.
-  Returns `:match` or `:no_match` (Phase 6 Sync Prototype).
+  Searches for a query string in a file or directory recursively.
+  Returns `{:ok, [match_path_1, match_path_2, ...]}` on success.
+  (Level 6 Parallel Performance)
   """
   def search(context, query, path), do: search_nif(context, query, path)
 

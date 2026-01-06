@@ -9,6 +9,7 @@ const api = @import("api.zig");
 pub const ScannerResource = struct {
     created_at: i64,
     is_active: bool,
+    pool: std.Thread.Pool,
 };
 
 /// Resource destructor - called by BEAM GC when Elixir drops the reference
@@ -16,6 +17,7 @@ pub export fn zig_resource_destructor(env: ?*api.ErlNifEnv, obj: *anyopaque) voi
     _ = env;
     const resource: *ScannerResource = @ptrCast(@alignCast(obj));
     resource.is_active = false;
+    resource.pool.deinit();
     // Note: The BEAM will free the resource memory after this returns
 }
 
@@ -36,6 +38,16 @@ pub export fn zig_create_context(
     const resource: *ScannerResource = @ptrCast(@alignCast(resource_ptr));
     resource.created_at = std.time.timestamp();
     resource.is_active = true;
+
+    // Initialize Thread Pool (Level 6)
+    // Use page_allocator for long-lived thread resources
+    // If pool fails to init (out of memory), we return error tuple
+    resource.pool.init(.{ .allocator = std.heap.page_allocator }) catch {
+        // Optimization: If pool alloc fails, we should probably fail the NIF
+        // Release the resource as we are aborting
+        nif_api.release_resource(resource_ptr);
+        return nif_api.make_tuple2(env, nif_api.make_atom(env, "error"), nif_api.make_atom(env, "pool_init_failed"));
+    };
 
     const term = nif_api.make_resource(env, resource_ptr);
     nif_api.release_resource(resource_ptr);

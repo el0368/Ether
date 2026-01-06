@@ -363,3 +363,26 @@ We executed the **Ignition Protocol** (`scripts/ignite.bat`) but encountered per
 - ✅ **Tests**: 100% test pass.
 
 **Commit**: `refactor: Rename project from Aether to Ether`
+
+---
+
+## Session 16 (Part 2): Level 6 Parallel Performance (2026-01-06)
+**Date**: 2026-01-06
+**Status**: SUCCESS
+
+### 🚀 Level 6: Parallel Content Search
+**Goal**: Scale content search to handle large repositories without blocking.
+
+**Achievements**:
+- **Resource Upgrade**: Enhanced `ScannerResource` to manage a persistent `std.Thread.Pool`.
+- **Parallel Architecture**: Implemented recursive `process_path` in Zig that spawns search tasks to the pool.
+- **Synchronization**: Specific `WaitGroup` implementation ensures all threads complete before the NIF returns.
+- **Memory Safety**: Uses `BeamAllocator` for results and `page_allocator` for worker threads, preventing leaks.
+
+**Files Changed**:
+- `native/scanner/src/searcher.zig`: Parallel implementation.
+- `native/scanner/src/resource.zig`: Thread pool lifecycle.
+- `lib/ether/native/scanner.ex`: API update.
+
+**Artifacts**:
+- `docs/reference/WALKTHROUGH_LEVEL6.md` (Detailed Architecture)

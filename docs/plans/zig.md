@@ -18,8 +18,7 @@
   - [x] **Test:** `verify_setup.bat` (DLL presence and loading check).
 
 ## ⚠️ In Progress (Phase 3-4)
-- [ ] **Zero-Copy Pipeline:** Ensure Elixir does NOT decode binaries, just passes them.
-  - [ ] **Test:** Benchmark CPU usage vs Hybrid decoding.
+- [ ] **Zero-Copy Pipeline:** Consolidating in **[Native Data Pipeline](NATIVE_DATA_PIPELINE.md)**.
 - [ ] **Binary Realloc:** Shrink large memory slabs using `enif_realloc_binary`.
   - [ ] **Test:** Memory fragmentation audit.
 - [ ] **Defensive API:** Audit `entry.c` for input validation (`enif_is_binary`, `enif_is_list`).

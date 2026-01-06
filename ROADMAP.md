@@ -15,6 +15,8 @@ This is the central index for all project plans.
 
 ### Core Architecture
 -   **[⚡ Zig Native Plan](docs/plans/zig.md)**: Native extensions, NIF safety.
+-   **[🔄 Native Data Pipeline](docs/plans/NATIVE_DATA_PIPELINE.md)**: Unified high-speed sync strategy.
+-   **[🛡️ Phase 6 Safety Shield](docs/plans/PHASE6_SAFETY_SHIELD.md)**: Performance & Stability protections.
 -   **[🔍 Level 6 Readiness](docs/plans/LEVEL6_NATIVE_SEARCH_READINESS.md)**: Preparation for Native Search.
 -   **[🧹 Zig Refactor Plan](docs/plans/zig-refactor.md)**: Native layer cleanup and optimization.
 -   **[💧 Elixir Backend Plan](docs/plans/elixir.md)**: Agents, GenServers Logic.

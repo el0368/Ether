@@ -25,7 +25,8 @@
   - [ ] **Test:** Fuzzing `scan_raw` with invalid argument types.
 
 ## 🛡️ Ultimate Stability (Phase 5: The "Zero-Panic" Goal)
-- [ ] **Resource Management:** See **[ADR-017: Native Resource Handles](../adr/ADR-017-Native-Resource-Handles.md)**.
+- [x] **Resource Management:** See **[ADR-017: Native Resource Handles](../adr/ADR-017-Native-Resource-Handles.md)** ✅ (2026-01-06).
+- [x] **Modular Refactoring:** Split `scanner_safe.zig` (434 lines) into 4 focused modules (26 lines main + 373 lines modules).
 - [ ] **Fault Tolerance:** Replace `catch return` logic with explicit `Error` types returned to Elixir.
   - [x] **Test:** `integrity_test.exs` (Error atom clarity).
 - [ ] **Thread-Safe Messaging:** Implement `enif_alloc_env` for workers to stream WITHOUT blocking the NIF.

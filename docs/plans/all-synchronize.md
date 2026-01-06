@@ -34,6 +34,7 @@ Ensuring different GenServer agents (FileServer, Git, Lint) share a consistent v
 - [ ] **Phase 1: Binary Standard** - Remove Base64 from EditorChannel and move to raw binary frames.
 - [ ] **Phase 2: Delta Engine** - Implement smart merging in Svelte for `filetree:delta` events.
 - [ ] **Phase 3: Unified Bus** - Connect Zig `error_tuple` to the Svelte alert system.
+- [ ] **Phase 4: Structured Reality** - Integrate MessagePack for Agent↔UI data transport.
 
 ## ⚙️ Performance Targets
 - **Init Sync:** <100ms for 10k files.

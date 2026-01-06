@@ -46,6 +46,13 @@
 - [ ] **LSP Server:** Move heavy-lifting LSP logic into Zig for <1ms response times.
   - [ ] **Test:** Memory usage vs ElixirLS.
 
+## 🌐 Level 7: Structured Binary (MessagePack)
+- [ ] **MessagePack Integration:** For complex structured data (agent responses, config).
+  - [ ] **Use Case:** Replace JSON for Agent-to-UI communication.
+  - [ ] **Strategy:** Raw binary for massive data (100k+ files), MessagePack for structured data.
+- [ ] **Schema Validation:** Optional compile-time schema checks in Zig.
+- [ ] **Test:** Round-trip encoding/decoding benchmarks vs JSON.
+
 ---
 
 ## 📜 History & Changelog

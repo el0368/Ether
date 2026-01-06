@@ -1,6 +1,6 @@
 @echo off
 echo ============================================
-echo   Ether IDE - Desktop Mode
+echo   Ether IDE - Tauri Desktop Mode
 echo ============================================
 
 :: 📂 DIRECTORY SETUP - Target parent of 'bat' folder
@@ -10,8 +10,9 @@ cd /d "%~dp0.."
 call bat\kill_zombies.bat
 
 echo.
-echo Starting Ether Desktop...
+echo Starting Tauri Development Server...
 echo.
 
-:: Start with desktop window
-iex -S mix phx.server -e "Ether.Desktop.start_link()"
+:: Start Tauri (uses Vite + Rust)
+cd assets
+bun run tauri dev

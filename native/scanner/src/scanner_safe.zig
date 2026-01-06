@@ -22,7 +22,67 @@ const WinNifApi = extern struct {
     free: *const fn (ptr: ?*anyopaque) callconv(.c) void,
     get_local_pid: *const fn (env: ?*ErlNifEnv, term: ERL_NIF_TERM, pid: *anyopaque) callconv(.c) c_int,
     send: *const fn (env: ?*ErlNifEnv, to_pid: *const anyopaque, msg_env: ?*ErlNifEnv, msg: ERL_NIF_TERM) callconv(.c) c_int,
+    // Resource Management (ADR-017)
+    alloc_resource: *const fn (size: usize) callconv(.c) ?*anyopaque,
+    release_resource: *const fn (obj: ?*anyopaque) callconv(.c) void,
+    make_resource: *const fn (env: ?*ErlNifEnv, obj: ?*anyopaque) callconv(.c) ERL_NIF_TERM,
+    get_resource: *const fn (env: ?*ErlNifEnv, term: ERL_NIF_TERM, objp: *?*anyopaque) callconv(.c) c_int,
 };
+
+// =============================================================================
+// ScannerResource: Persistent Native State (ADR-017)
+// =============================================================================
+const ScannerResource = struct {
+    // Future: Add search index, file watchers, cached state here
+    created_at: i64,
+    is_active: bool,
+};
+
+// Resource destructor - called by BEAM GC when Elixir drops the reference
+export fn zig_resource_destructor(env: ?*ErlNifEnv, obj: *anyopaque) void {
+    _ = env;
+    const resource: *ScannerResource = @ptrCast(@alignCast(obj));
+    // Mark as inactive (future: close file handles, free index, etc.)
+    resource.is_active = false;
+    // Note: The BEAM will free the resource memory after this returns
+}
+
+// Create a new resource context
+export fn zig_create_context(env: ?*ErlNifEnv, argc: c_int, argv: [*c]const ERL_NIF_TERM, api: *const WinNifApi) ERL_NIF_TERM {
+    _ = argc;
+    _ = argv;
+
+    const resource_ptr = api.alloc_resource(@sizeOf(ScannerResource)) orelse {
+        return api.make_tuple2(env, api.make_atom(env, "error"), api.make_atom(env, "alloc_failed"));
+    };
+
+    const resource: *ScannerResource = @ptrCast(@alignCast(resource_ptr));
+    resource.created_at = std.time.timestamp();
+    resource.is_active = true;
+
+    // Create the Elixir reference term
+    const term = api.make_resource(env, resource_ptr);
+
+    // Release our reference (Elixir now owns it)
+    api.release_resource(resource_ptr);
+
+    return api.make_tuple2(env, api.make_atom(env, "ok"), term);
+}
+
+// Close a resource context explicitly
+export fn zig_close_context(env: ?*ErlNifEnv, argc: c_int, argv: [*c]const ERL_NIF_TERM, api: *const WinNifApi) ERL_NIF_TERM {
+    if (argc != 1) return api.make_badarg(env);
+
+    var resource_ptr: ?*anyopaque = null;
+    if (api.get_resource(env, argv[0], &resource_ptr) == 0) {
+        return api.make_tuple2(env, api.make_atom(env, "error"), api.make_atom(env, "invalid_resource"));
+    }
+
+    const resource: *ScannerResource = @ptrCast(@alignCast(resource_ptr.?));
+    resource.is_active = false;
+
+    return api.make_atom(env, "ok");
+}
 
 // Configuration
 const PARALLEL_THRESHOLD: usize = 50;

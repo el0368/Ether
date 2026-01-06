@@ -1,7 +1,7 @@
 # ADR-017: Native Resource Handles
 
 ## Status
-**IN PROGRESS** - Implementation planned 2026-01-06.
+**COMPLETE** - Implemented 2026-01-06.
 
 ## Context
 Our current NIFs are "stateless"—we call `scan`, it finds files, and it finishes. "Level 6" features like **Content Indexing** require persistent state (e.g., an open database or a cached search index).

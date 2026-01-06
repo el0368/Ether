@@ -138,6 +138,7 @@ typedef struct {
 extern ERL_NIF_TERM zig_scan(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[], const WinNifApi* api);
 extern ERL_NIF_TERM zig_create_context(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[], const WinNifApi* api);
 extern ERL_NIF_TERM zig_close_context(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[], const WinNifApi* api);
+extern ERL_NIF_TERM zig_search(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[], const WinNifApi* api);
 
 // =============================================================================
 // API Builder (shared across all NIF wrappers)
@@ -191,13 +192,19 @@ static ERL_NIF_TERM close_context_wrapper(ErlNifEnv* env, int argc, const ERL_NI
     return zig_close_context(env, argc, argv, &api);
 }
 
+static ERL_NIF_TERM search_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+    WinNifApi api = build_api();
+    return zig_search(env, argc, argv, &api);
+}
+
 // =============================================================================
 // NIF Registration
 // =============================================================================
 static ErlNifFunc nif_funcs[] = {
     {"scan_nif", 2, scan_wrapper, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"create_context_nif", 0, create_context_wrapper, 0},
-    {"close_context_nif", 1, close_context_wrapper, 0}
+    {"close_context_nif", 1, close_context_wrapper, 0},
+    {"search_nif", 3, search_wrapper, ERL_NIF_DIRTY_JOB_IO_BOUND}
 };
 
 ERL_NIF_INIT(Elixir.Ether.Native.Scanner, nif_funcs, nif_load, NULL, NULL, NULL)

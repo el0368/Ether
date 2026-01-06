@@ -35,10 +35,10 @@
   - [ ] **Test:** Pause and Resume multi-million file scan.
 
 ## 🚀 Future (Phase 6+)
-- [ ] **File Watcher:** Implement `ReadDirectoryChangesW` (Windows) as a persistent NIF Resource.
-  - [ ] **Test:** Latency check for 0ms save-to-UI update.
-- [ ] **Content Search:** Ripgrep-style parallel text search (~1GB/s target).
+- [/] **Content Search:** Prototype Implemented (Sync). Next: Parallelize.
+  - [x] **Test:** `search_test.exs` (Basic match/no-match).
   - [ ] **Test:** Speed benchmark against `rg`.
+- [ ] **File Watcher:** Implement `ReadDirectoryChangesW` (Windows) as a persistent NIF Resource.
 - [ ] **Tree-Sitter:** Embed syntax parsing for instant code intelligence.
   - [ ] **Test:** Parsing accuracy for large Elixir modules.
 - [ ] **LSP Server:** Move heavy-lifting LSP logic into Zig for <1ms response times.

@@ -11,6 +11,7 @@ const std = @import("std");
 const api = @import("api.zig");
 const resource = @import("resource.zig");
 const crawler = @import("crawler.zig");
+const searcher = @import("searcher.zig");
 
 // Re-export types for entry.c compatibility
 pub const ErlNifEnv = api.ErlNifEnv;
@@ -23,4 +24,5 @@ comptime {
     _ = &resource.zig_create_context;
     _ = &resource.zig_close_context;
     _ = &resource.zig_resource_destructor;
+    _ = &searcher.zig_search;
 }

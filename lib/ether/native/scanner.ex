@@ -38,7 +38,6 @@ defmodule Ether.Native.Scanner do
     scan_nif(path, self())
   end
 
-  def scan_nif(_path, _pid), do: :erlang.nif_error(:nif_not_loaded)
 
   # =============================================================================
   # Resource Context Management (ADR-017 / Level 6)
@@ -55,13 +54,19 @@ defmodule Ether.Native.Scanner do
   end
 
   @doc """
-  Explicitly closes a resource context.
-  This marks the resource as inactive immediately rather than waiting for GC.
+  Closes a native resource context.
   """
-  def close_context(ref) do
-    close_context_nif(ref)
-  end
+  def close_context(ref), do: close_context_nif(ref)
 
-  def create_context_nif, do: :erlang.nif_error(:nif_not_loaded)
-  def close_context_nif(_ref), do: :erlang.nif_error(:nif_not_loaded)
+  @doc """
+  Searches for a query string in a file.
+  Returns `:match` or `:no_match` (Phase 6 Sync Prototype).
+  """
+  def search(context, query, path), do: search_nif(context, query, path)
+
+  # NIF Stubs (Fallbacks if DLL fails to load)
+  defp scan_nif(_path, _pid), do: :erlang.nif_error(:nif_not_loaded)
+  defp create_context_nif(), do: :erlang.nif_error(:nif_not_loaded)
+  defp close_context_nif(_ref), do: :erlang.nif_error(:nif_not_loaded)
+  defp search_nif(_ctx, _query, _path), do: :erlang.nif_error(:nif_not_loaded)
 end

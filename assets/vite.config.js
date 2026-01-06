@@ -8,8 +8,8 @@ export default defineConfig({
         tailwindcss(),
         svelte({
             onwarn: (warning, handler) => {
-                // Suppress a11y warnings that cause Vite to crash
-                if (warning.code.startsWith('a11y-')) return;
+                // Suppress a11y warnings that cause Vite to crash (handles Svelte 4/5 variations)
+                if (warning.code && warning.code.includes('a11y')) return;
                 handler(warning);
             }
         })

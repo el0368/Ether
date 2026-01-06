@@ -13,4 +13,9 @@ for /f "tokens=5" %%a in ('netstat -ano ^| findstr :5173 ^| findstr LISTENING') 
     taskkill /F /PID %%a >nul 2>nul
 )
 
+:: Aggressive Cleanup (Ensure DLLs are released)
+echo       Ensuring all Erlang processes are dead...
+taskkill /F /IM beam.smp.exe >nul 2>nul
+taskkill /F /IM erl.exe >nul 2>nul
+
 echo [Cleaner] Ports 4000 and 5173 are clear.

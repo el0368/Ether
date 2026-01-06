@@ -81,30 +81,27 @@ mix compile
 
 ---
 
-## Hybrid Engine Management
+## Hybrid Engine Management (Level 6 Active)
+### Safe Mode (Fallback)
+If the native DLL is missing or fails to load, `Ether.Native.Scanner` automatically falls back to:
+- `scan/1`: Returns `{:error, :nif_not_loaded}`
+- **Note**: Pure Elixir fallback was removed in Level 4 to ensure strict native reliability.
 
-### Safe Mode (Default)
-The project runs in "Safe Mode" where all native (Zig) dependencies are disabled.
-- **Scanner**: Uses pure Elixir implementation.
-- **Build**: No C compiler required.
+### Native Compilation (Zig)
+The `native/scanner` project is compiled independently of Mix to avoid toolchain conflicts.
 
-### Ignition Protocol (Activating Zig)
-> [!WARNING]
-> **Blocked on Windows**: This protocol currently fails due to ABI/Tooling mismatch (Zigler 0.15 vs Erlang 26-28).
-> Proceed with caution only if debugging the toolchain itself.
-
-To attempt native activation:
-
-1. **Uncomment Zigler**: In `mix.exs` and `config/config.exs`.
-2. **Run Ignition Script**:
+**To Rebuild NIF:**
 ```bash
-.\scripts\ignite.bat
+.\scripts\build_nif.bat
 ```
-3. **Verify**:
-```elixir
-Aether.Native.Bridge.scan(".")
-# => {:ok, [...]} (from Zig)
-```
+*   Compiles `scanner_safe.zig` (and modules) + `entry.c`
+*   Links against Erlang `erts-16.x` includes
+*   Outputs `priv/native/scanner_nif.dll`
+
+### Troubleshooting "Permission Denied"
+If `mix compile` fails with `permission denied` on `scanner_nif.dll`:
+1.  **Kill Zombie Processes**: Run `.\bat\kill_zombies.bat`
+2.  **Retry**: `mix compile`
 
 ---
 

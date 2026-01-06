@@ -48,6 +48,20 @@
 
 ## 📜 History & Changelog
 
+### 2026-01-06: Level 6 Foundation (ADR-017 + Modular Refactor)
+- **Resource Handles (ADR-017):** Implemented BEAM Resource lifecycle management.
+  - Added `enif_alloc_resource`, `enif_release_resource`, `enif_make_resource` wrappers to `entry.c`.
+  - Created `ScannerResource` struct with automatic GC-triggered destructor.
+  - Elixir now manages native pointer lifecycle safely.
+- **Modular Refactoring:** Split monolithic `scanner_safe.zig` (434 lines) into focused modules:
+  - `api.zig` (38 lines) — WinNifApi struct and type exports
+  - `allocator.zig` (58 lines) — BeamAllocator implementation
+  - `resource.zig` (62 lines) — ADR-017 lifecycle functions
+  - `crawler.zig` (215 lines) — File scanning logic
+  - `scanner_safe.zig` (26 lines) — Thin re-export layer
+- **Performance Baseline:** Established 125,000 files/sec throughput as the "Red Line" for future features.
+- **Test Suite Expansion:** Added Unicode stress test (7 special filenames) and 3-parallel concurrency test.
+
 ### 2026-01-04: The "Safe Shim" Revolution
 - **Removed Zigler:** Migrated away from the `Zigler` library. While excellent for Linux/OSX, it suffered from MSVC macro expansion inconsistencies on Windows, leading to unstable DLL headers.
 - **Hybrid Shim Architecture:** 

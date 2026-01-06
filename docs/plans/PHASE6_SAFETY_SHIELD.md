@@ -23,9 +23,10 @@ Implement "Level 6" Native Intelligence (Content Search) without degrading the p
 
 ## 📈 Performance Regression Testing
 We will add a "Performance Watchdog" to `test/ether/native/integrity_test.exs`:
-1. **Baseline**: Measure standard scan speed of `/node_modules`.
+1. **Baseline**: **125,000 files/sec** (Measured 2026-01-06).
+   - *Result*: 10,000 files scanned in ~80ms.
 2. **Under Load**: Run a heavy content search simultaneously.
-3. **Requirement**: Standard scan speed must not drop by more than **5%** while search is active.
+3. **Requirement**: Standard scan speed must not drop below **118,000 files/sec** (5% tolerance).
 
 ## 🛠️ Implementation Phasing
 - **Phase 6.1 (Shielding)**: Expand tests and split Zig modules.

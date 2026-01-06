@@ -14,7 +14,7 @@ defmodule Ether.Native.IntegrityTest do
 
       # Heavy scan: 1,000 iterations
       Enum.each(1..1000, fn _ ->
-        :ok = Ether.Scanner.scan_raw(".")
+        :ok = Ether.Native.Scanner.scan_raw(".")
         # Flush messages to prevent mailbox explosion
         flush_messages()
       end)
@@ -48,7 +48,7 @@ defmodule Ether.Native.IntegrityTest do
       # This means scheduler responsiveness test is still valid.
       
       _task = Task.async(fn -> 
-          Aether.Scanner.scan_raw(".") 
+          Ether.Native.Scanner.scan_raw(".") 
           flush_messages() # Cleanup
       end)
 
@@ -70,7 +70,7 @@ defmodule Ether.Native.IntegrityTest do
       # In scanner_safe.zig, `dir.openDir` failure returns error tuple synchronously.
       # So this test should still work if we inspect the return value.
       
-      result = Aether.Scanner.scan_raw("Z:/nonexistent/path/that/does/not/exist/123456789")
+      result = Ether.Native.Scanner.scan_raw("Z:/nonexistent/path/that/does/not/exist/123456789")
 
       case result do
         {:error, reason} ->

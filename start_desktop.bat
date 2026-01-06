@@ -7,6 +7,10 @@ REM Set PATH for Elixir, Erlang, Git, Node.js
 :: set PATH=C:\Elixir\elixir-otp-28\bin;C:\Program Files\Erlang OTP\bin;C:\Program Files\Git\cmd;C:\Program Files\nodejs;C:\Windows\system32;C:\Windows
 
 echo.
+
+:: Clean ports before launch
+call "%~dp0\bat\kill_zombies.bat"
+
 echo Starting Ether Desktop...
 echo.
 

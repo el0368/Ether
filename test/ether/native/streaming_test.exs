@@ -14,7 +14,6 @@ defmodule Ether.Native.StreamingTest do
 
     # 2. Start Scan
     assert :ok = Ether.Native.Scanner.scan_raw(tmp_dir)
-...
 
     # 3. Receive Messages
     # Expect at least 2 binary chunks (1000 + 500)

@@ -693,7 +693,24 @@ This replaces the previous C implementation and solves Windows linking issues us
   - Validated with `streaming_test.exs`: Received multiple chunks and completion signal for 1500 files.
 
 ### Files Changed
-- `native/scanner/src/entry.c` (Added messaging wrappers)
 - `native/scanner/src/scanner_safe.zig` (Streaming Logic)
-- `lib/aether/native/scanner.ex` (Arity Update)
+- `lib/ether/native/scanner.ex` (Arity Update)
+
+---
+
+### 🚀 Phase 3: Native Fusion (Hybrid Level 5)
+**Goal**: Leverage high-level Zigler ergonomics while maintaining Windows stability.
+
+**Achievements**:
+- **Bridge Architecture**: Implemented "Hybrid Level 5" by keeping the manual `entry.c` shim but importing Zigler's core `beam` module.
+- **Improved Ergonomics**: Removed manual NIF API pointer boilerplate; replaced with `beam.env`, `beam.term`, and automatic marshalling.
+- **Local Library Grafting**: Copied Zigler core files into `native/scanner/src/beam/` and patched for Windows compatibility (`erl_nif_win.h` fix).
+- **Verified Success**: `streaming_test.exs` passed with 1.4s execution time for 1,500 files, verifying async messaging and chunking logic.
+
+### Files Changed
+- `native/scanner/src/scanner_safe.zig` (Refactored for Level 5)
+- `native/scanner/src/beam/*` (Grafted Zigler Core)
+- `test/test_helper.exs` (Resilient Sandbox)
+- `docs/adr/ADR-016-Hybrid-Level-5.md` (New ADR)
+- `docs/reference/WALKTHROUGH_LEVEL5.md` (Success Record)
 

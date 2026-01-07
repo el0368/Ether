@@ -18,12 +18,12 @@ defmodule Ether.Application do
       Ether.Agents.LintAgent,
       Ether.Agents.FormatAgent,
       # Quality Assurance
-      Ether.Agents.QualityAgent,
+      # Ether.Agents.QualityAgent,
       
       # Advanced Agents (Phase 4)
-      Ether.Agents.RefactorAgent,
-      Ether.Agents.GitAgent,
-      Ether.Agents.CommandAgent,
+      # Ether.Agents.RefactorAgent,
+      # Ether.Agents.GitAgent,
+      # Ether.Agents.CommandAgent,
 
       # Phase 6: LSP
       Ether.Agents.LSPAgent,

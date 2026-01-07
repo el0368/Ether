@@ -12,3 +12,4 @@ docs/** linguist-documentation
 *.exs linguist-language=Elixir
 *.zig linguist-language=Zig
 *.svelte linguist-language=Svelte
+*.ts linguist-language=TypeScript

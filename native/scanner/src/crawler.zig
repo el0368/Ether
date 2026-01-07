@@ -171,7 +171,8 @@ pub export fn zig_scan_yieldable(
                         if (!std.mem.eql(u8, name_u8, ".git") and
                             !std.mem.eql(u8, name_u8, "node_modules") and
                             !std.mem.eql(u8, name_u8, "_build") and
-                            !std.mem.eql(u8, name_u8, "deps"))
+                            !std.mem.eql(u8, name_u8, "deps") and
+                            !std.mem.eql(u8, name_u8, ".elixir_ls"))
                         {
                             const full_path = std.fs.path.join(allocator, &.{ current_path, name_u8 }) catch continue;
 
@@ -186,6 +187,7 @@ pub export fn zig_scan_yieldable(
                                 local_buffer.writer(allocator).writeInt(u16, len, .little) catch continue;
                                 local_buffer.appendSlice(allocator, full_path) catch continue;
                                 scan_ctx.entry_count += 1;
+                                res_obj.total_count += 1;
                                 allocator.free(full_path);
                             }
                         }
@@ -207,5 +209,5 @@ pub export fn zig_scan_yieldable(
 
     flush_buffer(&scan_ctx);
     send_done(nif_api, &pid);
-    return nif_api.make_atom(env, "ok");
+    return nif_api.make_uint64(env, res_obj.total_count);
 }

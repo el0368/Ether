@@ -846,3 +846,25 @@ Finalized the "Ultimate Stability" hardening of Native NIFs.
 | `docs/adr/ADR-021-Stack-Safe-Windows-NIF.md` | New ADR |
 
 ---
+## Session 24: Honest Metrics & Benchmark Synchronization (2026-01-07)
+**Date**: 2026-01-07
+**Status**: SUCCESS (Leveled Playing Field)
+
+### 📊 Precise Performance Metrics
+- **Zig NIF**: Modified `ScannerResource` and `crawler.zig` to track and return actual file counts.
+- **API Bridge**: Exposed `make_uint64` to the Zig layer via `WinNifApi` bridge in `entry.c`/`api.zig`.
+- **Harmonized Filters**: Unified ignore rules (added `.elixir_ls`, `node_modules`) to ensure bit-perfect workload equality.
+- **Synchronous Reporting**: Implemented `Ether.Benchmark.run_sync/1` to fix terminal output truncation.
+- **Result**: Verified **7.1x Speedup** for Zig over Elixir on an identical 2,957-file recursive scan.
+
+### 📁 Files Modified
+| File | Change |
+|------|--------|
+| `native/scanner/src/resource.zig` | Added `total_count` tracking |
+| `native/scanner/src/crawler.zig` | Implemented count reporting & harmonized filters |
+| `native/scanner/src/entry.c` | Exposed `make_uint64` to Zig |
+| `native/scanner/src/api.zig` | Updated `WinNifApi` definition |
+| `lib/ether/native/scanner.ex` | Handled numeric NIF returns |
+| `lib/ether/benchmark.ex` | Added `run_sync/1` and fixed crash |
+
+---

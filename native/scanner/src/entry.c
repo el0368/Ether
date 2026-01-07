@@ -141,6 +141,7 @@ typedef struct {
     // Phase 5: Thread-Safe Messaging
     ErlNifEnv* (*alloc_env)(void);
     void (*free_env)(ErlNifEnv* env);
+    ERL_NIF_TERM (*make_uint64)(ErlNifEnv* env, ErlNifUInt64 val);
 } WinNifApi;
 
 // =============================================================================
@@ -187,6 +188,7 @@ static WinNifApi build_api(void) {
     // Phase 5: Thread-Safe Messaging
     api.alloc_env = enif_alloc_env;
     api.free_env = enif_free_env;
+    api.make_uint64 = enif_make_uint64;
 
     return api;
 }

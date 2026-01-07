@@ -76,6 +76,7 @@ defmodule NifMicrobench do
   
   defp run_yield_loop(ctx, path, pid) do
     case Ether.Native.Scanner.scan_yield_nif(ctx, path, pid) do
+      count when is_integer(count) -> {:ok, count}
       :ok -> :ok
       {:cont, ^ctx} -> run_yield_loop(ctx, path, pid)
     end

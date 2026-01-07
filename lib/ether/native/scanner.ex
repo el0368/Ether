@@ -36,7 +36,10 @@ defmodule Ether.Native.Scanner do
     Task.start(fn ->
       {:ok, resource} = create_context_nif()
       case do_scan_loop(resource, path, caller) do
-        :ok -> 
+        {:ok, count} -> 
+          close_context_nif(resource)
+          {:ok, count}
+        :ok ->
           close_context_nif(resource)
           :ok
         {:error, reason} -> 
@@ -54,6 +57,7 @@ defmodule Ether.Native.Scanner do
 
   defp do_scan_loop(resource, path, pid) do
     case scan_yield_nif(resource, path, pid) do
+      count when is_integer(count) -> {:ok, count}
       :ok -> :ok
       {:cont, ^resource} ->
         # Yielding happened! Elixir loop resumes execution

@@ -11,6 +11,7 @@ pub const ScannerResource = struct {
     is_active: bool,
     pool: std.Thread.Pool,
     stack: std.ArrayListUnmanaged([]const u8), // Stack of directories for re-entrant scanning
+    total_count: usize, // Track total files found
 };
 
 /// Resource destructor - called by BEAM GC when Elixir drops the reference
@@ -49,6 +50,7 @@ pub export fn zig_create_context(
     resource.created_at = std.time.timestamp();
     resource.is_active = true;
     resource.stack = .{}; // Initialize empty stack
+    resource.total_count = 0; // Reset count
 
     // Initialize Thread Pool (Level 6)
     // Use c_allocator for long-lived thread resources

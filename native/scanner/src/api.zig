@@ -40,6 +40,7 @@ pub const WinNifApi = extern struct {
     // Phase 5: Thread-Safe Messaging
     alloc_env: *const fn () callconv(.c) ?*ErlNifEnv,
     free_env: *const fn (env: ?*ErlNifEnv) callconv(.c) void,
+    make_uint64: *const fn (env: ?*ErlNifEnv, val: u64) callconv(.c) ERL_NIF_TERM,
 };
 
 /// Helper to create {:error, reason} tuple

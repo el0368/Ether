@@ -1,7 +1,67 @@
 [
   {
-    "timestamp": "2026-01-04T08:42:12.353000Z",
+    "timestamp": "2026-01-07T16:07:52.870000Z",
+    "zig_ops_sec": 25.77,
+    "elixir_ops_sec": 3.83,
+    "speedup": 6.73
+  },
+  {
+    "elixir_ops_sec": 3.68,
+    "speedup": 7.47,
+    "timestamp": "2026-01-07T16:07:26.452000Z",
+    "zig_ops_sec": 27.48
+  },
+  {
+    "elixir_ops_sec": 3.61,
+    "speedup": 7.06,
+    "timestamp": "2026-01-07T16:04:20.552000Z",
+    "zig_ops_sec": 25.5
+  },
+  {
+    "elixir_ops_sec": 1.55,
+    "speedup": 15.24,
+    "timestamp": "2026-01-07T15:50:16.245000Z",
+    "zig_ops_sec": 23.62
+  },
+  {
+    "elixir_ops_sec": 1.56,
+    "speedup": 15.24,
+    "timestamp": "2026-01-07T15:44:46.185000Z",
+    "zig_ops_sec": 23.78
+  },
+  {
+    "elixir_ops_sec": 1.68,
+    "speedup": 14.33,
+    "timestamp": "2026-01-07T15:39:39.108000Z",
+    "zig_ops_sec": 24.07
+  },
+  {
+    "elixir_ops_sec": 0.9,
+    "speedup": 25.7,
+    "timestamp": "2026-01-07T15:39:01.290000Z",
+    "zig_ops_sec": 23.13
+  },
+  {
+    "elixir_ops_sec": 7107.52,
+    "speedup": 0.0,
+    "timestamp": "2026-01-07T15:28:14.376000Z",
+    "zig_ops_sec": 16.48
+  },
+  {
+    "elixir_ops_sec": 6391.16,
+    "speedup": 0.0,
+    "timestamp": "2026-01-07T15:24:14.713000Z",
+    "zig_ops_sec": 16.9
+  },
+  {
+    "elixir_ops_sec": 843.32,
+    "speedup": 0.02,
+    "timestamp": "2026-01-07T15:17:36.172000Z",
+    "zig_ops_sec": 16.49
+  },
+  {
     "elixir_ops_sec": 9143.94,
+    "timestamp": "2026-01-04T08:42:12.353000Z",
     "zig_ops_sec": 9824.73
   },
   {

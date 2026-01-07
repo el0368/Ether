@@ -1,102 +1,144 @@
 # Ether IDE ⚡
 
-**The AI-Native, Cross-Platform IDE built on the BEAM.**
+**The AI-Native, Cross-Platform IDE built on the BEAM with Zig-powered Native Performance.**
 
-Ether is an experimental IDE designed for professional efficiency, leveraging the stability of Elixir and the reactivity of Svelte 5. It runs as a standalone desktop application but is built with web technologies, offering the best of both worlds.
+Ether is an experimental IDE designed for professional efficiency, combining Elixir's fault-tolerant runtime with Zig's zero-overhead native code. It runs as a standalone desktop application (via Tauri) or in the browser, offering a modern development experience.
 
-## 🏗️ Stack (SPEL-AI)
+## 🏗️ Stack
 
-*   **S**velte 5 (Frontend with Runes)
-*   **P**hoenix (Backend & Real-time WebSocket)
-*   **E**lixir (Core Business Logic & Agents)
-*   **L**ucide/Tailwind (Styling & Icons)
-*   **AI** (Integrated Agentic Workflows)
-*   **Desktop**: Elixir Desktop (wxWidgets + WebView)
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | Svelte 5 (Runes) + Tailwind CSS |
+| **Backend** | Phoenix 1.8 + Elixir |
+| **Native** | Zig NIFs (Level 6 Performance) |
+| **Desktop** | Tauri v2 (Rust) |
+| **Icons** | Lucide |
 
-## 🚀 Features (Phase 2)
+## ✨ Features
 
--   **Native Desktop Shell**: Runs as a standard Windows app using wxWidgets.
--   **Embedded WebView**: Full compatibility with modern web standards (Edge/WebKit).
--   **Agentic Core**:
-    -   `FileServerAgent`: Safe filesystem access.
-    -   `TestingAgent`: Automated test runner (`mix test`).
-    -   `LintAgent`: Code quality checker (`mix credo`).
-    -   `FormatAgent`: Auto-formatter (`mix format`).
--   **Svelte 5 UI**: Modern, reactive frontend using the latest Svelte Runes syntax.
+### Core IDE
+- **Native File Scanner**: High-performance directory traversal via Zig NIFs
+- **Parallel Content Search**: Multi-threaded grep implementation
+- **Real-time Updates**: WebSocket-based file tree with incremental deltas
+- **Virtual Scrolling**: Handles 100k+ files without UI lag
+
+### Agentic Core
+| Agent | Description |
+|-------|-------------|
+| `FileServerAgent` | Safe filesystem access with recent files tracking |
+| `TestingAgent` | Automated test runner (`mix test`) |
+| `LintAgent` | Code quality checker (`mix credo`) |
+| `FormatAgent` | Auto-formatter (`mix format`) |
+| `RefactorAgent` | AST-based code refactoring (Sourceror) |
+| `GitAgent` | Version control operations |
+| `LSPAgent` | Language Server Protocol support |
+
+### Native Performance (Zig NIFs)
+- **Level 5 Stability**: Zero-panic guarantees with yielding NIFs
+- **Level 6 Speed**: Thread pool parallelism for search operations
+- **BEAM Citizenship**: Cooperative scheduling via `enif_consume_timeslice`
 
 ## 🛠️ Getting Started
 
 ### Prerequisites
-*   Elixir 1.18+ & Erlang/OTP 27+
-*   Zig 0.14+
-*   Rust 1.75+
-*   Bun 1.0+
-*   Git
+- Elixir 1.18+ & Erlang/OTP 27+
+- Zig 0.14+
+- Rust 1.75+ (for Tauri desktop shell)
+- Bun 1.0+ (or Node.js 20+)
+- Git
 
-### Quick Start (New PC Setup)
+### Quick Start
 
 ```bash
-# 1. Clone the repository
+# Clone the repository
 git clone https://github.com/el0368/Ether.git
 cd Ether
 
-# 2. Check tools are installed
-.\check_env.bat
+# Check environment
+.\bat\check_env.bat
 
-# 3. Fix any missing tools (see docs/REQUIRED_VERSIONS.md)
-
-# 4. Install dependencies
+# Install dependencies
 mix deps.get
 cd assets && bun install && cd ..
 
-# 5. Verify everything works
-.\verify_setup.bat
+# Verify setup
+.\bat\verify_setup.bat
 
-# 6. Run the application
-.\start_dev.bat
-# OR run manually:
-#   Terminal 1: .\run_backend.bat
-#   Terminal 2: cargo tauri dev
+# Run in browser mode
+.\bat\start_dev.bat
+
+# OR run in desktop mode (Tauri)
+.\bat\start_tauri.bat
 ```
 
-> **Switching PCs?** Run `check_env.bat` first to verify tools, then `verify_setup.bat` to test everything works.
+### Development Modes
 
-### Web-Only Development
-If you prefer developing in the browser:
-```bash
-.\run_backend.bat
-```
-Then visit: `http://localhost:4000`
+| Mode | Command | Description |
+|------|---------|-------------|
+| **Browser** | `.\bat\start_dev.bat` | Phoenix + Vite at `localhost:5173` |
+| **Desktop** | `.\bat\start_tauri.bat` | Native Tauri window |
+| **Backend Only** | `.\run_backend.bat` | API at `localhost:4000` |
 
 ## 🧠 Architecture
 
-Ether allows "One Runtime" simplicity. The Elixir BEAM VM handles everything:
--   HTTP Server (Bandit)
--   WebSocket Channels (Phoenix)
--   Background Agents (GenServer)
--   GUI (wxWidgets)
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Tauri Shell (Rust)                   │
+├─────────────────────────────────────────────────────────┤
+│              Svelte 5 Frontend (WebView)                │
+├─────────────────────────────────────────────────────────┤
+│         Phoenix Channels (WebSocket Real-time)          │
+├─────────────────────────────────────────────────────────┤
+│              Elixir Agents (GenServer)                  │
+├─────────────────────────────────────────────────────────┤
+│              Zig NIFs (Native Performance)              │
+└─────────────────────────────────────────────────────────┘
+```
 
-No Rust/Zig NIFs are required for the core logic, ensuring strict stability and introspection capabilities.
+### Key Design Decisions
+- **Hybrid Shim Architecture**: C entry point (`entry.c`) bridges Erlang NIF ABI to pure Zig logic
+- **Resource Handles**: BEAM-managed lifecycle for thread pools and native state
+- **Chunked Streaming**: Binary protocol for efficient data transfer to frontend
 
-## 🚚 Moving to a New Machine
+## 📁 Project Structure
 
-To set up this project on a new Windows machine:
+```
+Ether/
+├── assets/           # Svelte 5 frontend
+├── bat/              # Windows launch scripts
+├── config/           # Elixir configuration
+├── docs/             # Documentation & ADRs
+├── lib/              # Elixir application
+│   ├── ether/        # Core logic & agents
+│   └── ether_web/    # Phoenix web layer
+├── native/           # Zig NIFs
+│   └── scanner/      # High-performance scanner
+├── priv/             # Static assets & compiled NIFs
+├── src-tauri/        # Tauri desktop shell
+└── test/             # Test suites
+```
 
-1.  **Install Prerequisites**:
-    *   Erlang/OTP 26+ (Install to `C:\Program Files\Erlang OTP` or update scripts)
-    *   Elixir 1.15+ (Install to `C:\elixir-otp-28` or update scripts)
-    *   Node.js 20+
-    *   Git
+## 📚 Documentation
 
-2.  **Check Scripts**:
-    *   Open `start_dev.bat` and `start_desktop.bat`.
-    *   Verify the `set PATH=...` line matches your installation paths for Elixir and Erlang.
+- **[DEVLOG.md](docs/logs/DEVLOG.md)**: Development history
+- **[WALKTHROUGH.md](docs/reference/WALKTHROUGH.md)**: Feature implementation details
+- **[ADRs](docs/adr/)**: Architecture Decision Records
 
-3.  **Bootstrap**:
-    ```powershell
-    # First run to setup DB and deps
-    .\start_dev.bat
-    ```
+## 🧪 Testing
+
+```bash
+# Run all tests
+mix test
+
+# Run native integrity tests
+mix test test/ether/native/
+
+# Lint code
+mix credo --strict
+
+# Format code
+mix format
+```
 
 ---
-*Generated by Ether Architect (Antigravity)*
+*Built with ❤️ using Elixir, Zig, and Rust*

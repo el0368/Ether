@@ -21,6 +21,7 @@ pub const ERL_NIF_TERM = api.ERL_NIF_TERM;
 // This is required because Zig only exports symbols from the root source file
 comptime {
     _ = &crawler.zig_scan;
+    _ = &crawler.zig_scan_yieldable;
     _ = &resource.zig_create_context;
     _ = &resource.zig_close_context;
     _ = &resource.zig_resource_destructor;

@@ -11,7 +11,38 @@ Tracks throughput and latency over time.
 # Run automated benchmark
 iex -S mix
 > Ether.Benchmark.run()
+```
 
+## Usage (Windows)
+
+> [!IMPORTANT]
+> On Windows, standalone benchmark scripts (`mix run ...`) may fail to load the NIF due to system-level DLL visibility restrictions. **The recommended way to run benchmarks is through the interactive shell.**
+
+### 1. Run via Interactive Shell (Recommended)
+
+Start the shell with the application context:
+```powershell
+iex -S mix
+```
+
+Then run the automated benchmark suite:
+```elixir
+# Run the full suite (saves to bench/history.json)
+Ether.Benchmark.run()
+
+# Set/Compare performance baseline
+Ether.Benchmark.set_baseline()
+```
+
+### 2. Standalone Verification (May require NIF pre-loading)
+
+If you must run individual scripts, use:
+```powershell
+mix run bench/nif_microbench.exs
+mix run bench/load_test.exs
+mix run bench/memory_bench.exs
+mix run bench/web_vitals.exs
+```
 # Set new baseline
 > Ether.Benchmark.set_baseline()
 ```

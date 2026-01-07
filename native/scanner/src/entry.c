@@ -1,5 +1,12 @@
 #include <erl_nif.h>
 
+// Windows DLL export macro
+#ifdef _WIN32
+    #define DLL_EXPORT __declspec(dllexport)
+#else
+    #define DLL_EXPORT
+#endif
+
 // =============================================================================
 // Global Resource Type (initialized in nif_load)
 // =============================================================================
@@ -185,29 +192,29 @@ static WinNifApi build_api(void) {
 }
 
 // =============================================================================
-// NIF Wrappers
+// NIF Wrappers (with Windows DLL export)
 // =============================================================================
-static ERL_NIF_TERM scan_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+DLL_EXPORT ERL_NIF_TERM scan_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     WinNifApi api = build_api();
     return zig_scan(env, argc, argv, &api);
 }
 
-static ERL_NIF_TERM scan_yield_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+DLL_EXPORT ERL_NIF_TERM scan_yield_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     WinNifApi api = build_api();
     return zig_scan_yieldable(env, argc, argv, &api);
 }
 
-static ERL_NIF_TERM create_context_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+DLL_EXPORT ERL_NIF_TERM create_context_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     WinNifApi api = build_api();
     return zig_create_context(env, argc, argv, &api);
 }
 
-static ERL_NIF_TERM close_context_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+DLL_EXPORT ERL_NIF_TERM close_context_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     WinNifApi api = build_api();
     return zig_close_context(env, argc, argv, &api);
 }
 
-static ERL_NIF_TERM search_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+DLL_EXPORT ERL_NIF_TERM search_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     WinNifApi api = build_api();
     return zig_search(env, argc, argv, &api);
 }

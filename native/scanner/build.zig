@@ -10,11 +10,11 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    
+
     // Add C source file (Shim)
     mod.addCSourceFile(.{
         .file = b.path("src/entry.c"),
-        .flags = &.{}, 
+        .flags = &.{},
     });
 
     const lib = b.addLibrary(.{
@@ -25,11 +25,12 @@ pub fn build(b: *std.Build) void {
 
     // Add Erlang Includes
     if (b.option([]const u8, "erl_include", "Path to Erlang include directory")) |path| {
-        mod.addIncludePath(.{ .cwd_relative = path }); 
+        mod.addIncludePath(.{ .cwd_relative = path });
     } else {
         mod.addIncludePath(.{ .cwd_relative = "C:\\Program Files\\Erlang OTP\\erts-16.2\\include" });
     }
 
     lib.linkLibC();
+
     b.installArtifact(lib);
 }

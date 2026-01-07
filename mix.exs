@@ -78,6 +78,7 @@ defmodule Ether.MixProject do
       # Agent Framework & Intelligence
       {:jido, "~> 1.0.0"},
       {:sourceror, "~> 1.0"},
+      {:httpoison, "~> 2.0"},
       {:elixir_sense, github: "elixir-lsp/elixir_sense"}
       # {:instructor, "~> 0.1.0"}
     ]

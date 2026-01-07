@@ -7,16 +7,6 @@ defmodule Ether.Agents.GitAgent do
     name: "git_agent",
     description: "Wraps system git commands for safe version control operations."
 
-  use GenServer
-
-  def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
-  end
-
-  def init(state) do
-    {:ok, state}
-  end
-  
   require Logger
 
   @doc """

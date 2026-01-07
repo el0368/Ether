@@ -7,15 +7,6 @@ defmodule Ether.Agents.CommandAgent do
     name: "command_agent",
     description: "Safely executes system commands with timeout and logging."
 
-  use GenServer
-
-  def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
-  end
-
-  def init(state) do
-    {:ok, state}
-  end
 
   require Logger
 

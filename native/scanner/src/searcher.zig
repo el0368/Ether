@@ -26,6 +26,31 @@ const SearchContext = struct {
     }
 };
 
+const w = std.os.windows;
+const CP_UTF8 = 65001;
+
+const kernel32 = struct {
+    extern "kernel32" fn MultiByteToWideChar(CodePage: u32, dwFlags: u32, lpMultiByteStr: [*]const u8, cbMultiByte: c_int, lpWideCharStr: ?[*]u16, cchWideChar: c_int) callconv(.winapi) c_int;
+    extern "kernel32" fn CreateFileW(lpFileName: [*]const u16, dwDesiredAccess: u32, dwShareMode: u32, lpSecurityAttributes: ?*anyopaque, dwCreationDisposition: u32, dwFlagsAndAttributes: u32, hTemplateFile: ?*anyopaque) callconv(.winapi) w.HANDLE;
+    extern "kernel32" fn CloseHandle(hObject: w.HANDLE) callconv(.winapi) bool;
+    extern "kernel32" fn ReadFile(hFile: w.HANDLE, lpBuffer: [*]u8, nNumberOfBytesToRead: u32, lpNumberOfBytesRead: ?*u32, lpOverlapped: ?*anyopaque) callconv(.winapi) bool;
+    extern "kernel32" fn GetFileSizeEx(hFile: w.HANDLE, lpFileSize: *i64) callconv(.winapi) bool;
+    extern "kernel32" fn GetFileAttributesW(lpFileName: [*]const u16) callconv(.winapi) u32;
+    extern "kernel32" fn FindFirstFileW(lpFileName: [*]const u16, lpFindFileData: *w.WIN32_FIND_DATAW) callconv(.winapi) w.HANDLE;
+    extern "kernel32" fn FindNextFileW(hFindFile: w.HANDLE, lpFindFileData: *w.WIN32_FIND_DATAW) callconv(.winapi) bool;
+    extern "kernel32" fn FindClose(hFindFile: w.HANDLE) callconv(.winapi) bool;
+    extern "kernel32" fn WideCharToMultiByte(CodePage: u32, dwFlags: u32, lpWideCharStr: [*]const u16, cchWideChar: c_int, lpMultiByteStr: ?[*]u8, cbMultiByte: c_int, lpDefaultChar: ?[*]const u8, lpUsedDefaultChar: ?*bool) callconv(.winapi) c_int;
+};
+
+fn sliceToHeapUTF16(mem_alloc: std.mem.Allocator, path_u8: []const u8) ![]u16 {
+    const res_len = kernel32.MultiByteToWideChar(CP_UTF8, 0, path_u8.ptr, @intCast(path_u8.len), null, 0);
+    if (res_len <= 0) return error.UnicodeError;
+    const path_utf16 = try mem_alloc.alloc(u16, @intCast(res_len + 1));
+    _ = kernel32.MultiByteToWideChar(CP_UTF8, 0, path_u8.ptr, @intCast(path_u8.len), path_utf16.ptr, res_len);
+    path_utf16[@intCast(res_len)] = 0;
+    return path_utf16;
+}
+
 /// Main search entry point
 pub export fn zig_search(
     env: ?*api.ErlNifEnv,
@@ -97,79 +122,126 @@ pub export fn zig_search(
     return nif_api.make_tuple2(env, nif_api.make_atom(env, "ok"), list);
 }
 
-// Unified recursive walker
-fn process_path(ctx: *SearchContext, path: []const u8) !void {
-    // Try to open as directory
-    var dir = std.fs.openDirAbsolute(path, .{ .iterate = true }) catch |err| {
-        if (err == error.NotDir) {
-            // It's a file, spawn search task
-            const path_dupe = try ctx.alloc.dupe(u8, path);
-            ctx.wg.start();
-            try ctx.pool.spawn(search_file_task, .{ ctx, path_dupe });
-            return;
+fn process_path(ctx: *SearchContext, path_u8: []const u8) !void {
+    const path_utf16 = try sliceToHeapUTF16(ctx.alloc, path_u8);
+    defer ctx.alloc.free(path_utf16);
+
+    const attrs = kernel32.GetFileAttributesW(path_utf16.ptr);
+    if (attrs == 0xFFFFFFFF) return error.NotFound;
+
+    if ((attrs & 0x10) != 0) { // FILE_ATTRIBUTE_DIRECTORY
+        // Iterate directory using FindFirstFileW
+        var search_pattern_u8 = std.ArrayListUnmanaged(u8){};
+        defer search_pattern_u8.deinit(ctx.alloc);
+        try search_pattern_u8.appendSlice(ctx.alloc, path_u8);
+        if (!std.mem.endsWith(u8, path_u8, "\\") and !std.mem.endsWith(u8, path_u8, "/")) {
+            try search_pattern_u8.appendSlice(ctx.alloc, "\\*");
+        } else {
+            try search_pattern_u8.append(ctx.alloc, '*');
         }
-        return err;
-    };
-    defer dir.close();
 
-    // It's a directory, iterate
-    var iter = dir.iterate();
-    while (try iter.next()) |entry| {
-        // Skip common ignore patterns
-        if (std.mem.eql(u8, entry.name, ".git")) continue;
-        if (std.mem.eql(u8, entry.name, "tmp")) continue;
-        if (std.mem.eql(u8, entry.name, "deps")) continue;
-        if (std.mem.eql(u8, entry.name, "_build")) continue;
-        if (std.mem.eql(u8, entry.name, "node_modules")) continue;
+        const pattern_utf16 = try sliceToHeapUTF16(ctx.alloc, search_pattern_u8.items);
+        defer ctx.alloc.free(pattern_utf16);
 
-        const full_path = try std.fs.path.join(ctx.alloc, &.{ path, entry.name });
-        defer ctx.alloc.free(full_path);
+        var find_data: w.WIN32_FIND_DATAW = undefined;
+        const find_handle = kernel32.FindFirstFileW(pattern_utf16.ptr, &find_data);
+        if (find_handle == w.INVALID_HANDLE_VALUE) return;
+        defer _ = kernel32.FindClose(find_handle);
 
-        if (entry.kind == .directory) {
-            try process_path(ctx, full_path);
-        } else if (entry.kind == .file) {
-            const path_dupe = try ctx.alloc.dupe(u8, full_path);
-            ctx.wg.start();
-            try ctx.pool.spawn(search_file_task, .{ ctx, path_dupe });
+        while (true) {
+            const name_u16 = std.mem.sliceTo(&find_data.cFileName, 0);
+            if (!std.mem.eql(u16, name_u16, &.{'.'}) and !std.mem.eql(u16, name_u16, &.{ '.', '.' })) {
+                // Convert name back to UTF-8
+                const name_len = kernel32.WideCharToMultiByte(CP_UTF8, 0, name_u16.ptr, @intCast(name_u16.len), null, 0, null, null);
+                if (name_len > 0) {
+                    const name_u8 = try ctx.alloc.alloc(u8, @intCast(name_len));
+                    defer ctx.alloc.free(name_u8);
+                    _ = kernel32.WideCharToMultiByte(CP_UTF8, 0, name_u16.ptr, @intCast(name_u16.len), name_u8.ptr, name_len, null, null);
+
+                    // Skip ignore patterns
+                    if (!std.mem.eql(u8, name_u8, ".git") and !std.mem.eql(u8, name_u8, "node_modules")) {
+                        const full_path = try std.fs.path.join(ctx.alloc, &.{ path_u8, name_u8 });
+                        defer ctx.alloc.free(full_path);
+
+                        if ((find_data.dwFileAttributes & 0x10) != 0) {
+                            try process_path(ctx, full_path);
+                        } else {
+                            const path_dupe = try ctx.alloc.dupe(u8, full_path);
+                            ctx.wg.start();
+                            try ctx.pool.spawn(search_file_task, .{ ctx, path_dupe });
+                        }
+                    }
+                }
+            }
+
+            if (!kernel32.FindNextFileW(find_handle, &find_data)) break;
         }
+    } else {
+        // It's a file
+        const path_dupe = try ctx.alloc.dupe(u8, path_u8);
+        ctx.wg.start();
+        try ctx.pool.spawn(search_file_task, .{ ctx, path_dupe });
     }
 }
 
-fn search_file_task(ctx: *SearchContext, path: []u8) void {
+fn search_file_task(ctx: *SearchContext, path_u8: []u8) void {
     defer ctx.wg.finish();
-    // We own path, must free or pass ownership
-    // If not match, free. If match, pass to results.
-    defer {
-        // We do NOT free path here if we added it to results?
-        // Result list needs it.
-        // Actually, let's keep it simple: always free here unless we move ownership.
+
+    // 1. Convert path to UTF-16 on the heap
+    const path_utf16 = sliceToHeapUTF16(ctx.alloc, path_u8) catch {
+        ctx.alloc.free(path_u8);
+        return;
+    };
+    defer ctx.alloc.free(path_utf16);
+
+    // 2. Open File using raw Win32
+    const handle = kernel32.CreateFileW(
+        path_utf16.ptr,
+        w.GENERIC_READ,
+        w.FILE_SHARE_READ,
+        null,
+        w.OPEN_EXISTING,
+        w.FILE_ATTRIBUTE_NORMAL,
+        null,
+    );
+
+    if (handle == w.INVALID_HANDLE_VALUE) {
+        ctx.alloc.free(path_u8);
+        return;
+    }
+    defer _ = kernel32.CloseHandle(handle);
+
+    // 3. Get File Size and Read
+    var file_size: i64 = 0;
+    if (!kernel32.GetFileSizeEx(handle, &file_size)) {
+        ctx.alloc.free(path_u8);
+        return;
     }
 
-    // Use page allocator for file buffer (thread local)
-    const file = std.fs.openFileAbsolute(path, .{ .mode = .read_only }) catch {
-        ctx.alloc.free(path);
-        return;
-    };
-    defer file.close();
-
     // Limit read size to 1MB for search
-    const max_size = 1024 * 1024;
-    const buffer = std.heap.page_allocator.alloc(u8, max_size) catch {
-        ctx.alloc.free(path);
+    const max_size: u32 = 1024 * 1024;
+    const read_size: u32 = if (file_size > max_size) max_size else @intCast(file_size);
+
+    const buffer = ctx.alloc.alloc(u8, read_size) catch {
+        ctx.alloc.free(path_u8);
         return;
     };
-    defer std.heap.page_allocator.free(buffer);
+    defer ctx.alloc.free(buffer);
 
-    const bytes = file.readAll(buffer) catch 0;
-    const content = buffer[0..bytes];
+    var bytes_read: u32 = 0;
+    if (!kernel32.ReadFile(handle, buffer.ptr, read_size, &bytes_read, null)) {
+        ctx.alloc.free(path_u8);
+        return;
+    }
 
+    const content = buffer[0..bytes_read];
+
+    // 4. Search and Add Result
     if (std.mem.indexOf(u8, content, ctx.query) != null) {
-        // Found match!
-        ctx.addResult(path) catch {
-            ctx.alloc.free(path); // failed to add
+        ctx.addResult(path_u8) catch {
+            ctx.alloc.free(path_u8);
         };
     } else {
-        // No match, free path
-        ctx.alloc.free(path);
+        ctx.alloc.free(path_u8);
     }
 }

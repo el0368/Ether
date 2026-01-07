@@ -13,23 +13,21 @@ defmodule Ether.Scanner do
     
     # Delegate strictly to the Zig/C NIF.
     # POLICY: No Fallback. If NIF fails/crashes, we crash.
-    case Ether.Native.Scanner.scan(path) do
-      :ok ->
-        collect_and_decode(path, [])
-      {:error, reason} -> 
-        Logger.error("NIF Scan Failed: #{inspect(reason)}")
-        raise "Native Scanner Failure: #{inspect(reason)}"
-    end
+    :ok = Ether.Native.Scanner.scan(path)
+    collect_and_decode(path, [])
   end
 
   defp collect_and_decode(root, acc_binaries) do
     receive do
-      {:binary, bin} -> 
+      {:scanner_chunk, bin} -> 
         collect_and_decode(root, [bin | acc_binaries])
-      {:scan_completed, _} ->
+      {:scanner_done, :ok} ->
         # Join all chunks reversed (since we prepended)
         full_binary = acc_binaries |> Enum.reverse() |> IO.iodata_to_binary()
         decode_slab(full_binary, root, [])
+      {:scanner_error, reason} ->
+        Logger.error("NIF Scan Failed: #{inspect(reason)}")
+        raise "Native Scanner Failure: #{inspect(reason)}"
     after
       5000 -> raise "Scanner Timeout: NIF did not reply."
     end

@@ -1,244 +1,81 @@
 //! Crawler Module: File system scanning logic
-//! Implements parallel and sequential directory traversal
+//! Implements iterative stack-safe directory traversal for Windows
+//! ADR-021: Stack-Safe Windows NIF Infrastructure
 
 const std = @import("std");
 const api = @import("api.zig");
-const alloc_mod = @import("allocator.zig");
+const beam = @import("beam/erl_nif.zig");
+const resource = @import("resource.zig");
 
 // Configuration
-pub const PARALLEL_THRESHOLD: usize = 50;
-pub const MAX_THREADS: u32 = 4;
 pub const CHUNK_SIZE: usize = 1000;
+
+const w = std.os.windows;
+const CP_UTF8 = 65001;
+
+const kernel32 = struct {
+    extern "kernel32" fn MultiByteToWideChar(CodePage: u32, dwFlags: u32, lpMultiByteStr: [*]const u8, cbMultiByte: c_int, lpWideCharStr: ?[*]u16, cchWideChar: c_int) callconv(.winapi) c_int;
+    extern "kernel32" fn CreateFileW(lpFileName: [*]const u16, dwDesiredAccess: u32, dwShareMode: u32, lpSecurityAttributes: ?*anyopaque, dwCreationDisposition: u32, dwFlagsAndAttributes: u32, hTemplateFile: ?*anyopaque) callconv(.winapi) w.HANDLE;
+    extern "kernel32" fn CloseHandle(hObject: w.HANDLE) callconv(.winapi) bool;
+    extern "kernel32" fn GetFileAttributesW(lpFileName: [*]const u16) callconv(.winapi) u32;
+    extern "kernel32" fn FindFirstFileW(lpFileName: [*]const u16, lpFindFileData: *w.WIN32_FIND_DATAW) callconv(.winapi) w.HANDLE;
+    extern "kernel32" fn FindNextFileW(hFindFile: w.HANDLE, lpFindFileData: *w.WIN32_FIND_DATAW) callconv(.winapi) bool;
+    extern "kernel32" fn FindClose(hFindFile: w.HANDLE) callconv(.winapi) bool;
+    extern "kernel32" fn WideCharToMultiByte(CodePage: u32, dwFlags: u32, lpWideCharStr: [*]const u16, cchWideChar: c_int, lpMultiByteStr: ?[*]u8, cbMultiByte: c_int, lpDefaultChar: ?[*]const u8, lpUsedDefaultChar: ?*bool) callconv(.winapi) c_int;
+};
+
+fn sliceToHeapUTF16(mem_alloc: std.mem.Allocator, path_u8: []const u8) ![]u16 {
+    const res_len = kernel32.MultiByteToWideChar(CP_UTF8, 0, path_u8.ptr, @intCast(path_u8.len), null, 0);
+    if (res_len <= 0) return error.UnicodeError;
+    const path_utf16 = try mem_alloc.alloc(u16, @intCast(res_len + 1));
+    _ = kernel32.MultiByteToWideChar(CP_UTF8, 0, path_u8.ptr, @intCast(path_u8.len), path_utf16.ptr, res_len);
+    path_utf16[@intCast(res_len)] = 0;
+    return path_utf16;
+}
 
 /// Shared context for scanning
 pub const ScanContext = struct {
     buffer: *std.ArrayListUnmanaged(u8),
     allocator: std.mem.Allocator,
-    mutex: std.Thread.Mutex,
-    base_path: []const u8,
     env: ?*api.ErlNifEnv,
     nif_api: *const api.WinNifApi,
-    pid: *const anyopaque,
+    pid: *const beam.ErlNifPid,
     entry_count: usize,
 };
 
 /// Flush buffer to Elixir process
 pub fn flush_buffer(ctx: *ScanContext) void {
-    ctx.mutex.lock();
-    defer ctx.mutex.unlock();
-
     if (ctx.buffer.items.len == 0) return;
-    send_chunk(ctx.nif_api, ctx.pid, ctx.buffer);
+
+    const msg_env = ctx.nif_api.alloc_env() orelse return;
+    var bin: api.ErlNifBinary = undefined;
+    if (ctx.nif_api.alloc_binary(ctx.buffer.items.len, &bin) == 0) {
+        ctx.nif_api.free_env(msg_env);
+        return;
+    }
+    @memcpy(bin.data[0..bin.size], ctx.buffer.items);
+
+    const tag = ctx.nif_api.make_atom(msg_env, "scanner_chunk");
+    const val = ctx.nif_api.make_binary(msg_env, &bin);
+    const msg = ctx.nif_api.make_tuple2(msg_env, tag, val);
+
+    if (ctx.nif_api.send(null, ctx.pid, msg_env, msg) == 0) {
+        ctx.nif_api.free_env(msg_env);
+    }
+
     ctx.buffer.clearRetainingCapacity();
     ctx.entry_count = 0;
 }
 
-/// Send a binary chunk to Elixir
-pub fn send_chunk(
-    nif_api: *const api.WinNifApi,
-    pid: *const anyopaque,
-    buffer: *std.ArrayListUnmanaged(u8),
-) void {
-    const msg_env = nif_api.alloc_env() orelse return;
-    defer nif_api.free_env(msg_env);
-
-    var bin: api.ErlNifBinary = undefined;
-    if (nif_api.alloc_binary(buffer.items.len, &bin) == 0) return;
-    @memcpy(bin.data[0..bin.size], buffer.items);
-
-    const tag = nif_api.make_atom(msg_env, "scanner_chunk");
-    const val = nif_api.make_binary(msg_env, &bin);
-    const msg = nif_api.make_tuple2(msg_env, tag, val);
-
-    _ = nif_api.send(null, pid, msg_env, msg);
-}
-
 /// Send scan completion signal
-pub fn send_done(nif_api: *const api.WinNifApi, pid: *const anyopaque) void {
+pub fn send_done(nif_api: *const api.WinNifApi, pid: *const beam.ErlNifPid) void {
     const msg_env = nif_api.alloc_env() orelse return;
-    defer nif_api.free_env(msg_env);
-
     const tag = nif_api.make_atom(msg_env, "scanner_done");
     const val = nif_api.make_atom(msg_env, "ok");
     const msg = nif_api.make_tuple2(msg_env, tag, val);
-
-    _ = nif_api.send(null, pid, msg_env, msg);
-}
-
-/// Worker function for parallel scanning
-pub fn scanSubdirWorker(ctx: *ScanContext, subdir_name: []const u8) void {
-    var path_buf: [4096]u8 = undefined;
-    const full_path = std.fmt.bufPrint(&path_buf, "{s}/{s}", .{ ctx.base_path, subdir_name }) catch return;
-
-    var dir = std.fs.cwd().openDir(full_path, .{ .iterate = true }) catch return;
-    defer dir.close();
-
-    var local_buffer = std.ArrayListUnmanaged(u8){};
-    defer local_buffer.deinit(ctx.allocator);
-
-    var iterator = dir.iterate();
-    while (iterator.next() catch null) |entry| {
-        const type_byte: u8 = switch (entry.kind) {
-            .file => 1,
-            .directory => 2,
-            .sym_link => 3,
-            else => 0,
-        };
-        local_buffer.append(ctx.allocator, type_byte) catch return;
-
-        var rel_path_buf: [4096]u8 = undefined;
-        const rel_path = std.fmt.bufPrint(&rel_path_buf, "{s}/{s}", .{ subdir_name, entry.name }) catch return;
-
-        const len: u16 = @intCast(rel_path.len);
-        local_buffer.writer(ctx.allocator).writeInt(u16, len, .little) catch return;
-        local_buffer.appendSlice(ctx.allocator, rel_path) catch return;
+    if (nif_api.send(null, pid, msg_env, msg) == 0) {
+        nif_api.free_env(msg_env);
     }
-
-    ctx.mutex.lock();
-    defer ctx.mutex.unlock();
-    ctx.buffer.appendSlice(ctx.allocator, local_buffer.items) catch return;
-    ctx.entry_count += 50;
-}
-
-/// Main scan entry point
-pub export fn zig_scan(
-    env: ?*api.ErlNifEnv,
-    argc: c_int,
-    argv: [*c]const api.ERL_NIF_TERM,
-    nif_api: *const api.WinNifApi,
-) api.ERL_NIF_TERM {
-    if (argc != 2) return nif_api.make_badarg(env);
-
-    // Phase 3-4: Defensive Input Validation
-    if (nif_api.is_binary(env, argv[0]) == 0) {
-        return api.make_error_tuple(env, nif_api, "invalid_path_type");
-    }
-    if (nif_api.is_pid(env, argv[1]) == 0) {
-        return api.make_error_tuple(env, nif_api, "invalid_pid_type");
-    }
-
-    // 1. Parse Path
-    var path_bin: api.ErlNifBinary = undefined;
-    if (nif_api.inspect_binary(env, argv[0], &path_bin) == 0) {
-        return nif_api.make_badarg(env);
-    }
-    const path_slice = path_bin.data[0..path_bin.size];
-
-    // 2. Parse PID
-    var pid_buffer: [128]u8 = undefined;
-    if (nif_api.get_local_pid(env, argv[1], &pid_buffer) == 0) {
-        return nif_api.make_badarg(env);
-    }
-
-    var dir = std.fs.cwd().openDir(path_slice, .{ .iterate = true }) catch |err| {
-        return switch (err) {
-            error.AccessDenied => api.make_error_tuple(env, nif_api, "e_acces"),
-            error.FileNotFound => api.make_error_tuple(env, nif_api, "e_noent"),
-            else => api.make_error_tuple(env, nif_api, "e_io"),
-        };
-    };
-    defer dir.close();
-
-    // Use BEAM Allocator
-    var beam_alloc = alloc_mod.BeamAllocator.init(nif_api, env);
-    const allocator = beam_alloc.allocator();
-
-    var buffer = std.ArrayListUnmanaged(u8){};
-    defer buffer.deinit(allocator);
-
-    var ctx = ScanContext{
-        .buffer = &buffer,
-        .allocator = allocator,
-        .mutex = std.Thread.Mutex{},
-        .base_path = path_slice,
-        .env = env,
-        .nif_api = nif_api,
-        .pid = &pid_buffer,
-        .entry_count = 0,
-    };
-
-    // Collect subdirs
-    var subdirs = std.ArrayListUnmanaged([]const u8){};
-    defer {
-        for (subdirs.items) |subdir| {
-            allocator.free(subdir);
-        }
-        subdirs.deinit(allocator);
-    }
-
-    var iterator = dir.iterate();
-    var iteration_count: usize = 0;
-    while (iterator.next() catch null) |entry| {
-        iteration_count += 1;
-
-        if (iteration_count % 100 == 0) {
-            _ = nif_api.consume_timeslice(env, 1);
-        }
-
-        // FILTER: Ignore Heavy Directories
-        if (entry.kind == .directory) {
-            if (std.mem.eql(u8, entry.name, "node_modules") or
-                std.mem.eql(u8, entry.name, "_build") or
-                std.mem.eql(u8, entry.name, "deps") or
-                std.mem.eql(u8, entry.name, ".git") or
-                std.mem.eql(u8, entry.name, ".elixir_ls"))
-            {
-                continue;
-            }
-        }
-
-        const type_byte: u8 = switch (entry.kind) {
-            .file => 1,
-            .directory => 2,
-            .sym_link => 3,
-            else => 0,
-        };
-        buffer.append(allocator, type_byte) catch return api.make_error_tuple(env, nif_api, "oom");
-
-        const len: u16 = @intCast(entry.name.len);
-        buffer.writer(allocator).writeInt(u16, len, .little) catch return api.make_error_tuple(env, nif_api, "oom");
-        buffer.appendSlice(allocator, entry.name) catch return api.make_error_tuple(env, nif_api, "oom");
-
-        ctx.entry_count += 1;
-
-        if (ctx.entry_count >= CHUNK_SIZE) {
-            flush_buffer(&ctx);
-        }
-
-        if (entry.kind == .directory) {
-            const name_copy = allocator.dupe(u8, entry.name) catch continue;
-            subdirs.append(allocator, name_copy) catch continue;
-        }
-    }
-
-    flush_buffer(&ctx);
-
-    if (subdirs.items.len >= PARALLEL_THRESHOLD) {
-        var pool: std.Thread.Pool = undefined;
-        pool.init(.{ .allocator = allocator, .n_jobs = MAX_THREADS }) catch {
-            for (subdirs.items) |subdir_name| {
-                scanSubdirWorker(&ctx, subdir_name);
-                if (ctx.buffer.items.len > 1024 * 64) flush_buffer(&ctx);
-            }
-            flush_buffer(&ctx);
-            send_done(nif_api, &pid_buffer);
-            return nif_api.make_atom(env, "ok");
-        };
-        defer pool.deinit();
-
-        for (subdirs.items) |subdir_name| {
-            pool.spawn(scanSubdirWorker, .{ &ctx, subdir_name }) catch continue;
-        }
-    } else {
-        for (subdirs.items) |subdir_name| {
-            scanSubdirWorker(&ctx, subdir_name);
-        }
-    }
-
-    flush_buffer(&ctx);
-    send_done(nif_api, &pid_buffer);
-
-    return nif_api.make_atom(env, "ok");
 }
 
 /// Yieldable scan entry point (Level 5)
@@ -250,124 +87,125 @@ pub export fn zig_scan_yieldable(
 ) api.ERL_NIF_TERM {
     if (argc != 3) return nif_api.make_badarg(env);
 
-    // 1. Get Resource
-    var resource_ptr: ?*anyopaque = null;
-    if (nif_api.get_resource(env, argv[0], &resource_ptr) == 0) {
-        return api.make_error_tuple(env, nif_api, "invalid_resource");
-    }
-    const resource: *@import("resource.zig").ScannerResource = @ptrCast(@alignCast(resource_ptr.?));
+    // 1. Validate Context Resource
+    var ctx_ptr: ?*anyopaque = undefined;
+    if (nif_api.get_resource(env, argv[0], &ctx_ptr) == 0) return nif_api.make_badarg(env);
+    const res_obj: *resource.ScannerResource = @ptrCast(@alignCast(ctx_ptr));
 
-    // 2. Parse Path (only if stack is empty - initial call)
-    if (resource.stack.items.len == 0) {
+    // 2. Parse PID
+    var pid: beam.ErlNifPid = undefined;
+    if (nif_api.get_local_pid(env, argv[2], &pid) == 0) return nif_api.make_badarg(env);
+
+    // 3. Handle Initial Path (if stack empty)
+    const allocator = std.heap.c_allocator;
+    if (res_obj.stack.items.len == 0) {
         var path_bin: api.ErlNifBinary = undefined;
-        if (nif_api.inspect_binary(env, argv[1], &path_bin) == 0) {
+        if (nif_api.inspect_binary(env, argv[1], &path_bin) == 0) return nif_api.make_badarg(env);
+        const initial_path = allocator.dupe(u8, path_bin.data[0..path_bin.size]) catch return nif_api.make_badarg(env);
+        res_obj.stack.append(allocator, initial_path) catch {
+            allocator.free(initial_path);
             return nif_api.make_badarg(env);
-        }
-        const path_slice = path_bin.data[0..path_bin.size];
-
-        const path_copy = std.heap.page_allocator.dupe(u8, path_slice) catch return api.make_error_tuple(env, nif_api, "oom");
-        resource.stack.append(std.heap.page_allocator, path_copy) catch {
-            std.heap.page_allocator.free(path_copy);
-            return api.make_error_tuple(env, nif_api, "oom");
         };
     }
 
-    // 3. Parse PID
-    var pid_buffer: [128]u8 = undefined;
-    if (nif_api.get_local_pid(env, argv[2], &pid_buffer) == 0) {
-        return nif_api.make_badarg(env);
-    }
+    var local_buffer = std.ArrayListUnmanaged(u8){};
+    defer local_buffer.deinit(allocator);
 
-    // Use page_allocator for the scan loop (needs to be persistent if interrupted)
-    const allocator = std.heap.page_allocator;
-    var beam_alloc = alloc_mod.BeamAllocator.init(nif_api, env);
-    const nif_allocator = beam_alloc.allocator();
-
-    var buffer = std.ArrayListUnmanaged(u8){};
-    defer buffer.deinit(nif_allocator);
-
-    var ctx = ScanContext{
-        .buffer = &buffer,
-        .allocator = nif_allocator,
-        .mutex = std.Thread.Mutex{},
-        .base_path = "", // Will be set per directory
+    var scan_ctx = ScanContext{
+        .buffer = &local_buffer,
+        .allocator = allocator,
         .env = env,
         .nif_api = nif_api,
-        .pid = &pid_buffer,
+        .pid = &pid,
         .entry_count = 0,
     };
 
-    var iteration_count: usize = 0;
-    while (resource.stack.items.len > 0) {
-        const dir_path = resource.stack.items[resource.stack.items.len - 1];
-        resource.stack.items.len -= 1;
-        ctx.base_path = dir_path;
-
-        iteration_count += 1;
-        if (iteration_count % 50 == 0) {
+    var iterations: usize = 0;
+    while (res_obj.stack.items.len > 0) {
+        iterations += 1;
+        if (iterations % 50 == 0) {
             if (nif_api.consume_timeslice(env, 1) != 0) {
-                // YIELD! Push directory BACK so it's processed on resume
-                resource.stack.append(allocator, dir_path) catch {
-                    allocator.free(dir_path);
-                    return api.make_error_tuple(env, nif_api, "oom");
-                };
-                return nif_api.make_tuple2(env, nif_api.make_atom(env, "cont"), argv[0]);
+                flush_buffer(&scan_ctx);
+                return nif_api.make_atom(env, "yield");
             }
         }
 
-        var dir = std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch {
-            allocator.free(dir_path);
-            continue;
-        };
-        defer dir.close();
+        const current_path = res_obj.stack.items[res_obj.stack.items.len - 1];
+        res_obj.stack.items.len -= 1;
+        defer allocator.free(current_path);
 
-        var iterator = dir.iterate();
-        while (iterator.next() catch null) |entry| {
-            // FILTER: Standard Aether Filters
-            if (entry.kind == .directory) {
-                if (std.mem.eql(u8, entry.name, "node_modules") or
-                    std.mem.eql(u8, entry.name, ".git") or
-                    std.mem.eql(u8, entry.name, "_build") or
-                    std.mem.eql(u8, entry.name, "deps"))
-                {
-                    continue;
+        const path_utf16 = sliceToHeapUTF16(allocator, current_path) catch continue;
+        defer allocator.free(path_utf16);
+
+        const attrs = kernel32.GetFileAttributesW(path_utf16.ptr);
+        if (attrs == 0xFFFFFFFF) continue;
+
+        if ((attrs & 0x10) != 0) { // Directory
+            var search_pattern_u8 = std.ArrayListUnmanaged(u8){};
+            defer search_pattern_u8.deinit(allocator);
+            search_pattern_u8.appendSlice(allocator, current_path) catch continue;
+            if (!std.mem.endsWith(u8, current_path, "\\") and !std.mem.endsWith(u8, current_path, "/")) {
+                search_pattern_u8.appendSlice(allocator, "\\*") catch continue;
+            } else {
+                search_pattern_u8.append(allocator, '*') catch continue;
+            }
+
+            const pattern_utf16 = sliceToHeapUTF16(allocator, search_pattern_u8.items) catch continue;
+            defer allocator.free(pattern_utf16);
+
+            var find_data: w.WIN32_FIND_DATAW = undefined;
+            const find_handle = kernel32.FindFirstFileW(pattern_utf16.ptr, &find_data);
+            if (find_handle == w.INVALID_HANDLE_VALUE) continue;
+            defer _ = kernel32.FindClose(find_handle);
+
+            while (true) {
+                const name_u16 = std.mem.sliceTo(&find_data.cFileName, 0);
+                if (!std.mem.eql(u16, name_u16, &.{'.'}) and !std.mem.eql(u16, name_u16, &.{ '.', '.' })) {
+                    const name_len = kernel32.WideCharToMultiByte(CP_UTF8, 0, name_u16.ptr, @intCast(name_u16.len), null, 0, null, null);
+                    if (name_len > 0) {
+                        const name_u8 = allocator.alloc(u8, @intCast(name_len)) catch continue;
+                        defer allocator.free(name_u8);
+                        _ = kernel32.WideCharToMultiByte(CP_UTF8, 0, name_u16.ptr, @intCast(name_u16.len), name_u8.ptr, name_len, null, null);
+
+                        // Skip ignore patterns
+                        if (!std.mem.eql(u8, name_u8, ".git") and
+                            !std.mem.eql(u8, name_u8, "node_modules") and
+                            !std.mem.eql(u8, name_u8, "_build") and
+                            !std.mem.eql(u8, name_u8, "deps"))
+                        {
+                            const full_path = std.fs.path.join(allocator, &.{ current_path, name_u8 }) catch continue;
+
+                            if ((find_data.dwFileAttributes & 0x10) != 0) {
+                                res_obj.stack.append(allocator, full_path) catch {
+                                    allocator.free(full_path);
+                                };
+                            } else {
+                                // Add file entry to buffer
+                                local_buffer.append(allocator, 1) catch continue; // type_file
+                                const len: u16 = @intCast(full_path.len);
+                                local_buffer.writer(allocator).writeInt(u16, len, .little) catch continue;
+                                local_buffer.appendSlice(allocator, full_path) catch continue;
+                                scan_ctx.entry_count += 1;
+                                allocator.free(full_path);
+                            }
+                        }
+                    }
+                }
+                if (!kernel32.FindNextFileW(find_handle, &find_data)) break;
+
+                // Pre-emptive flush to avoid giant messages
+                if (local_buffer.items.len > 1024 * 64) {
+                    flush_buffer(&scan_ctx);
                 }
             }
-
-            const type_byte: u8 = switch (entry.kind) {
-                .file => 1,
-                .directory => 2,
-                .sym_link => 3,
-                else => 0,
-            };
-            buffer.append(nif_allocator, type_byte) catch break;
-
-            const name_with_path = std.fs.path.join(nif_allocator, &[_][]const u8{ dir_path, entry.name }) catch break;
-            defer nif_allocator.free(name_with_path);
-
-            const len: u16 = @intCast(name_with_path.len);
-            buffer.writer(nif_allocator).writeInt(u16, len, .little) catch break;
-            buffer.appendSlice(nif_allocator, name_with_path) catch break;
-
-            if (entry.kind == .directory) {
-                const sub_path = allocator.dupe(u8, name_with_path) catch continue;
-                resource.stack.append(allocator, sub_path) catch {
-                    allocator.free(sub_path);
-                    continue;
-                };
-            }
         }
 
-        // Processing of this directory is finished. Free the path.
-        allocator.free(dir_path);
-
-        if (buffer.items.len > CHUNK_SIZE) {
-            flush_buffer(&ctx);
+        if (scan_ctx.entry_count >= CHUNK_SIZE) {
+            flush_buffer(&scan_ctx);
         }
     }
 
-    flush_buffer(&ctx);
-    send_done(nif_api, &pid_buffer);
-
+    flush_buffer(&scan_ctx);
+    send_done(nif_api, &pid);
     return nif_api.make_atom(env, "ok");
 }

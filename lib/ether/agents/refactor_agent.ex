@@ -7,15 +7,7 @@ defmodule Ether.Agents.RefactorAgent do
     name: "refactor_agent",
     description: "Safely refactors Elixir code using AST manipulation."
 
-  use GenServer
-
-  def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
-  end
-
-  def init(state) do
-    {:ok, state}
-  end
+  require Logger
 
   @doc """
   Renames a variable in the provided code snippet.

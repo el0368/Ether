@@ -16,7 +16,7 @@ defmodule Ether.Native.Scanner do
 
     case :erlang.load_nif(path, 0) do
       :ok -> :ok
-      {:error, {:load_failed, reason}} ->
+      {:error, reason} ->
         Logger.error("Failed to load Native Scanner NIF: #{path}")
         Logger.error("Reason: #{inspect(reason)}")
         {:error, reason}
@@ -36,13 +36,17 @@ defmodule Ether.Native.Scanner do
     Task.start(fn ->
       {:ok, resource} = create_context_nif()
       case do_scan_loop(resource, path, caller) do
-        :ok -> :ok
+        :ok -> 
+          close_context_nif(resource)
+          :ok
         {:error, reason} -> 
           Logger.error("Scanner NIF failed: #{inspect(reason)}")
           send(caller, {:scanner_error, reason})
+          close_context_nif(resource)
         unknown -> 
           Logger.error("Scanner NIF returned unknown result: #{inspect(unknown)}")
           send(caller, {:scanner_error, :unknown_native_failure})
+          close_context_nif(resource)
       end
     end)
     :ok
@@ -66,7 +70,9 @@ defmodule Ether.Native.Scanner do
   """
   def scan_raw(path) do
     {:ok, resource} = create_context_nif()
-    do_scan_loop(resource, path, self())
+    result = do_scan_loop(resource, path, self())
+    close_context(resource)
+    result
   end
 
 

@@ -17,11 +17,13 @@ pub const ScannerResource = struct {
 pub export fn zig_resource_destructor(env: ?*api.ErlNifEnv, obj: *anyopaque) void {
     _ = env;
     const resource: *ScannerResource = @ptrCast(@alignCast(obj));
-    resource.is_active = false;
-    resource.pool.deinit();
+    if (resource.is_active) {
+        resource.is_active = false;
+        resource.pool.deinit();
+    }
 
     // Clean up stack
-    const allocator = std.heap.page_allocator;
+    const allocator = std.heap.c_allocator;
     for (resource.stack.items) |path| {
         allocator.free(path);
     }
@@ -49,9 +51,9 @@ pub export fn zig_create_context(
     resource.stack = .{}; // Initialize empty stack
 
     // Initialize Thread Pool (Level 6)
-    // Use page_allocator for long-lived thread resources
+    // Use c_allocator for long-lived thread resources
     // If pool fails to init (out of memory), we return error tuple
-    resource.pool.init(.{ .allocator = std.heap.page_allocator }) catch {
+    resource.pool.init(.{ .allocator = std.heap.c_allocator }) catch {
         // Optimization: If pool alloc fails, we should probably fail the NIF
         // Release the resource as we are aborting
         nif_api.release_resource(resource_ptr);
@@ -79,7 +81,10 @@ pub export fn zig_close_context(
     }
 
     const resource: *ScannerResource = @ptrCast(@alignCast(resource_ptr.?));
-    resource.is_active = false;
+    if (resource.is_active) {
+        resource.is_active = false;
+        resource.pool.deinit();
+    }
 
     return nif_api.make_atom(env, "ok");
 }

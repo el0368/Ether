@@ -815,3 +815,34 @@ Finalized the "Ultimate Stability" hardening of Native NIFs.
     *   **Hardening**: Improved symbol visibility with `__declspec(dllexport)` in `entry.c`.
     *   **Documentation**: Updated `bench/README.md` with IEx execution workaround for Windows.
 *   **Status**: Ready for production deployment and regression tracking.
+---
+
+## Session 23: Windows NIF Stabilization (2026-01-07)
+**Date**: 2026-01-07
+**Status**: SUCCESS (Production-Ready Windows NIF)
+
+### 🛡️ Phase 21: Stack-Safe Win32 Bypass (ADR-021)
+- **Problem**: Access Violations (`0xc0000005`) in Erlang dirty scheduler threads due to Zig `std.fs` using stack-allocated UTF-16 conversion.
+- **Solution**: Explicitly bypassed `std.fs` for Windows.
+  - Implemented heap-allocated UTF-8 to UTF-16 path conversion using `nif_api.alloc`.
+  - Migrated `crawler.zig` and `searcher.zig` to direct Win32 API calls (`kernel32.dll`).
+  - Added iterative directory stack to `ScannerResource` for re-entrant, non-recursive scanning.
+- **Result**: Complete stability on Windows 11.
+
+### 🧪 Load & Stress Testing
+- **Concurrency**: Verified **100 parallel scans/searches** with zero crashes.
+- **Performance**:
+  - Scanning: ~87 recursive scans/sec under pressure.
+  - Searching: ~1,800 matches/sec under pressure.
+- **Hardening**: Resolved all Zig 0.15.2 compiler warnings (shadowing, optional unwrapping, `popOrNull` mismatch).
+
+### 📁 Files Modified
+| File | Change |
+|------|--------|
+| `native/scanner/src/crawler.zig` | Iterative Stack-Safe Scan |
+| `native/scanner/src/searcher.zig` | Stack-Safe Native Search |
+| `native/scanner/src/entry.c` | Removed dead code, fixed symbols |
+| `lib/ether/native/scanner.ex` | Protocol alignment |
+| `docs/adr/ADR-021-Stack-Safe-Windows-NIF.md` | New ADR |
+
+---

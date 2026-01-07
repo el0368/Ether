@@ -194,27 +194,23 @@ static WinNifApi build_api(void) {
 // =============================================================================
 // NIF Wrappers (with Windows DLL export)
 // =============================================================================
-DLL_EXPORT ERL_NIF_TERM scan_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
-    WinNifApi api = build_api();
-    return zig_scan(env, argc, argv, &api);
-}
 
-DLL_EXPORT ERL_NIF_TERM scan_yield_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+ERL_NIF_TERM scan_yield_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     WinNifApi api = build_api();
     return zig_scan_yieldable(env, argc, argv, &api);
 }
 
-DLL_EXPORT ERL_NIF_TERM create_context_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+ERL_NIF_TERM create_context_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     WinNifApi api = build_api();
     return zig_create_context(env, argc, argv, &api);
 }
 
-DLL_EXPORT ERL_NIF_TERM close_context_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+ERL_NIF_TERM close_context_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     WinNifApi api = build_api();
     return zig_close_context(env, argc, argv, &api);
 }
 
-DLL_EXPORT ERL_NIF_TERM search_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+ERL_NIF_TERM search_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     WinNifApi api = build_api();
     return zig_search(env, argc, argv, &api);
 }
@@ -223,7 +219,6 @@ DLL_EXPORT ERL_NIF_TERM search_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_T
 // NIF Registration
 // =============================================================================
 static ErlNifFunc nif_funcs[] = {
-    {"scan_nif", 2, scan_wrapper, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"scan_yield_nif", 3, scan_yield_wrapper, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"create_context_nif", 0, create_context_wrapper, 0},
     {"close_context_nif", 1, close_context_wrapper, 0},

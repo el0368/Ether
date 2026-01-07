@@ -7,16 +7,6 @@ defmodule Ether.Agents.QualityAgent do
     name: "ether_quality_agent",
     description: "Verifies system stability, native performance, and schema integrity."
   
-  use GenServer
-
-  def start_link(_opts) do
-    GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
-  end
-
-  def init(state) do
-    {:ok, state}
-  end
-
   require Logger
 
   @doc """

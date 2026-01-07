@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ether IDE - Performance Benchmarks</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-unit {
+            font-size: 1rem;
+            color: #999;
+            margin-left: 0.25rem;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            margin-top: 3rem;
+            font-size: 0.875rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #10b981;
+            color: white;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            padding: 3rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ Ether IDE Performance</h1>
+            <p class="subtitle">Real-time benchmark tracking for native scanner performance</p>
+        </header>
+
+        <div id="loading" class="loading">Loading benchmark data...</div>
+
+        <div id="content" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Latest Elixir</div>
+                    <div class="stat-value" id="latest-elixir">-</div>
+                    <div class="stat-unit">ops/sec</div>
+                    <div class="badge">Pure Elixir</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Latest Zig NIF</div>
+                    <div class="stat-value" id="latest-zig">-</div>
+                    <div class="stat-unit">ops/sec</div>
+                    <div class="badge">Native</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Performance Gain</div>
+                    <div class="stat-value" id="speedup">-</div>
+                    <div class="stat-unit">x faster</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Runs</div>
+                    <div class="stat-value" id="total-runs">-</div>
+                    <div class="stat-unit">benchmarks</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">📊 Throughput Over Time</div>
+                <div class="chart-wrapper">
+                    <canvas id="throughputChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">⚡ Performance Comparison</div>
+                <div class="chart-wrapper">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Powered by Zig NIFs • Elixir BEAM • Chart.js</p>
+            <p>Last updated: <span id="last-updated">-</span></p>
+        </footer>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        // Wait for data.js to load
+        if (typeof window.BENCHMARK_DATA === 'undefined') {
+            document.getElementById('loading').innerHTML = '⚠️ No benchmark data found. Run benchmarks first!';
+        } else {
+            const data = window.BENCHMARK_DATA;
+
+            // Hide loading, show content
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+
+            // Calculate stats
+            const latest = data[0];
+            const elixirOps = latest.elixir_ops_sec;
+            const zigOps = latest.zig_ops_sec;
+            const speedup = (zigOps / elixirOps).toFixed(1);
+
+            // Update stat cards
+            document.getElementById('latest-elixir').textContent = elixirOps.toLocaleString();
+            document.getElementById('latest-zig').textContent = zigOps.toLocaleString();
+            document.getElementById('speedup').textContent = speedup;
+            document.getElementById('total-runs').textContent = data.length;
+            document.getElementById('last-updated').textContent = new Date(latest.timestamp).toLocaleString();
+
+            // Prepare chart data (reverse for chronological order)
+            const reversedData = [...data].reverse();
+            const labels = reversedData.map((d, i) => `Run ${i + 1}`);
+            const elixirData = reversedData.map(d => d.elixir_ops_sec);
+            const zigData = reversedData.map(d => d.zig_ops_sec);
+
+            // Throughput Chart
+            const throughputCtx = document.getElementById('throughputChart').getContext('2d');
+            new Chart(throughputCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Elixir (Pure)',
+                            data: elixirData,
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Zig NIF (Native)',
+                            data: zigData,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Operations per Second'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Comparison Chart (Latest 10 runs)
+            const recent = reversedData.slice(-10);
+            const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+            new Chart(comparisonCtx, {
+                type: 'bar',
+                data: {
+                    labels: recent.map((d, i) => `Run ${reversedData.length - 9 + i}`),
+                    datasets: [
+                        {
+                            label: 'Elixir',
+                            data: recent.map(d => d.elixir_ops_sec),
+                            backgroundColor: 'rgba(139, 92, 246, 0.8)'
+                        },
+                        {
+                            label: 'Zig NIF',
+                            data: recent.map(d => d.zig_ops_sec),
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Operations per Second'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

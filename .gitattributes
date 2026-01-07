@@ -1,0 +1,14 @@
+# Exclude vendored dependencies from language statistics
+assets/node_modules/** linguist-vendored
+_build/** linguist-generated
+deps/** linguist-vendored
+priv/static/** linguist-generated
+
+# Exclude documentation from statistics
+docs/** linguist-documentation
+
+# Mark primary languages
+*.ex linguist-language=Elixir
+*.exs linguist-language=Elixir
+*.zig linguist-language=Zig
+*.svelte linguist-language=Svelte

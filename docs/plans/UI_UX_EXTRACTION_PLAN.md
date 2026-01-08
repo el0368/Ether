@@ -14,12 +14,22 @@ A focused strategy to extract the Visual Studio Code user experience and interfa
 
 ## 🔍 Detailed Phase Descriptions
 
-### Phase I: Visual Identity & Design Tokens
-- **Objective**: Sourcing the "Skin" of VS Code.
-- **Key Resources**:
-    - `src/vs/platform/theme`
-    - `src/vs/base/browser/ui` (Basic UI styles)
-- **Outcome**: A comprehensive CSS variable set that allows Ether to adopt any VS Code theme natively.
+### Phase I: Visual Identity & Design Tokens (The Skin)
+- **Objective**: Source and implement the complete VS Code design language (tokens).
+- **Micro-Plan**:
+    - [ ] **Step 1.1: Color Registry Extraction**
+        - Analyze `src/vs/platform/theme/common/colorRegistry.ts` to map semantic keys (e.g., `--vscode-editor-background`).
+    - [ ] **Step 1.2: Default Theme Parsing**
+        - Extract hex values from `extensions/theme-defaults/themes/dark_plus.json`.
+    - [ ] **Step 1.3: Token Generation**
+        - Create `assets/src/lib/styles/vscode-tokens.css` in Ether.
+    - [ ] **Step 1.4: Iconography Setup**
+        - Identify the Codicon font path in `src/vs/base/browser/ui/codicons`.
+        - Import font and create a Svelte icon component.
+    - [ ] **Step 1.5: Typography Alignment**
+        - Standardize font stacks: `Inter` for UI, `Monaco` for Editor.
+    - [ ] **Step 1.6: Reactive Theme Store**
+        - Implement `assets/src/lib/state/theme.svelte.js` for real-time variable injection.
 
 ### Phase II: Structural Shell & Layout
 - **Objective**: Defining the "Skeleton".

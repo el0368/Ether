@@ -16,6 +16,9 @@
 
 ### Milestone 2: "The Editor"
 **Goal:** Robust file editing with multi-tab management and scannable visual cues.
+> [!NOTE]
+> Progress on this milestone depends on the **[VSC_IDE_STUDY.md](VSC_IDE_STUDY.md)** phased analysis.
+
 - [ ] **Monaco/CodeMirror:** High-performance text editor integration.
 - [ ] **Tab System:** Managing multiple open buffers with save/dirty states.
 - [ ] **File Icons:** Integration of Seti/Material icon sets.

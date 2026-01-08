@@ -31,12 +31,21 @@ A focused strategy to extract the Visual Studio Code user experience and interfa
     - [ ] **Step 1.6: Reactive Theme Store**
         - Implement `assets/src/lib/state/theme.svelte.js` for real-time variable injection.
 
-### Phase II: Structural Shell & Layout
-- **Objective**: Defining the "Skeleton".
-- **Key Areas**: 
-    - `src/vs/workbench/browser/parts`
-    - CSS Flex/Grid definitions for the workbench layout.
-- **Outcome**: A responsive Svelte-based replica of the VS Code workbench container.
+### Phase II: Structural Shell & Layout (The Skeleton)
+- **Objective**: Define and implement the responsive, resizable IDE layout.
+- **Micro-Plan**:
+    - [ ] **Step 2.1: Semantic Layout Variables**
+        - Analyze `src/vs/workbench/browser/layout.ts` to extract standard dimensions (e.g., `ACTIVITY_BAR_WIDTH: 48px`).
+    - [ ] **Step 2.2: The Grid Engine**
+        - Implement the base Svelte Grid container modeled after `src/vs/base/browser/ui/grid`.
+    - [ ] **Step 2.3: Atomic Shell Parts**
+        - Build the fixed-height static parts: `TitleBar` (top) and `StatusBar` (bottom).
+    - [ ] **Step 2.4: The Resizable SplitView**
+        - Port the "Sash" logic from `src/vs/base/browser/ui/sash` to Svelte for resizable boundaries.
+    - [ ] **Step 2.5: SideBar & Panel Orchestration**
+        - Implement the visibility toggle and positioning logic for the primary SideBar and the bottom Panel.
+    - [ ] **Step 2.6: Layout Persistence**
+        - Integrate `localStorage` tracking for panel widths and visibility states to ensure session continuity.
 
 ### Phase III: Interactive Component Logic
 - **Objective**: Capturing the "Feel".

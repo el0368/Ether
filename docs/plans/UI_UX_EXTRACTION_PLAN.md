@@ -9,6 +9,7 @@ A focused strategy to extract the Visual Studio Code user experience and interfa
 | **Phase I** | **Visual Identity (Tokens)** | Extract the CSS variables, color themes, typography, and iconography (Seti/Codicons). | *In Queue* |
 | **Phase II** | **Structural Shell (Layout)** | Map and replicate the Workbench shell parts: TitleBar, ActivityBar, SideBar, and Panel grid. | *In Queue* |
 | **Phase III** | **Interactive Components** | Replicate high-frequency UI behaviors: Command Palette (QuickPick), Menus, and the Tree/List interaction model. | *In Queue* |
+| **Phase IV** | **Testing & Quality** | Implement Smoke Tests (Playwright), Micro-benchmarks, and MCP-specific automation. | *In Queue* |
 
 ---
 
@@ -62,6 +63,15 @@ A focused strategy to extract the Visual Studio Code user experience and interfa
         - Replicate the focus-trap and keyboard orchestration patterns from `src/vs/platform/keybinding`.
     - [ ] **Step 3.6: Drag & Drop Logic**
         - Implement the standard IDE feedback for file-move operations and editor tiling using `src/vs/base/browser/dnd`.
+
+---
+
+### Phase IV: Testing & Quality (The Senses)
+- **Objective**: Ensure long-term stability and high-fidelity performance.
+- **Key Deliverables**:
+    - **Smoke Tests**: Playwright scripts for structural integrity.
+    - **Micro-Benchmarks**: Porting `perfTest()` for UI components.
+    - **MCP Automation**: Validating agent/server communication flows.
 
 ---
 

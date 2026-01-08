@@ -1,46 +1,117 @@
 <script>
+    import {
+        Files,
+        Search,
+        GitBranch,
+        Play,
+        GraduationCap,
+        UserCircle,
+        Settings,
+    } from "lucide-svelte";
     let { activeSidebar, sidebarVisible, onToggle } = $props();
 </script>
 
 <nav
-    class="w-12 bg-base-300 flex flex-col items-center py-2 gap-2 shrink-0 border-r border-white/[0.03]"
+    class="w-[48px] bg-[var(--vscode-activityBar-background)] flex flex-col items-center py-2 gap-0 shrink-0 border-r border-[var(--vscode-activityBar-border)]"
 >
-    <div class="flex flex-col gap-1 w-full">
+    <div class="flex flex-col w-full">
+        <!-- Explorer -->
         <button
-            class="h-12 w-full flex items-center justify-center transition-all cursor-pointer text-xl border-l-[3px] {activeSidebar ===
+            class="h-12 w-full flex items-center justify-center transition-all cursor-pointer relative {activeSidebar ===
                 'files' && sidebarVisible
-                ? 'border-white opacity-100 bg-white/5'
-                : 'border-transparent opacity-40 hover:opacity-80'}"
+                ? 'text-[var(--vscode-activityBar-foreground)]'
+                : 'text-[var(--vscode-activityBar-inactiveForeground)] hover:text-[var(--vscode-activityBar-foreground)]'}"
             title="Explorer"
-            onclick={() => onToggle("files")}>📁</button
+            onclick={() => onToggle("files")}
         >
+            {#if activeSidebar === "files" && sidebarVisible}
+                <div
+                    class="absolute left-0 top-0 bottom-0 w-[2px] bg-[var(--vscode-activityBar-activeBorder)]"
+                ></div>
+            {/if}
+            <Files size={24} strokeWidth={1.5} />
+        </button>
+
+        <!-- Search -->
         <button
-            class="h-12 w-full flex items-center justify-center transition-all cursor-pointer text-xl border-l-[3px] {activeSidebar ===
-                'git' && sidebarVisible
-                ? 'border-white opacity-100 bg-white/5'
-                : 'border-transparent opacity-40 hover:opacity-80'}"
-            title="Source Control"
-            onclick={() => onToggle("git")}>🌿</button
-        >
-        <button
-            class="h-12 w-full flex items-center justify-center transition-all cursor-pointer text-xl border-l-[3px] {activeSidebar ===
+            class="h-12 w-full flex items-center justify-center transition-all cursor-pointer relative {activeSidebar ===
                 'search' && sidebarVisible
-                ? 'border-white opacity-100 bg-white/5'
-                : 'border-transparent opacity-40 hover:opacity-80'}"
+                ? 'text-[var(--vscode-activityBar-foreground)]'
+                : 'text-[var(--vscode-activityBar-inactiveForeground)] hover:text-[var(--vscode-activityBar-foreground)]'}"
             title="Search"
-            onclick={() => onToggle("search")}>🔍</button
+            onclick={() => onToggle("search")}
         >
+            {#if activeSidebar === "search" && sidebarVisible}
+                <div
+                    class="absolute left-0 top-0 bottom-0 w-[2px] bg-[var(--vscode-activityBar-activeBorder)]"
+                ></div>
+            {/if}
+            <Search size={24} strokeWidth={1.5} />
+        </button>
+
+        <!-- Source Control -->
         <button
-            class="h-12 w-full flex items-center justify-center transition-all cursor-pointer text-xl border-l-[3px] {activeSidebar ===
-                'debug' && sidebarVisible
-                ? 'border-white opacity-100 bg-white/5'
-                : 'border-transparent opacity-40 hover:opacity-80'}"
-            title="Run and Debug"
-            onclick={() => onToggle("debug")}>▶️</button
+            class="h-12 w-full flex items-center justify-center transition-all cursor-pointer relative {activeSidebar ===
+                'git' && sidebarVisible
+                ? 'text-[var(--vscode-activityBar-foreground)]'
+                : 'text-[var(--vscode-activityBar-inactiveForeground)] hover:text-[var(--vscode-activityBar-foreground)]'}"
+            title="Source Control"
+            onclick={() => onToggle("git")}
         >
+            {#if activeSidebar === "git" && sidebarVisible}
+                <div
+                    class="absolute left-0 top-0 bottom-0 w-[2px] bg-[var(--vscode-activityBar-activeBorder)]"
+                ></div>
+            {/if}
+            <GitBranch size={24} strokeWidth={1.5} />
+        </button>
+
+        <!-- Debug -->
+        <button
+            class="h-12 w-full flex items-center justify-center transition-all cursor-pointer relative {activeSidebar ===
+                'debug' && sidebarVisible
+                ? 'text-[var(--vscode-activityBar-foreground)]'
+                : 'text-[var(--vscode-activityBar-inactiveForeground)] hover:text-[var(--vscode-activityBar-foreground)]'}"
+            title="Run and Debug"
+            onclick={() => onToggle("debug")}
+        >
+            {#if activeSidebar === "debug" && sidebarVisible}
+                <div
+                    class="absolute left-0 top-0 bottom-0 w-[2px] bg-[var(--vscode-activityBar-activeBorder)]"
+                ></div>
+            {/if}
+            <Play size={24} strokeWidth={1.5} />
+        </button>
+
+        <!-- Academy -->
+        <button
+            class="h-12 w-full flex items-center justify-center transition-all cursor-pointer relative {activeSidebar ===
+                'academy' && sidebarVisible
+                ? 'text-[var(--vscode-activityBar-foreground)]'
+                : 'text-[var(--vscode-activityBar-inactiveForeground)] hover:text-[var(--vscode-activityBar-foreground)]'}"
+            title="Academy Studio"
+            onclick={() => onToggle("academy")}
+        >
+            {#if activeSidebar === "academy" && sidebarVisible}
+                <div
+                    class="absolute left-0 top-0 bottom-0 w-[2px] bg-[var(--vscode-activityBar-activeBorder)]"
+                ></div>
+            {/if}
+            <GraduationCap size={24} strokeWidth={1.5} />
+        </button>
     </div>
-    <div class="mt-auto flex flex-col gap-4 opacity-40 pb-4">
-        <button class="text-lg hover:opacity-100 transition-opacity">👤</button>
-        <button class="text-lg hover:opacity-100 transition-opacity">⚙️</button>
+
+    <!-- Bottom Actions -->
+    <div class="mt-auto flex flex-col w-full">
+        <button
+            class="h-12 w-full flex items-center justify-center text-[var(--vscode-activityBar-inactiveForeground)] hover:text-[var(--vscode-activityBar-foreground)] transition-colors"
+        >
+            <UserCircle size={24} strokeWidth={1.5} />
+        </button>
+        <button
+            class="h-12 w-full flex items-center justify-center text-[var(--vscode-activityBar-inactiveForeground)] hover:text-[var(--vscode-activityBar-foreground)] transition-colors"
+        >
+            <Settings size={24} strokeWidth={1.5} />
+        </button>
     </div>
 </nav>

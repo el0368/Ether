@@ -31,6 +31,12 @@ export default defineConfig({
         include: ['phoenix', 'phoenix_live_view', 'phoenix_html'],
         exclude: ['@tauri-apps/api']
     },
+    resolve: {
+        alias: {
+            '@': path.resolve(__dirname, './src'),
+            '$lib': path.resolve(__dirname, './src/lib')
+        }
+    },
     build: {
         target: 'esnext',
         minify: false,
@@ -52,11 +58,6 @@ export default defineConfig({
                     }
                     return 'assets/[name]-[hash][extname]'
                 }
-            }
-        },
-        resolve: {
-            alias: {
-                '@': path.resolve(__dirname, 'src')
             }
         }
     }

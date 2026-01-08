@@ -119,7 +119,14 @@ defmodule Ether.MixProject do
         "esbuild ether --minify",
         "phx.digest"
       ],
-      precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"]
+      precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"],
+      "bench.total": [
+        "run bench/internal_ops.exs",
+        "run bench/ipc_bench.exs",
+        "run bench/nif_microbench.exs",
+        "run bench/scanner_bench.exs",
+        "run bench/web_vitals.exs"
+      ]
     ]
   end
 end

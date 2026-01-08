@@ -10,6 +10,11 @@
     "noEmit": true,
     "isolatedModules": true,
     "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "$lib/*": ["./src/lib/*"]
+    },
     "types": [
       "svelte"
     ]

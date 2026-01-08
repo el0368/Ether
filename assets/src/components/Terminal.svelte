@@ -1,5 +1,5 @@
 <script>
-  let { channel } = $props();
+  let { channel, onClear = () => {}, onClose = () => {} } = $props();
 
   let history = $state([]);
   let input = $state("");
@@ -47,6 +47,11 @@
       });
   }
 
+  function clear() {
+    history = [];
+    onClear();
+  }
+
   function scrollToBottom() {
     setTimeout(() => {
       if (container) container.scrollTop = container.scrollHeight;
@@ -55,14 +60,27 @@
 </script>
 
 <div
-  class="flex flex-col h-56 border-t border-base-content/10 bg-base-100 font-mono text-[11px] text-base-content/70"
+  class="flex flex-col flex-1 min-h-0 bg-[var(--vscode-terminal-background)] font-mono text-[11px] text-[var(--vscode-terminal-foreground)]"
 >
   <div
-    class="flex items-center px-4 py-1.5 bg-base-200 border-b border-base-content/5"
+    class="flex items-center px-4 py-1.5 bg-[var(--vscode-panel-background)] border-b border-[var(--vscode-panel-border)] justify-between"
   >
-    <span class="text-[9px] font-black uppercase tracking-[0.2em] opacity-40"
-      >Integrated Terminal</span
-    >
+    <div class="flex items-center gap-4 h-full">
+      <span class="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 border-b border-[var(--vscode-focusBorder)] h-full flex items-center"
+        >Terminal</span
+      >
+      <span class="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-80 cursor-pointer h-full flex items-center">Output</span>
+      <span class="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-80 cursor-pointer h-full flex items-center">Problems</span>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button class="opacity-40 hover:opacity-100 p-1 hover:bg-white/10 rounded transition-colors" onclick={clear} title="Clear Terminal">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+      </button>
+      <button class="opacity-40 hover:opacity-100 p-1 hover:bg-white/10 rounded transition-colors" onclick={onClose} title="Close Panel">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+      </button>
+    </div>
   </div>
   <div bind:this={container} class="flex-1 overflow-auto p-3 leading-relaxed">
     {#each history as line}

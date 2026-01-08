@@ -1,19 +1,38 @@
 <script>
     import { onMount, onDestroy } from "svelte";
     import * as monaco from "monaco-editor";
+    import MathPreview from "./MathPreview.svelte";
 
     let { value, language, theme, channel, path, onChange } = $props();
 
     let editorContainer;
     let editor;
     let model;
+    let showPreview = $state(false);
+
+    // Create or retrieve model for a specific path
+    function getOrCreateModel(path, value, language) {
+        let existingModel = monaco.editor
+            .getModels()
+            .find((m) => m.uri.toString() === `file://${path}`);
+        if (existingModel) {
+            if (value !== undefined && value !== existingModel.getValue()) {
+                existingModel.setValue(value);
+            }
+            return existingModel;
+        }
+        return monaco.editor.createModel(
+            value || "",
+            language || "elixir",
+            monaco.Uri.parse(`file://${path}`),
+        );
+    }
 
     // Initialize Monaco
     onMount(() => {
+        const mountStart = performance.now();
         if (editorContainer) {
             editor = monaco.editor.create(editorContainer, {
-                value: value || "",
-                language: language || "elixir",
                 theme:
                     theme ||
                     (document.documentElement.getAttribute("data-theme") ===
@@ -30,12 +49,24 @@
                 scrollBeyondLastLine: false,
                 renderLineHighlight: "all",
                 scrollbar: {
-                    vertical: "hidden",
-                    horizontal: "hidden",
+                    vertical: "visible",
+                    horizontal: "visible",
+                    useShadows: false,
+                    verticalScrollbarSize: 10,
+                    horizontalScrollbarSize: 10,
                 },
             });
 
-            model = editor.getModel();
+            const mountEnd = performance.now();
+            import("$lib/benchmarks").then(({ FrontendBenchmarks }) => {
+                new FrontendBenchmarks().recordMonacoMount(mountEnd - mountStart);
+            });
+
+            // Initial model
+            if (path) {
+                const newModel = getOrCreateModel(path, value, language);
+                editor.setModel(newModel);
+            }
 
             // Handle content changes
             editor.onDidChangeModelContent(() => {
@@ -61,9 +92,6 @@
                                 column: position.column,
                             })
                             .receive("ok", (resp) => {
-                                // Transform backend items to Monaco format if needed
-                                // Backend sends: {label, kind, detail, documentation}
-                                // Monaco expects similar structure
                                 const suggestions = resp.items.map((item) => ({
                                     label: item.label,
                                     kind: mapKind(item.kind),
@@ -86,13 +114,16 @@
         if (editor) {
             editor.dispose();
         }
+        // Dispose all models to prevent memory leaks
+        monaco.editor.getModels().forEach((m) => m.dispose());
     });
 
     // Listen for diagnostics from backend
     $effect(() => {
         if (channel && editor) {
             const ref = channel.on("lsp:diagnostics", (payload) => {
-                if (payload.path === path) {
+                const currentModel = editor.getModel();
+                if (payload.path === path && currentModel) {
                     const markers = payload.diagnostics.map((diag) => ({
                         startLineNumber: diag.from.line,
                         startColumn: diag.from.col,
@@ -101,28 +132,27 @@
                         message: diag.message,
                         severity: monaco.MarkerSeverity.Error,
                     }));
-                    monaco.editor.setModelMarkers(
-                        editor.getModel(),
-                        "owner",
-                        markers,
-                    );
+                    monaco.editor.setModelMarkers(currentModel, "owner", markers);
                 }
             });
 
             return () => {
-                // channel.off("lsp:diagnostics", ref) // handling off might differ in Phoenix
+                // cleanup diagnostics listeners if needed
             };
         }
     });
 
-    // Watch for external value changes
+    // Watch for file/path changes (Switching Files)
     $effect(() => {
-        if (editor && value !== editor.getValue()) {
-            // Avoid loop if we just typed it
-            // Simple check: if cursor is at end, maybe push?
-            // Better: complete replace only if significantly different or forced update
-            // For now, simple replace for file switching
-            editor.setValue(value || "");
+        if (editor && path) {
+            const currentModel = editor.getModel();
+            if (!currentModel || currentModel.uri.toString() !== `file://${path}`) {
+                const newModel = getOrCreateModel(path, value, language);
+                editor.setModel(newModel);
+            } else if (value !== undefined && value !== editor.getValue()) {
+                // If it's the same file but value changed externally (e.g. undo/redo from parent)
+                editor.setValue(value);
+            }
         }
     });
 
@@ -153,8 +183,6 @@
     });
 
     function mapKind(kindAtom) {
-        // Map ElixirSense kinds/atoms to monaco.languages.CompletionItemKind
-        // Keyword = 14, Function = 2, Module = 9
         switch (kindAtom) {
             case "keyword":
                 return monaco.languages.CompletionItemKind.Keyword;
@@ -168,13 +196,38 @@
     }
 </script>
 
-<div class="editor-container" bind:this={editorContainer}></div>
+<div class="editor-shell flex flex-col h-full w-full overflow-hidden">
+    <div
+        class="editor-toolbar flex items-center justify-end px-4 py-1 gap-2 bg-[var(--vscode-editorGroupHeader-tabsBackground)] border-b border-[var(--vscode-sideBar-border)]"
+    >
+        <button
+            class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded transition-colors {showPreview
+                ? 'bg-[var(--vscode-button-background)] text-white'
+                : 'bg-white/5 opacity-40 hover:opacity-100'}"
+            onclick={() => (showPreview = !showPreview)}
+        >
+            {showPreview ? "Hide Preview" : "Math Preview"}
+        </button>
+    </div>
+
+    <div class="flex-1 flex overflow-hidden">
+        <div
+            class="editor-container h-full {showPreview ? 'w-1/2' : 'w-full'}"
+            bind:this={editorContainer}
+        ></div>
+        {#if showPreview}
+            <div
+                class="preview-container w-1/2 h-full border-l border-[var(--vscode-editorGroup-border)] bg-[var(--vscode-editor-background)] text-[var(--vscode-editor-foreground)] overflow-y-auto"
+            >
+                <MathPreview content={value} />
+            </div>
+        {/if}
+    </div>
+</div>
 
 <style>
     .editor-container {
         width: 100%;
         height: 100%;
-        min-height: 400px;
-        border: 1px solid #333;
     }
 </style>

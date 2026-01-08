@@ -1,0 +1,63 @@
+/* VS Code Default Dark Theme (Precise Colors) */
+:root {
+  /* Activity Bar */
+  --vscode-activityBar-background: #333333;
+  --vscode-activityBar-foreground: #ffffff;
+  --vscode-activityBar-inactiveForeground: rgba(255, 255, 255, 0.4);
+  --vscode-activityBar-border: #252526;
+  --vscode-activityBar-activeBorder: #ffffff;
+  --vscode-activityBar-activeBackground: rgba(255, 255, 255, 0.05);
+
+  /* Sidebar */
+  --vscode-sideBar-background: #252526;
+  --vscode-sideBar-foreground: #cccccc;
+  --vscode-sideBar-border: rgba(204, 204, 204, 0.2);
+  --vscode-sideBarTitle-foreground: #bbbbbb;
+  --vscode-sideBarSectionHeader-background: rgba(255, 255, 255, 0.02);
+  --vscode-sideBarSectionHeader-border: rgba(204, 204, 204, 0.2);
+
+  /* Editor */
+  --vscode-editor-background: #1e1e1e;
+  --vscode-editor-foreground: #d4d4d4;
+  --vscode-editorGroupHeader-tabsBackground: #252526;
+  --vscode-editorGroup-border: #2b2b2b;
+  --vscode-editor-lineHighlightBackground: #2a2d2e;
+
+  /* Tabs */
+  --vscode-tab-activeBackground: #1e1e1e;
+  --vscode-tab-activeForeground: #ffffff;
+  --vscode-tab-inactiveBackground: #2d2d2d;
+  --vscode-tab-inactiveForeground: rgba(255, 255, 255, 0.5);
+  --vscode-tab-border: #252526;
+  --vscode-tab-activeBorderTop: #007acc;
+
+  /* Status Bar */
+  --vscode-statusBar-background: #007acc;
+  --vscode-statusBar-foreground: #ffffff;
+  --vscode-statusBar-border: rgba(0, 0, 0, 0.2);
+
+  /* Title Bar */
+  --vscode-titleBar-activeBackground: #3c3c3c;
+  --vscode-titleBar-activeForeground: #cccccc;
+  --vscode-titleBar-border: rgba(0, 0, 0, 0.2);
+
+  /* List & Tree */
+  --vscode-list-activeSelectionBackground: #37373d;
+  --vscode-list-activeSelectionForeground: #ffffff;
+  --vscode-list-hoverBackground: #2a2d2e;
+  --vscode-list-inactiveSelectionBackground: #37373d;
+  --vscode-list-focusBackground: #062f4a;
+
+  /* Input & Button */
+  --vscode-input-background: #3c3c3c;
+  --vscode-input-foreground: #cccccc;
+  --vscode-input-border: #3c3c3c;
+  --vscode-button-background: #007acc;
+  --vscode-button-foreground: #ffffff;
+  --vscode-button-hoverBackground: #1177bb;
+
+  /* Design Tweaks */
+  --vscode-focusBorder: #007acc;
+  --vscode-panel-background: #1e1e1e;
+  --vscode-panel-border: rgba(204, 204, 204, 0.2);
+}

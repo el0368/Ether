@@ -41,3 +41,7 @@ npm-debug.log
 zig-out/ 
 **/zig-out/ 
 /priv/native/*.dll
+
+# External Source
+/vscode-main/
+/vscode-main.zip

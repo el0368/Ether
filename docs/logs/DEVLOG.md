@@ -891,3 +891,28 @@ Finalized the "Ultimate Stability" hardening of Native NIFs.
 | `docs/plans/*.md` | Deleted 17 redundant fragments |
 
 ---
+## Session 26: vscode-main Architectual Study (2026-01-08)
+**Date**: 2026-01-08
+**Status**: SUCCESS (Full Architectual Map)
+
+### 🔍 Deep Dive: Code - OSS (vscode-main)
+- **Goal**: Analyze the `vscode-main` folder to understand its role and integration.
+- **Root Analysis**: Confirmed presence of a complete **Code - OSS** fork.
+- **Architectural Discovery**:
+    - Mapped standard VS Code layers: `base`, `platform`, `editor`, `workbench`.
+    - Discovered a custom **MCP (Model Context Protocol)** platform layer in `src/vs/platform/mcp`.
+- **MCP Native Integration**:
+    - Identified services for MCP management, permissions, and gallery/manifest discovery.
+    - Verified direct support for `uvx` and Python-based MCP servers.
+- **Workbench Analysis**: Confirmed hybrid Web/Electron structure ready for Ether expansion.
+
+### 📁 Files Analyzed
+| File | Change |
+|------|--------|
+| `vscode-main/vscode-main/src/vs/platform/mcp/*` | Deep study of MCP services |
+| `vscode-main/vscode-main/src/vs/workbench/*` | Workbench structure analysis |
+| `vscode-main/vscode-main/src/vs/editor/*` | Core editor mapping |
+| `vscode-main/vscode-main/README.md` | Repository verification |
+| `vscode-main/vscode-main/.github/copilot-instructions.md` | Style & architecture guidelines |
+
+---

@@ -4,9 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ether IDE - Performance Benchmarks</title>
+    <title>Ether Studio - Performance Matrix</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
+        :root {
+            --bg-editor: #1e1e1e;
+            --bg-sidebar: #252526;
+            --bg-activity: #333333;
+            --color-primary: #007acc;
+            --text-base: #cccccc;
+            --text-heading: #ffffff;
+            --border: rgba(204, 204, 204, 0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,296 +24,360 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
-            padding: 2rem;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-editor);
+            color: var(--text-base);
+            padding: 0;
             min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
         }
 
         header {
-            text-align: center;
-            color: white;
-            margin-bottom: 3rem;
+            background-color: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 700;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-heading);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
+        .latency-badge {
+            background: #16825D;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
         }
 
-        .stats-grid {
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 2rem;
+            padding: 2rem;
+            flex: 1;
         }
 
-        .stat-card {
-            background: white;
-            border-radius: 12px;
+        .card {
+            background-color: var(--bg-sidebar);
+            border: 1px solid var(--border);
+            border-radius: 8px;
             padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
 
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-heading);
+            opacity: 0.8;
+        }
+
+        .stat-group {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
         }
 
         .stat-label {
-            font-size: 0.875rem;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-bottom: 0.25rem;
         }
 
         .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #667eea;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--color-primary);
         }
 
         .stat-unit {
-            font-size: 1rem;
-            color: #999;
-            margin-left: 0.25rem;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            margin-left: 0.2rem;
         }
 
         .chart-container {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-
-        .chart-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: #333;
-        }
-
-        .chart-wrapper {
+            flex: 1;
+            min-height: 250px;
             position: relative;
-            height: 300px;
         }
 
-        .footer {
-            text-align: center;
-            color: white;
-            opacity: 0.8;
-            margin-top: 3rem;
-            font-size: 0.875rem;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            background: #10b981;
-            color: white;
-            border-radius: 12px;
+        footer {
+            background-color: var(--bg-sidebar);
+            border-top: 1px solid var(--border);
+            padding: 0.75rem 2rem;
             font-size: 0.75rem;
-            font-weight: 600;
-            margin-top: 0.5rem;
+            opacity: 0.6;
+            display: flex;
+            justify-content: space-between;
         }
 
-        .loading {
-            text-align: center;
-            color: white;
-            font-size: 1.2rem;
-            padding: 3rem;
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-editor);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--color-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <header>
-            <h1>⚡ Ether IDE Performance</h1>
-            <p class="subtitle">Real-time benchmark tracking for native scanner performance</p>
-        </header>
+    <div id="loader" class="loading-screen">
+        <div class="spinner"></div>
+        <p>Synthesizing Performance Matrix...</p>
+    </div>
 
-        <div id="loading" class="loading">Loading benchmark data...</div>
+    <header>
+        <h1>⚡ Ether Studio <span class="latency-badge">REAL-TIME PERFORMANCE</span></h1>
+        <div id="latest-ts">Last sync: --:--:--</div>
+    </header>
 
-        <div id="content" style="display: none;">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Latest Elixir</div>
-                    <div class="stat-value" id="latest-elixir">-</div>
-                    <div class="stat-unit">ops/sec</div>
-                    <div class="badge">Pure Elixir</div>
+    <main class="dashboard-grid">
+        <!-- Tier 1: Native Scanner -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Native Scanner Throughput</div>
+                <div class="badge">Tier 1: Zig/C</div>
+            </div>
+            <div class="stat-group">
+                <div class="stat">
+                    <span class="stat-label">Zig Throughput</span>
+                    <span class="stat-value" id="zig-val">--</span>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-label">Latest Zig NIF</div>
-                    <div class="stat-value" id="latest-zig">-</div>
-                    <div class="stat-unit">ops/sec</div>
-                    <div class="badge">Native</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Performance Gain</div>
-                    <div class="stat-value" id="speedup">-</div>
-                    <div class="stat-unit">x faster</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Total Runs</div>
-                    <div class="stat-value" id="total-runs">-</div>
-                    <div class="stat-unit">benchmarks</div>
+                <div class="stat">
+                    <span class="stat-label">Performance Gain</span>
+                    <span class="stat-value" id="gain-val">--<span class="stat-unit">x</span></span>
                 </div>
             </div>
-
             <div class="chart-container">
-                <div class="chart-title">📊 Throughput Over Time</div>
-                <div class="chart-wrapper">
-                    <canvas id="throughputChart"></canvas>
-                </div>
-            </div>
-
-            <div class="chart-container">
-                <div class="chart-title">⚡ Performance Comparison</div>
-                <div class="chart-wrapper">
-                    <canvas id="comparisonChart"></canvas>
-                </div>
+                <canvas id="scannerChart"></canvas>
             </div>
         </div>
 
-        <footer class="footer">
-            <p>Powered by Zig NIFs • Elixir BEAM • Chart.js</p>
-            <p>Last updated: <span id="last-updated">-</span></p>
-        </footer>
-    </div>
+        <!-- Tier 2: Backend Latency -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Backend Interaction Latency</div>
+                <div class="badge">Tier 2: Elixir/BEAM</div>
+            </div>
+            <div class="stat-group">
+                <div class="stat">
+                    <span class="stat-label">GenServer Roundtrip</span>
+                    <span class="stat-value" id="gs-val">--<span class="stat-unit">µs</span></span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">JSON Encode (1k)</span>
+                    <span class="stat-value" id="json-val">--<span class="stat-unit">ms</span></span>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="backendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Tier 3: IPC Bridge -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">IPC Bridge Overhead</div>
+                <div class="badge">Tier 3: Rust/IPC</div>
+            </div>
+            <div class="stat-group">
+                <div class="stat">
+                    <span class="stat-label">Channel Latency</span>
+                    <span class="stat-value" id="ipc-val">--<span class="stat-unit">µs</span></span>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="ipcChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Tier 4: Frontend Responsiveness -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Frontend Component Timing</div>
+                <div class="badge">Tier 4: Svelte/JS</div>
+            </div>
+            <div class="stat-group">
+                <div class="stat">
+                    <span class="stat-label">Monaco Mount</span>
+                    <span class="stat-value" id="monaco-val">--<span class="stat-unit">ms</span></span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Svelte Reactivity</span>
+                    <span class="stat-value" id="svelte-val">--<span class="stat-unit">ms</span></span>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="frontendChart"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div>Ether Professional IDE • Premium Performance Stack</div>
+        <div>Total Samples: <span id="sample-count">0</span></div>
+    </footer>
 
     <script src="data.js"></script>
     <script>
-        // Wait for data.js to load
-        if (typeof window.BENCHMARK_DATA === 'undefined') {
-            document.getElementById('loading').innerHTML = '⚠️ No benchmark data found. Run benchmarks first!';
-        } else {
+        const chartDefaults = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { display: false },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10 } }
+                }
+            }
+        };
+
+        if (typeof window.BENCHMARK_DATA !== 'undefined') {
             const data = window.BENCHMARK_DATA;
+            const history = [...data].reverse();
 
-            // Hide loading, show content
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('content').style.display = 'block';
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('sample-count').textContent = data.length;
 
-            // Calculate stats
-            const latest = data[0];
-            const elixirOps = latest.elixir_ops_sec;
-            const zigOps = latest.zig_ops_sec;
-            const speedup = (zigOps / elixirOps).toFixed(1);
+            // --- Tier 1: Scanner ---
+            const scannerEntries = history.filter(d => d.metric_type === 'scanner' || (!d.metric_type && d.zig_ops_sec));
+            if (scannerEntries.length > 0) {
+                const latest = scannerEntries[scannerEntries.length - 1];
+                document.getElementById('zig-val').textContent = Math.round(latest.zig_ops_sec).toLocaleString();
+                document.getElementById('gain-val').innerHTML = `${latest.speedup}<span class="stat-unit">x</span>`;
 
-            // Update stat cards
-            document.getElementById('latest-elixir').textContent = elixirOps.toLocaleString();
-            document.getElementById('latest-zig').textContent = zigOps.toLocaleString();
-            document.getElementById('speedup').textContent = speedup;
-            document.getElementById('total-runs').textContent = data.length;
-            document.getElementById('last-updated').textContent = new Date(latest.timestamp).toLocaleString();
-
-            // Prepare chart data (reverse for chronological order)
-            const reversedData = [...data].reverse();
-            const labels = reversedData.map((d, i) => `Run ${i + 1}`);
-            const elixirData = reversedData.map(d => d.elixir_ops_sec);
-            const zigData = reversedData.map(d => d.zig_ops_sec);
-
-            // Throughput Chart
-            const throughputCtx = document.getElementById('throughputChart').getContext('2d');
-            new Chart(throughputCtx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Elixir (Pure)',
-                            data: elixirData,
-                            borderColor: '#8b5cf6',
-                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        },
-                        {
-                            label: 'Zig NIF (Native)',
-                            data: zigData,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        }
+                new Chart(document.getElementById('scannerChart'), {
+                    type: 'line',
+                    data: {
+                        labels: scannerEntries.map((_, i) => i),
+                        datasets: [{
+                            data: scannerEntries.map(d => d.zig_ops_sec),
+                            borderColor: '#007acc',
+                            backgroundColor: 'rgba(0,122,204,0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Operations per Second'
-                            }
-                        }
-                    }
-                }
-            });
+                    options: chartDefaults
+                });
+            }
 
-            // Comparison Chart (Latest 10 runs)
-            const recent = reversedData.slice(-10);
-            const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
-            new Chart(comparisonCtx, {
-                type: 'bar',
-                data: {
-                    labels: recent.map((d, i) => `Run ${reversedData.length - 9 + i}`),
-                    datasets: [
-                        {
-                            label: 'Elixir',
-                            data: recent.map(d => d.elixir_ops_sec),
-                            backgroundColor: 'rgba(139, 92, 246, 0.8)'
-                        },
-                        {
-                            label: 'Zig NIF',
-                            data: recent.map(d => d.zig_ops_sec),
-                            backgroundColor: 'rgba(16, 185, 129, 0.8)'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        }
+            // --- Tier 2: Backend ---
+            const backendEntries = history.filter(d => d.metric_type === 'backend');
+            if (backendEntries.length > 0) {
+                const latest = backendEntries[backendEntries.length - 1];
+                document.getElementById('gs-val').innerHTML = `${Math.round(latest.genserver_latency_us)}<span class="stat-unit">µs</span>`;
+                document.getElementById('json-val').innerHTML = `${latest.json_encode_ms.toFixed(2)}<span class="stat-unit">ms</span>`;
+
+                new Chart(document.getElementById('backendChart'), {
+                    type: 'line',
+                    data: {
+                        labels: backendEntries.map((_, i) => i),
+                        datasets: [{
+                            data: backendEntries.map(d => d.genserver_latency_us),
+                            borderColor: '#C586C0',
+                            backgroundColor: 'rgba(197,134,192,0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Operations per Second'
-                            }
-                        }
-                    }
-                }
-            });
+                    options: chartDefaults
+                });
+            }
+
+            // --- Tier 3: IPC ---
+            const ipcEntries = history.filter(d => d.metric_type === 'ipc');
+            if (ipcEntries.length > 0) {
+                const latest = ipcEntries[ipcEntries.length - 1];
+                document.getElementById('ipc-val').innerHTML = `${Math.round(latest.bridge_latency_us)}<span class="stat-unit">µs</span>`;
+
+                new Chart(document.getElementById('ipcChart'), {
+                    type: 'line',
+                    data: {
+                        labels: ipcEntries.map((_, i) => i),
+                        datasets: [{
+                            data: ipcEntries.map(d => d.bridge_latency_us),
+                            borderColor: '#4EC9B0',
+                            backgroundColor: 'rgba(78,201,176,0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: chartDefaults
+                });
+            }
+
+            // --- Tier 4: Frontend ---
+            const frontendEntries = history.filter(d => d.metric_type === 'frontend');
+            if (frontendEntries.length > 0) {
+                const latest = frontendEntries[frontendEntries.length - 1];
+                document.getElementById('monaco-val').innerHTML = `${latest.monaco_mount_ms.toFixed(1)}<span class="stat-unit">ms</span>`;
+                document.getElementById('svelte-val').innerHTML = `${latest.svelte_reactivity_ms.toFixed(1)}<span class="stat-unit">ms</span>`;
+
+                new Chart(document.getElementById('frontendChart'), {
+                    type: 'line',
+                    data: {
+                        labels: frontendEntries.map((_, i) => i),
+                        datasets: [{
+                            data: frontendEntries.map(d => d.monaco_mount_ms),
+                            borderColor: '#DCDCAA',
+                            backgroundColor: 'rgba(220,221,170,0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: chartDefaults
+                });
+            }
         }
     </script>
 </body>

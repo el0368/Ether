@@ -30,9 +30,9 @@
     {#each editorGroups as group, idx}
         <!-- Pane -->
         <div
-            class="flex-1 flex flex-col min-w-0 border-r border-base-content/10 last:border-r-0 relative group/pane {idx ===
+            class="flex-1 flex flex-col min-w-0 border-r border-[var(--vscode-editorGroup-border)] last:border-r-0 relative group/pane {idx ===
             activeGroupIndex
-                ? 'bg-base-200'
+                ? 'bg-[var(--vscode-editor-background)]'
                 : 'opacity-80'}"
             onclick={() => (activeGroupIndex = idx)}
             role="button"
@@ -41,20 +41,20 @@
         >
             <!-- Editor Tabs -->
             <div
-                class="flex items-center bg-base-300 h-9 min-h-[2.25rem] overflow-x-auto no-scrollbar justify-between"
+                class="flex items-center bg-[var(--vscode-editorGroupHeader-tabsBackground)] h-9 min-h-[2.25rem] overflow-x-auto no-scrollbar justify-between"
             >
                 <div class="flex items-center h-full">
                     {#if group.file}
                         <div
                             class="flex items-center {idx === activeGroupIndex
-                                ? 'bg-base-200 border-t border-t-primary'
-                                : 'bg-base-300'} h-full px-4 gap-2 border-r border-black/20"
+                                ? 'bg-[var(--vscode-tab-activeBackground)] border-t border-t-[var(--vscode-focusBorder)] text-[var(--vscode-tab-activeForeground)]'
+                                : 'bg-[var(--vscode-tab-inactiveBackground)] text-[var(--vscode-tab-inactiveForeground)]'} h-full px-4 gap-2 border-r border-[var(--vscode-tab-border)]"
                         >
-                            <span class="text-xs text-primary opacity-60"
+                            <span class="text-xs text-[var(--vscode-focusBorder)] opacity-60"
                                 >📄</span
                             >
                             <span
-                                class="text-[13px] whitespace-nowrap text-base-content"
+                                class="text-[13px] whitespace-nowrap"
                                 >{group.file.name}</span
                             >
                             <button
@@ -88,7 +88,7 @@
             <!-- Breadcrumbs -->
             {#if group.file}
                 <div
-                    class="h-6 flex items-center px-4 bg-base-200 border-b border-black/10 text-[11px] opacity-40 gap-1"
+                    class="h-6 flex items-center px-4 bg-[var(--vscode-editor-background)] border-b border-[var(--vscode-editorGroup-border)] text-[11px] opacity-40 gap-1"
                 >
                     <span>Aether</span>
                     <span>›</span>
@@ -99,7 +99,7 @@
             {/if}
 
             <!-- Main Editor Area -->
-            <section class="flex-1 flex flex-col bg-base-100 min-h-0 relative">
+            <section class="flex-1 flex flex-col bg-[var(--vscode-editor-background)] min-h-0 relative">
                 {#if group.file}
                     <div class="flex-1 overflow-hidden relative h-full min-h-0">
                         {#if group.file.is_dir}
@@ -148,7 +148,7 @@
                     </div>
                 {:else}
                     <div
-                        class="flex-1 flex items-center justify-center bg-base-200"
+                        class="flex-1 flex items-center justify-center bg-[var(--vscode-editor-background)]"
                     >
                         <div class="text-center opacity-20">
                             <span class="text-9xl">⚡</span>

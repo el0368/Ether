@@ -484,3 +484,57 @@ We executed the **Ignition Protocol** (`scripts/ignite.bat`) but encountered per
 **Verdict**: The project now has a unified, scannable roadmap for all three major technical layers.
 
 **Commit**: `docs: consolidate master strategies and purge redundant plan fragments`
+## Session 26: Backend Visibility (The Engine Room)
+**Date**: 2026-01-07
+**Status**: SUCCESS
+
+### 🔍 Backend Visibility (The Engine Room)
+**Goal**: Pull back the curtain on the invisible orchestration layer.
+- **Implemented**: Created **[BACKEND_MAP.md](file:///c:/GitHub/Ether/docs/reference/BACKEND_MAP.md)**—a visual guide using Mermaid diagrams to explain how Elixir Agents talk to the Zig Native Engine.
+- **Result**: The "Invisible" now has a map. The user can now navigate the "Heart" of the system with confidence.
+
+**Verdict**: The development environment is now "Unbreakable," and we have the instrumentation needed to hit our premium performance targets.
+
+**Commit**: `feat: Add Backend Visibility documentation and map`
+
+## Session 27: Milestone 2 - The Math Studio & IDE Overhaul
+**Date**: 2026-01-08
+**Status**: SUCCESS
+
+- **VS Code Aesthetic**: Purged DaisyUI and replaced it with a CSS variable-driven design system using `vscode_tokens.css`.
+- **Math-Native Authoring**: Integrated **KaTeX** for real-time LaTeX rendering within the Monaco Editor.
+- **Academy Backstage**: Implemented a specialized **Curriculum Sidebar** for grade-based navigation of the `/academy` directory.
+- **Tech Debt**: Resolved lint errors in `app.css` and formalized the SPA token architecture.
+
+```mermaid
+graph TD
+    A[Monaco Editor] -->|Text Change| B[MathPreview.svelte]
+    B -->|Render| C[KaTeX Engine]
+    D[Activity Bar] -->|Toggle| E[Academy View]
+    E -->|Filter| F[Curriculum Sidebar]
+    F -->|Structure| G[/academy/Grade X/]
+```
+
+**Verdict**: Ether is now a functional Math Academy Studio.
+
+---
+
+## Session 26: vscode-main Architectural Study (2026-01-08)
+
+### Core Discovery: Native MCP Support
+Visual Studio Code (Code - OSS) does not natively support MCP. However, the `vscode-main` fork in this repository includes a dedicated `mcp` layer within `src/vs/platform`.
+
+#### Architectural Map
+- **`src/vs/platform/mcp`**: The nerve center for MCP integration.
+  - `mcpManagementService.ts`: Manages server lifecycle and client connections.
+  - `allowedMcpServersService.ts`: Security layer for server authorization.
+  - `mcpGalleryService.ts`: Handles discovery of new MCP tools.
+- **`src/vs/workbench`**: Standard VS Code layout (Activity Bar, Side Bar, Panels) configured for Ether.
+
+#### Verified Integration
+The system is pre-configured to handle:
+- `uvx` (Fast Python tool execution)
+- Standard Python environments
+- Custom MCP Manifests (`mcpGalleryManifest.ts`)
+
+**Outcome**: The IDE backbone is ready for deep agentic integration through standard protocols.

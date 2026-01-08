@@ -1,13 +1,12 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@import "./lib/vscode_tokens.css";
 
-
-@theme {
-  --color-primary: #007acc;
-  --color-sidebar: #252526;
-  --color-activity-bar: #333333;
-  --color-editor: #1e1e1e;
-  --color-status-bar: #007acc;
+:root {
+  --color-primary: var(--vscode-button-background);
+  --color-sidebar: var(--vscode-sideBar-background);
+  --color-activity-bar: var(--vscode-activityBar-background);
+  --color-editor: var(--vscode-editor-background);
+  --color-status-bar: var(--vscode-statusBar-background);
 }
 
 :root {

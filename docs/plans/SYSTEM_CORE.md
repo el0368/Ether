@@ -62,10 +62,47 @@ A multi-layered pyramid ensuring "Unbreakable" status.
 
 ---
 
+## 💾 Data Strategy (PostgreSQL + Vector)
+The database in Ether is **not** for storing your files (those live on the disk). It is for **Code Intelligence**.
+
+### 1. Why a Database for an IDE?
+- **Vector Search (`pgvector`):** Stores AI-generated embeddings of your code. This allows the AI to "know" which functions are related across 10,000 files instantly.
+- **Symbol Index:** Caching Go-to-Definition and Find-All-References data so the IDE doesn't lag during navigation.
+- **Workspace State:** Persisting your tabs, search history, and window layouts so they remain identical when you switch between Desktop and Cloud.
+
+---
+
+## ☁️ The Cloud-Hybrid Vision
+Ether is designed to be **Platform Agnostic**. The SPEL-AI stack allows it to run as a native Tauri app or a web-based Cloud IDE.
+
+### 1. Strategy
+- **Shared Backend:** The Elixir/Phoenix backend runs locally on your machine for Desktop, and in a container (Docker/Fly.io) for the Cloud.
+- **Zig in the Cloud:** Our high-performance Native Engine runs on the server to handle massive repository scans without slow I/O.
+- **Svelte Anywhere:** The frontend remains 100% identical between the Tauri shell and the Chrome/Firefox browser.
+
+---
+
+## 🤖 The Internal Architect (AI Self-Maintenance)
+The ultimate goal of Ether is to be **Self-Healing**. 
+
+### 1. The Maintenance Loop
+- **Continuous Quality Agent:** An internal GenServer that constantly runs `mix test`, `credo`, and `zig build` in the background.
+- **Gemini Integration:** If a build fails, the internal agent uses the Gemini API to analyze the error and propose a refactor *before* the developer even sees the bug.
+- **Dependency Sentinel:** Automatically detects updates (like Zig 0.15+) and runs a shadow build to verify compatibility before suggesting an upgrade to the user.
+
+### 2. The Self-Updater
+- **Tauri Native Updater:** Using Tauri's signature-based update system to push production binaries.
+- **Git-Native Evolution:** Ether can "commit its own changes" to its own repository if the user approves an AI-suggested refactor.
+
+---
+
 ## 🚧 System Roadmap
 - [ ] **LSP Integration:** Full `ElixirLS` support via a dedicated LSP Agent.
 - [ ] **PTY Support:** Real terminal integration for `CommandAgent`.
 - [ ] **Global Search:** Connecting the Zig Searcher results to the DB/UI.
+- [ ] **Agent Registry:** A central hub for managing localized AI agents (Gemini/Local LLM).
+- [ ] **Recursive CI:** The IDE runs its own CI pipeline internally.
+- [ ] **Web-Shell Auth:** Standardized session management for the Cloud version.
 
 ---
 

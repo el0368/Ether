@@ -264,6 +264,32 @@ defmodule EtherWeb.EditorChannel do
     end
   end
 
+  # Performance Benchmarking
+  @impl true
+  def handle_in("benchmark:ping", payload, socket) do
+    push(socket, "benchmark:pong", payload)
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_in("benchmark:report", %{"latency" => latency, "metric" => metric} = payload, socket) do
+    Logger.info("PERF: Client reported #{metric} latency: #{latency}ms")
+    
+    # Map frontend metrics to unified 'frontend' sample
+    metrics = 
+      case metric do
+        "monaco_mount" -> %{metric_type: "frontend", monaco_mount_ms: latency, svelte_reactivity_ms: 0.0}
+        "svelte_reactivity" -> %{metric_type: "frontend", svelte_reactivity_ms: latency, monaco_mount_ms: 0.0}
+        _ -> %{metric_type: "frontend", "#{metric}_ms": latency}
+      end
+
+    if Code.ensure_loaded?(Ether.Benchmark) do
+      Ether.Benchmark.record_metrics(metrics)
+    end
+
+    {:noreply, socket}
+  end
+
   # Window Management
   # NOTE: Window controls are now handled by Tauri (Rust).
   # Legacy Desktop.Window handlers removed.

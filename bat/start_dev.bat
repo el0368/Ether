@@ -21,12 +21,9 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-:: 🧹 KILL ZOMBIE PROCESSES (Port 4000)
+:: 🧹 KILL ZOMBIE PROCESSES (Ports 4000 & 5173)
 echo [2/5] Cleaning up old processes...
-for /f "tokens=5" %%a in ('netstat -ano ^| findstr :4000 ^| findstr LISTENING') do (
-    echo       Killing zombie process on port 4000 (PID: %%a)
-    taskkill /F /PID %%a >nul 2>nul
-)
+powershell -Command "Get-NetTCPConnection -LocalPort 4000, 5173 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }"
 
 :: 📦 DEPENDENCY CHECK
 echo [3/5] Checking dependencies...

@@ -2,6 +2,8 @@ import { mount } from 'svelte'
 import './app.css'
 import App from './App.svelte'
 import { Socket } from 'phoenix'
+import './lib/performance_monitor'
+import './lib/interaction_monitor'
 
 // Monaco Worker Configuration
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'

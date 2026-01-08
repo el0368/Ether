@@ -1,9 +1,53 @@
 [
   {
-    "timestamp": "2026-01-07T16:07:52.870000Z",
-    "zig_ops_sec": 25.77,
+    "timestamp": "2026-01-08T08:48:30.892000Z",
+    "metric_type": "scanner",
+    "zig_ops_sec": 18.63,
+    "elixir_ops_sec": 2.84,
+    "speedup": 6.56
+  },
+  {
+    "bridge_latency_us": 0.0,
+    "broadcast_latency_us": 0,
+    "channel_latency_us": 0,
+    "metric_type": "ipc",
+    "timestamp": "2026-01-08T08:48:05.771000Z"
+  },
+  {
+    "genserver_latency_us": 21.299,
+    "json_decode_ms": 15.974,
+    "json_encode_ms": 12.083,
+    "metric_type": "backend",
+    "path_logic_ms": 11.366,
+    "timestamp": "2026-01-08T08:48:03.943000Z"
+  },
+  {
+    "elixir_ops_sec": 3.16,
+    "metric_type": "scanner",
+    "speedup": 6.23,
+    "timestamp": "2026-01-08T07:51:03.556000Z",
+    "zig_ops_sec": 19.69
+  },
+  {
+    "bridge_latency_us": 0.0,
+    "broadcast_latency_us": 0,
+    "channel_latency_us": 0,
+    "metric_type": "ipc",
+    "timestamp": "2026-01-08T07:49:57.482000Z"
+  },
+  {
+    "genserver_latency_us": 6.348,
+    "json_decode_ms": 13.619,
+    "json_encode_ms": 11.264,
+    "metric_type": "backend",
+    "path_logic_ms": 12.902,
+    "timestamp": "2026-01-08T07:49:57.395000Z"
+  },
+  {
     "elixir_ops_sec": 3.83,
-    "speedup": 6.73
+    "speedup": 6.73,
+    "timestamp": "2026-01-07T16:07:52.870000Z",
+    "zig_ops_sec": 25.77
   },
   {
     "elixir_ops_sec": 3.68,

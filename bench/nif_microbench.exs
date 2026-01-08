@@ -14,43 +14,51 @@ defmodule NifMicrobench do
       Ether.Native.Scanner.close_context(ctx)
     end, 1000)
     
-    # 2. Binary Decoding (Small) - DISABLED (Missing NifDecoder)
-    # small_binary = <<1, 0, 5, "hello">>
-    # measure("Binary Decode (Small)", fn ->
-    #   Ether.Native.NifDecoder.decode_entry(small_binary, 0)
-    # end, 50_000)
+    # 2. Slab Decoding (Translation Tax)
+    # This measures the speed of parsing the Zig-returned binary into Elixir tuples.
+    mock_slab = create_mock_slab(100)
+    measure("Slab Decoding (100 nodes)", fn ->
+      decode_slab(mock_slab, "/root", [])
+    end, 1000)
+
+    mock_large_slab = create_mock_slab(1000)
+    measure("Slab Decoding (1000 nodes)", fn ->
+      decode_slab(mock_large_slab, "/root", [])
+    end, 100)
     
-    # 3. Binary Decoding (Medium) - DISABLED (Missing NifDecoder)
-    # medium_binary = create_test_binary(100)
-    # measure("Binary Decode (Medium)", fn ->
-    #   Ether.Native.NifDecoder.decode_all(medium_binary)
-    # end, 10_000)
-    
-    # 4. Binary Decoding (Large) - DISABLED (Missing NifDecoder)
-    # large_binary = create_test_binary(1000)
-    # measure("Binary Decode (Large)", fn ->
-    #   Ether.Native.NifDecoder.decode_all(large_binary)
-    # end, 1_000)
-    
-    # 5. Scan Operation (Minimal)
-    # 5. Scan Operation (Minimal)
+    # 3. Scan Operation (Minimal)
     {:ok, scan_ctx} = Ether.Native.Scanner.create_context()
-    measure("Scan (Current Dir)", fn ->
+    measure("Scan Yield Loop (Current Dir)", fn ->
       run_yield_loop(scan_ctx, ".", self())
       flush_messages()
     end, 100)
     Ether.Native.Scanner.close_context(scan_ctx)
     
-    # 6. Search Operation (Small file)
+    # 4. Search Operation (Single File)
     measure("Search (Single File)", fn ->
       {:ok, ctx} = Ether.Native.Scanner.create_context()
-      Ether.Native.Scanner.search(ctx, "defmodule", Path.expand("lib/ether/benchmark.ex"))
+      # Note: This checks specific performance of the search NIF path
+      Ether.Native.Scanner.search(ctx, "defmodule", Path.expand("lib/ether/scanner.ex"))
       Ether.Native.Scanner.close_context(ctx)
     end, 1000)
     
     IO.puts("\n✅ Microbenchmarks Complete")
   end
-  
+
+  defp create_mock_slab(count) do
+    for i <- 1..count, into: <<>> do
+      path = "file_#{i}.ex"
+      len = byte_size(path)
+      <<1::8, len::16-little, path::binary>>
+    end
+  end
+
+  # Re-implementing the decoding logic here for isolated benchmarking
+  defp decode_slab(<<>>, _root, acc), do: acc
+  defp decode_slab(<<_type::8, len::16-little, path::binary-size(len), rest::binary>>, root, acc) do
+    decode_slab(rest, root, [Path.join(root, path) | acc])
+  end
+
   defp measure(name, func, iterations) do
     IO.write("#{name} (#{iterations} runs)... ")
     
@@ -68,20 +76,20 @@ defmodule NifMicrobench do
     
     IO.puts("#{format_time(avg_ns)} | #{Float.round(ops_sec, 0)} ops/sec")
   end
-  
+
   defp format_time(ns) when ns < 1_000, do: "#{Float.round(ns, 2)} ns"
   defp format_time(ns) when ns < 1_000_000, do: "#{Float.round(ns / 1_000, 2)} µs"
   defp format_time(ns), do: "#{Float.round(ns / 1_000_000, 2)} ms"
-  
-  
+
   defp run_yield_loop(ctx, path, pid) do
     case Ether.Native.Scanner.scan_yield_nif(ctx, path, pid) do
       count when is_integer(count) -> {:ok, count}
       :ok -> :ok
       {:cont, ^ctx} -> run_yield_loop(ctx, path, pid)
+      _ -> :ok
     end
   end
-  
+
   defp flush_messages do
     receive do
       _ -> flush_messages()
@@ -91,7 +99,6 @@ defmodule NifMicrobench do
   end
 end
 
-# Run if executed directly
 if System.argv() == [] do
   NifMicrobench.run()
 end

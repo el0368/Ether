@@ -1,6 +1,7 @@
 <script>
   import { getCurrentWindow } from "@tauri-apps/api/window";
   import { onMount } from "svelte";
+  import { SunMoon, Zap } from "lucide-svelte";
 
   let { children } = $props();
   let appWindow = $state(null);
@@ -54,21 +55,23 @@
 <!-- Main TitleBar Container with Drag Region -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-  class="h-8 bg-base-300 flex items-center justify-between border-b border-base-content/10 select-none shrink-0"
+  class="h-8 bg-[var(--vscode-titleBar-activeBackground)] flex items-center justify-between border-b border-[var(--vscode-titleBar-border)] select-none shrink-0"
   data-tauri-drag-region
   ondblclick={handleTitleDoubleClick}
 >
   <!-- Left Section: Logo & Menu -->
   <div
-    class="flex items-center gap-1 pl-2 h-full overflow-hidden pointer-events-none"
+    class="flex items-center gap-1 pl-2 h-full"
   >
     <!-- App Logo/Name -->
-    <div class="flex items-center gap-2 mr-2" data-tauri-drag-region>
+    <div class="flex items-center gap-2 mr-3" data-tauri-drag-region>
       <div
-        class="w-3 h-3 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500"
-      ></div>
+        class="w-4 h-4 rounded bg-indigo-600 flex items-center justify-center shadow-sm"
+      >
+        <Zap size={10} fill="white" class="text-white" />
+      </div>
       <span
-        class="text-xs font-bold text-base-content opacity-50 tracking-wider"
+        class="text-[11px] font-bold text-[var(--vscode-titleBar-activeForeground)] opacity-80 tracking-tight"
         >ETHER</span
       >
     </div>
@@ -83,11 +86,11 @@
   <div class="flex items-center h-full" data-tauri-drag-region>
     <!-- Theme Toggle -->
     <button
-      class="h-full w-8 hover:bg-white/10 text-base-content opacity-60 transition-colors flex items-center justify-center cursor-default z-50 pointer-events-auto mr-2"
+      class="h-full w-10 hover:bg-white/10 text-[var(--vscode-titleBar-activeForeground)] opacity-60 transition-colors flex items-center justify-center cursor-default z-50 pointer-events-auto mr-1"
       onclick={toggleTheme}
       title="Toggle Theme"
     >
-      <span class="text-[12px]">🌓</span>
+      <SunMoon size={16} strokeWidth={1.5} />
     </button>
 
     <!-- Native Badge -->
@@ -100,7 +103,7 @@
     <!-- Controls (Only show if in Tauri) -->
     {#if appWindow}
       <button
-        class="h-full w-12 hover:bg-base-content/10 text-base-content transition-colors flex items-center justify-center cursor-default z-50 pointer-events-auto"
+        class="h-full w-12 hover:bg-white/10 text-[var(--vscode-titleBar-activeForeground)] transition-colors flex items-center justify-center cursor-default z-50 pointer-events-auto"
         onclick={minimize}
         title="Minimize"
       >
@@ -116,7 +119,7 @@
       </button>
 
       <button
-        class="h-full w-12 hover:bg-base-content/10 text-base-content transition-colors flex items-center justify-center cursor-default z-50 pointer-events-auto"
+        class="h-full w-12 hover:bg-white/10 text-[var(--vscode-titleBar-activeForeground)] transition-colors flex items-center justify-center cursor-default z-50 pointer-events-auto"
         onclick={toggleMaximize}
         title="Maximize"
       >
@@ -132,7 +135,7 @@
       </button>
 
       <button
-        class="h-full w-12 hover:bg-red-500 hover:text-white text-base-content transition-colors flex items-center justify-center cursor-default z-50 pointer-events-auto"
+        class="h-full w-12 hover:bg-red-500 hover:text-white text-[var(--vscode-titleBar-activeForeground)] transition-colors flex items-center justify-center cursor-default z-50 pointer-events-auto"
         onclick={close}
         title="Close"
       >

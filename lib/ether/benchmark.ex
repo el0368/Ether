@@ -17,10 +17,21 @@ defmodule Ether.Benchmark do
     do_run(opts)
   end
 
+  @doc """
+  Records a map of metrics and persists them to history.
+  Accepts a flat map of key-value pairs.
+  """
+  def record_metrics(metrics) when is_map(metrics) do
+    entry = Map.merge(metrics, %{
+      timestamp: DateTime.utc_now() |> DateTime.to_iso8601()
+    })
+    save_history(entry)
+  end
+
   defp do_run(opts) do
-    Logger.info("Starting Automated Benchmark...")
+    Logger.info("Starting Automated Scanner Benchmark...")
     
-    # 1. Measure (Recursive vs Recursive)
+    # Measure Scanner (Legacy compatible path)
     {elixir_score, elixir_count} = measure_ops_with_count(fn -> elixir_recursive_scan(".") end)
     {zig_score, zig_count} = measure_ops_with_count(fn -> Ether.Scanner.scan_raw(".") end)
     
@@ -30,16 +41,17 @@ defmodule Ether.Benchmark do
       timestamp: DateTime.utc_now() |> DateTime.to_iso8601(),
       elixir_ops_sec: elixir_score,
       zig_ops_sec: zig_score,
-      speedup: Float.round(zig_score / elixir_score, 2)
+      speedup: Float.round(zig_score / elixir_score, 2),
+      metric_type: "scanner"
     }
 
-    # 2. Check for regression
+    # Check for regression (only for scanner)
     regression_status = check_regression(result)
     
-    # 3. Save
+    # Save
     save_history(result)
     
-    # 4. Export for CI
+    # Export for CI
     if opts[:ci], do: export_ci_results(result, regression_status)
     
     Logger.info("Benchmark Complete: Elixir=#{elixir_score} ops/s, Zig=#{zig_score} ops/s")
@@ -66,7 +78,8 @@ defmodule Ether.Benchmark do
       timestamp: DateTime.utc_now() |> DateTime.to_iso8601(),
       elixir_ops_sec: elixir_score,
       zig_ops_sec: zig_score,
-      speedup: Float.round(zig_score / elixir_score, 2)
+      speedup: Float.round(zig_score / elixir_score, 2),
+      metric_type: "scanner"
     }
     
     save_baseline(baseline)
@@ -120,15 +133,20 @@ defmodule Ether.Benchmark do
       nil ->
         :no_baseline
       baseline ->
-        # Compare Zig performance (primary metric)
-        current_perf = current.zig_ops_sec
-        baseline_perf = baseline.zig_ops_sec
-        delta = (current_perf - baseline_perf) / baseline_perf
-        
-        cond do
-          delta < -@regression_threshold -> {:regression, abs(delta)}
-          delta > @regression_threshold -> {:improvement, delta}
-          true -> :ok
+        # Only compare if types match
+        if current[:metric_type] == baseline[:metric_type] do
+          # Compare Zig performance (primary metric for scanner)
+          current_perf = current.zig_ops_sec
+          baseline_perf = baseline.zig_ops_sec
+          delta = (current_perf - baseline_perf) / baseline_perf
+          
+          cond do
+            delta < -@regression_threshold -> {:regression, abs(delta)}
+            delta > @regression_threshold -> {:improvement, delta}
+            true -> :ok
+          end
+        else
+          :ok
         end
     end
   end
@@ -162,11 +180,21 @@ defmodule Ether.Benchmark do
         _ -> []
       end
     
-    # Keep last 100 runs
-    new_history = [entry | history] |> Enum.take(100)
+    # Unified history management
+    unified_history = 
+      case history do
+        list when is_list(list) ->
+          # If it's a list, check if it's the old flat list or new typed entries
+          # We'll just append and tag with metric_type if missing
+          [entry | list]
+        _ -> [entry]
+      end
+
+    # Keep last 200 runs (multiple tiers mean more entries)
+    final_history = Enum.take(unified_history, 200)
     
-    File.write!(@history_file, Jason.encode!(new_history, pretty: true))
-    write_js_data(new_history)
+    File.write!(@history_file, Jason.encode!(final_history, pretty: true))
+    write_js_data(final_history)
   end
 
   defp write_js_data(history) do
@@ -184,14 +212,16 @@ defmodule Ether.Benchmark do
     
     File.write!("bench/ci_results.json", Jason.encode!(ci_output, pretty: true))
     
-    # Also write to stdout for GitHub Actions
-    IO.puts("::set-output name=zig_ops_sec::#{result.zig_ops_sec}")
-    IO.puts("::set-output name=elixir_ops_sec::#{result.elixir_ops_sec}")
-    IO.puts("::set-output name=speedup::#{result.speedup}")
-    
-    case regression_status do
-      {:regression, _} -> IO.puts("::set-output name=regression::true")
-      _ -> IO.puts("::set-output name=regression::false")
+    # Also write to stdout for GitHub Actions if metric_type is scanner
+    if result[:metric_type] == "scanner" do
+      IO.puts("::set-output name=zig_ops_sec::#{result.zig_ops_sec}")
+      IO.puts("::set-output name=elixir_ops_sec::#{result.elixir_ops_sec}")
+      IO.puts("::set-output name=speedup::#{result.speedup}")
+      
+      case regression_status do
+        {:regression, _} -> IO.puts("::set-output name=regression::true")
+        _ -> IO.puts("::set-output name=regression::false")
+      end
     end
   end
 end

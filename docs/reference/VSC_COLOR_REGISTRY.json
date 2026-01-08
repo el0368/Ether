@@ -1,0 +1,33 @@
+{
+  "base": {
+    "foreground": "foreground",
+    "disabledForeground": "disabledForeground",
+    "errorForeground": "errorForeground",
+    "descriptionForeground": "descriptionForeground",
+    "icon.foreground": "icon.foreground",
+    "focusBorder": "focusBorder",
+    "contrastBorder": "contrastBorder",
+    "activeContrastBorder": "activeContrastBorder",
+    "selection.background": "selection.background"
+  },
+  "editor": {
+    "editor.background": "editor.background",
+    "editor.foreground": "editor.foreground",
+    "editorCursor.foreground": "editorCursor.foreground",
+    "editor.lineHighlightBackground": "editor.lineHighlightBackground",
+    "editor.selectionBackground": "editor.selectionBackground",
+    "editorLineNumber.foreground": "editorLineNumber.foreground",
+    "editorLineNumber.activeForeground": "editorLineNumber.activeForeground"
+  },
+  "workbench": {
+    "sideBar.background": "sideBar.background",
+    "sideBar.foreground": "sideBar.foreground",
+    "sideBarSectionHeader.background": "sideBarSectionHeader.background",
+    "activityBar.background": "activityBar.background",
+    "activityBar.foreground": "activityBar.foreground",
+    "activityBarBadge.background": "activityBarBadge.background",
+    "statusBar.background": "statusBar.background",
+    "statusBar.foreground": "statusBar.foreground",
+    "titleBar.activeBackground": "titleBar.activeBackground"
+  }
+}

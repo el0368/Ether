@@ -8,7 +8,7 @@ export default mergeConfig(
       globals: true,
       // Switching to 'node' environment for pure logic tests
       // This is faster and avoids JSDOM-specific startup errors
-      environment: 'node',
+      environment: 'jsdom',
       include: ['src/**/*.{test,spec}.{js,ts}'],
       setupFiles: ['./vitest-setup.js'],
     },

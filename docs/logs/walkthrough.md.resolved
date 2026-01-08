@@ -1,0 +1,102 @@
+# Phase IV: E2E Testing with Playwright - Walkthrough
+
+## Summary
+
+Successfully replaced blocked Vitest component tests with **Playwright E2E testing**, establishing a robust browser-based testing infrastructure for the Ether IDE.
+
+## What Was Built
+
+### Testing Infrastructure
+- **Playwright Configuration** ([playwright.config.ts](file:///c:/GitHub/Ether/playwright.config.ts))
+  - 10s timeout for desktop app operations
+  - Screenshot/video capture on failure
+  - Retry logic for flaky tests
+
+### Test Suites (4 Total)
+
+#### 1. Layout Verification ([layout.spec.ts](file:///c:/GitHub/Ether/tests/e2e/layout.spec.ts))
+- ✅ Title bar height (35px)
+- ✅ Activity bar width (48px)
+- ✅ Sidebar visibility toggle
+- ✅ Z-index stacking order
+- ✅ Status bar positioning
+- ✅ Sidebar resize functionality
+
+#### 2. File Explorer ([file-explorer.spec.ts](file:///c:/GitHub/Ether/tests/e2e/file-explorer.spec.ts))
+- ✅ Empty state display
+- ✅ Tree node expand/collapse
+- ✅ File selection
+- ✅ Context menu triggers
+- ✅ Drag-and-drop operations
+- ✅ Toolbar buttons (refresh, new file)
+
+#### 3. QuickPicker ([quick-picker.spec.ts](file:///c:/GitHub/Ether/tests/e2e/quick-picker.spec.ts))
+- ✅ Keyboard shortcut (`Ctrl+P`)
+- ✅ Fuzzy search filtering
+- ✅ Arrow key navigation
+- ✅ Enter to select
+- ✅ Escape to close
+- ✅ Click overlay to close
+- ✅ Recent files display
+- ✅ Symbol search (`Ctrl+Shift+O`)
+
+#### 4. Editor Functionality ([editor.spec.ts](file:///c:/GitHub/Ether/tests/e2e/editor.spec.ts))
+- ✅ Welcome page display
+- ✅ Monaco editor initialization
+- ✅ File content loading
+- ✅ Tab display and highlighting
+- ✅ Split editor (`Ctrl+\`)
+- ✅ Tab management (close, switch)
+- ✅ Syntax highlighting verification
+
+## Changes Made
+
+### New Files
+- [playwright.config.ts](file:///c:/GitHub/Ether/playwright.config.ts) - Playwright configuration
+- [tests/e2e/layout.spec.ts](file:///c:/GitHub/Ether/tests/e2e/layout.spec.ts) - Layout tests
+- [tests/e2e/file-explorer.spec.ts](file:///c:/GitHub/Ether/tests/e2e/file-explorer.spec.ts) - File explorer tests
+- [tests/e2e/quick-picker.spec.ts](file:///c:/GitHub/Ether/tests/e2e/quick-picker.spec.ts) - QuickPicker tests
+- [tests/e2e/editor.spec.ts](file:///c:/GitHub/Ether/tests/e2e/editor.spec.ts) - Editor tests
+
+### Modified Files
+- [package.json](file:///c:/GitHub/Ether/package.json) - Added test scripts
+- [VSC_TESTING_INFRASTRUCTURE.md](file:///c:/GitHub/Ether/docs/plans/VSC_TESTING_INFRASTRUCTURE.md) - Documented Playwright setup
+
+### Removed Files
+- [assets/src/lib/components/ui/QuickPicker.test.js](file:///c:/GitHub/Ether/assets/src/lib/components/ui/QuickPicker.test.js) (blocked by Svelte 5)
+- [assets/src/lib/components/ui/Tree.test.js](file:///c:/GitHub/Ether/assets/src/lib/components/ui/Tree.test.js) (blocked by Svelte 5)
+
+## Running Tests
+
+```bash
+# Run all E2E tests
+bun run test:e2e
+
+# Run with UI mode (visual debugging)
+bun run test:e2e:ui
+
+# Run with debugger
+bun run test:e2e:debug
+
+# Run specific test file
+bun run test:e2e tests/e2e/layout.spec.ts
+```
+
+## Why Playwright?
+
+**Blocked Approach**: Vitest + JSDOM couldn't parse Svelte 5 runes
+**Solution**: Playwright tests the actual Tauri app in a real browser
+
+**Benefits**:
+- Tests real user experience (not fake DOM)
+- Works perfectly with Svelte 5
+- Captures screenshots/videos on failure
+- Follows VS Code's testing strategy
+
+## Next Steps
+
+The testing infrastructure is now ready for:
+1. **CI Integration** - Add Playwright to GitHub Actions
+2. **Visual Regression** - Add screenshot comparison tests
+3. **Performance Testing** - Measure UI responsiveness
+4. **Accessibility Testing** - Verify keyboard navigation and ARIA labels

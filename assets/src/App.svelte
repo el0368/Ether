@@ -11,7 +11,7 @@
   import StatusBar from "./components/StatusBar.svelte";
   import Terminal from "./components/Terminal.svelte";
   import RefactorModal from "./components/RefactorModal.svelte";
-  import CommandPalette from "./components/CommandPalette.svelte";
+  import QuickPicker from "./lib/components/ui/QuickPicker.svelte";
   import WelcomePage from "./components/WelcomePage.svelte";
   import DropdownMenu from "./components/DropdownMenu.svelte";
   import Boundary from "./components/Boundary.svelte";
@@ -282,7 +282,7 @@
   onSuccess={handleRefactorSuccess}
 />
 
-<CommandPalette
+<QuickPicker
   isOpen={ui.showPalette}
   items={explorer.fileTree}
   {recentFiles}

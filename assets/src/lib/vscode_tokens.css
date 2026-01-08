@@ -60,4 +60,14 @@
   --vscode-focusBorder: #007acc;
   --vscode-panel-background: #1e1e1e;
   --vscode-panel-border: rgba(204, 204, 204, 0.2);
+
+  /* Layout Constants */
+  --vscode-titleBar-height: 35px;
+  --vscode-statusBar-height: 22px;
+  --vscode-activityBar-width: 48px;
+  --vscode-sideBar-minWidth: 170px;
+  --vscode-sideBar-width: 260px;
+  --vscode-panel-minHeight: 77px;
+  --vscode-panel-height: 300px;
+  --vscode-banner-height: 0px;
 }

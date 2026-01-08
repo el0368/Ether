@@ -8,7 +8,7 @@ This document outlines the systematic analysis of the `vscode-main` folder (Code
 | :--- | :--- | :--- | :--- |
 | **Phase I** | **Structural Mapping** | Map the root layers (`base`, `platform`, `editor`, `workbench`) and confirm repository origin. | **COMPLETED** |
 | **Phase II** | **The Intelligence Layer** | Deep analyze `src/vs/platform/mcp`. Understand how the Model Context Protocol is natively integrated for AI agents. | **COMPLETED** |
-| **Phase III** | **Editor & Extension Bridge** | Study the Monaco core (`src/vs/editor`) and how the workbench interacts with the Svelte-based frontend via custom services or the Extension API. | *In Queue* |
+| **Phase III** | **Editor & Extension Bridge** | Study the Monaco core (`src/vs/editor`) and how the workbench interacts with the Svelte-based frontend via custom services or the Extension API. | **IN PROGRESS** |
 | **Phase IV** | **Build & Bundling Internals** | Analyze `gulpfile.mjs`, `scripts/`, and the desktop entry points to understand how the code is optimized and delivered as a product. | *In Queue* |
 
 ---

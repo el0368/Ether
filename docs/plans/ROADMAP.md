@@ -44,8 +44,8 @@
 ---
 
 ## 🏃 Project Velocity (Jan 2026)
-- **Week 1:** Foundational stability. Moved from "Zigler" to "Hybrid Shim" architecture. Achieved production-ready Windows NIF status. Implemented comprehensive performance dashboard.
-- **Current Focus:** Aesthetic refinement and the transition to the Milestone 2 "Editing" phase.
+- **Week 1:** Foundational stability. Moved from "Zigler" to "Hybrid Shim" architecture. Achieved production-ready Windows NIF status. Implemented high-fidelity interactive component layer (QuickPicker, Tree, ContextMenu).
+- **Current Focus:** Transitioning to Milestone 3: "The Intelligence" (LSP and Agentic integration) while polishing the Phase IV "Quality" layer.
 
 ---
 

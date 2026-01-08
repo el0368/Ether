@@ -17,6 +17,7 @@
     <div class="flex flex-col w-full">
         <!-- Explorer -->
         <button
+            data-testid="activity-explorer"
             class="h-12 w-full flex items-center justify-center transition-all cursor-pointer relative {activeSidebar ===
                 'files' && sidebarVisible
                 ? 'text-[var(--vscode-activityBar-foreground)]'

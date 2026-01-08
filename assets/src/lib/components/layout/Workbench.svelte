@@ -1,6 +1,8 @@
 <script>
   import { layout } from '../../state/layout.svelte';
+  import { contextMenu } from '../../state/contextMenu.svelte';
   import Sash from '../ui/Sash.svelte';
+  import ContextMenu from '../ui/ContextMenu.svelte';
 
   let { 
     titlebar,
@@ -18,7 +20,7 @@
   class:sidebar-hidden={!layout.sidebarVisible}
   class:panel-hidden={!layout.panelVisible}
 >
-  <div class="part-titlebar">
+  <div class="part-titlebar" data-tauri-drag-region>
     {@render titlebar?.()}
   </div>
   
@@ -47,6 +49,16 @@
   <div class="part-statusbar">
     {@render statusbar?.()}
   </div>
+
+  <!-- Global Context Menu Portal -->
+  <ContextMenu 
+    isOpen={contextMenu.isOpen}
+    x={contextMenu.x}
+    y={contextMenu.y}
+    items={contextMenu.items}
+    onClose={() => contextMenu.close()}
+    onAction={contextMenu.onAction}
+  />
 </div>
 
 <style>
@@ -67,7 +79,7 @@
     font-family: var(--vscode-font-family);
   }
 
-  .part-titlebar { grid-area: title; z-index: 10; }
+  .part-titlebar { grid-area: title; z-index: 100; pointer-events: auto; }
   .part-activitybar { grid-area: activity; z-index: 5; }
   .part-sidebar { grid-area: sidebar; position: relative; z-index: 4; }
   .part-editor { grid-area: main; position: relative; overflow: hidden; z-index: 1; }

@@ -916,3 +916,34 @@ Finalized the "Ultimate Stability" hardening of Native NIFs.
 | `vscode-main/vscode-main/.github/copilot-instructions.md` | Style & architecture guidelines |
 
 ---
+## Session 27: UI/UX Orbit 1 - Phase I Extraction (2026-01-08)
+**Date**: 2026-01-08
+**Status**: SUCCESS (Visual Identity Implemented)
+
+### 🎨 Phase I: Visual Identity & Design Tokens
+- **Goal**: Extract and implement the VS Code design system into Ether Svelte.
+- **Micro-Plan Completion**:
+    - [x] **Color Registry Extraction**: Mapped 100+ semantic keys from VS Code core.
+    - [x] **Theme Payload Extraction**: Merged `dark_vs` and `dark_plus` themes.
+    - [x] **Token Generation**: Created foundational `vscode-tokens.css`.
+    - [x] **Iconography Setup**: Relocated Codicon font assets and created `VscodeIcon.svelte`.
+    - [x] **Typography Alignment**: Standardized `Inter` and `Monaco` font stacks.
+    - [x] **Reactive Store Integration**: Built `theme.svelte.js` for dynamic variable injection.
+
+### 📁 Files Created/Modified
+| File | Change |
+|------|--------|
+| `docs/reference/VSC_COLOR_REGISTRY.json` | [NEW] Semantic key mapping |
+| `docs/reference/VSC_DARK_PLUS_FLATTENED.json` | [NEW] Flattened theme payload |
+| `assets/src/lib/styles/vscode-tokens.css` | [NEW] Core CSS variables |
+| `assets/src/lib/components/ui/VscodeIcon.svelte` | [NEW] Svelte icon component |
+| `assets/src/lib/state/theme.svelte.js` | [NEW] Reactive theme store |
+| `assets/static/fonts/codicon.ttf` | [NEW] Font asset relocation |
+| `assets/static/themes/dark-plus.json` | [NEW] Production theme payload |
+
+### 🚀 Outcomes
+- Ether now possesses a complete, native VS Code "Skin".
+- Reactive theme switching is architected and ready for Light/High Contrast modes.
+- Foundation established for Orbit 2 (Phase II: Structural Shell).
+
+---

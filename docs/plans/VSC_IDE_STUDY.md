@@ -7,7 +7,7 @@ This document outlines the systematic analysis of the `vscode-main` folder (Code
 | Phase | Focus Area | Goal | Status |
 | :--- | :--- | :--- | :--- |
 | **Phase I** | **Structural Mapping** | Map the root layers (`base`, `platform`, `editor`, `workbench`) and confirm repository origin. | **COMPLETED** |
-| **Phase II** | **The Intelligence Layer** | Deep analyze `src/vs/platform/mcp`. Understand how the Model Context Protocol is natively integrated for AI agents. | *In Queue* |
+| **Phase II** | **The Intelligence Layer** | Deep analyze `src/vs/platform/mcp`. Understand how the Model Context Protocol is natively integrated for AI agents. | **COMPLETED** |
 | **Phase III** | **Editor & Extension Bridge** | Study the Monaco core (`src/vs/editor`) and how the workbench interacts with the Svelte-based frontend via custom services or the Extension API. | *In Queue* |
 | **Phase IV** | **Build & Bundling Internals** | Analyze `gulpfile.mjs`, `scripts/`, and the desktop entry points to understand how the code is optimized and delivered as a product. | *In Queue* |
 
@@ -20,8 +20,10 @@ This document outlines the systematic analysis of the `vscode-main` folder (Code
 - **Outcome**: Confirmed complete Code - OSS fork. Identified the non-standard `mcp` platform layer.
 - **Artifact**: [Study Report (Session 26)](file:///c:/GitHub/Ether/docs/logs/DEVLOG.md#session-26-vscode-main-architectual-study-2026-01-08)
 
-### Phase II: The Intelligence Layer (MCP)
+### Phase II: The Intelligence Layer (MCP) (Completed)
 - **Objective**: Decipher the custom MCP implementation.
+- **Outcome**: Identified `McpManagementService`, `McpGalleryService`, and the `uvx`/Python dispatch logic. Confirmed native support for standard MCP transports.
+- **Artifact**: [Study Report (Session 26)](file:///c:/GitHub/Ether/docs/logs/DEVLOG.md#session-26-vscode-main-architectual-study-2026-01-08)
 - **Key Files**: 
     - `src/vs/platform/mcp/common/mcpManagementService.ts`
     - `src/vs/platform/mcp/common/mcpGalleryService.ts`

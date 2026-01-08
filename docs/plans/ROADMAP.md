@@ -11,17 +11,17 @@
 - [x] **Native Stabilization:** Stack-safe Win32 bypass and iterative scanning.
 - [x] **Fair Benchmarking:** Verified 7x speedup over Elixir.
 - [ ] **Performance Master Plan:** Formalized observability roadmap in [PERFORMANCE.md](PERFORMANCE.md).
-- [ ] **VS Code Aesthetic:** Complete migration from DaisyUI to native CSS variables.
+- [x] **VS Code Aesthetic:** Complete migration from DaisyUI to native CSS variables.
 - [ ] **Precise Sync:** Transition to raw binary WebSocket frames for the file tree.
 
-### Milestone 2: "The Editor"
+### Milestone 2: "The Editor" [/]
 **Goal:** Robust file editing with multi-tab management and scannable visual cues.
 > [!NOTE]
 > Progress on this milestone depends on the **[VSC_IDE_STUDY.md](VSC_IDE_STUDY.md)** phased analysis.
 
 - [ ] **Monaco/CodeMirror:** High-performance text editor integration.
 - [ ] **Tab System:** Managing multiple open buffers with save/dirty states.
-- [ ] **File Icons:** Integration of Seti/Material icon sets.
+- [x] **File Icons:** Integration of Seti/Material icon sets (Codicons).
 
 ### Milestone 3: "The Intelligence"
 **Goal:** Agentic AI assistance and deep language integration.

@@ -6,7 +6,7 @@ A focused strategy to extract the Visual Studio Code user experience and interfa
 
 | Phase | Focus Area | Goal | Status |
 | :--- | :--- | :--- | :--- |
-| **Phase I** | **Visual Identity (Tokens)** | Extract the CSS variables, color themes, typography, and iconography (Seti/Codicons). | *In Queue* |
+| **Phase I** | **Visual Identity (Tokens)** | Extract the CSS variables, color themes, typography, and iconography (Seti/Codicons). | **[Completed]** |
 | **Phase II** | **Structural Shell (Layout)** | Map and replicate the Workbench shell parts: TitleBar, ActivityBar, SideBar, and Panel grid. | *In Queue* |
 | **Phase III** | **Interactive Components** | Replicate high-frequency UI behaviors: Command Palette (QuickPick), Menus, and the Tree/List interaction model. | *In Queue* |
 | **Phase IV** | **Testing & Quality** | Implement Smoke Tests (Playwright), Micro-benchmarks, and MCP-specific automation. | *In Queue* |
@@ -18,18 +18,18 @@ A focused strategy to extract the Visual Studio Code user experience and interfa
 ### Phase I: Visual Identity & Design Tokens (The Skin)
 - **Objective**: Source and implement the complete VS Code design language (tokens).
 - **Micro-Plan**:
-    - [ ] **Step 1.1: Color Registry Extraction**
+    - [x] **Step 1.1: Color Registry Extraction**
         - Analyze `src/vs/platform/theme/common/colorRegistry.ts` to map semantic keys (e.g., `--vscode-editor-background`).
-    - [ ] **Step 1.2: Default Theme Parsing**
+    - [x] **Step 1.2: Default Theme Parsing**
         - Extract hex values from `extensions/theme-defaults/themes/dark_plus.json`.
-    - [ ] **Step 1.3: Token Generation**
+    - [x] **Step 1.3: Token Generation**
         - Create `assets/src/lib/styles/vscode-tokens.css` in Ether.
-    - [ ] **Step 1.4: Iconography Setup**
+    - [x] **Step 1.4: Iconography Setup**
         - Identify the Codicon font path in `src/vs/base/browser/ui/codicons`.
         - Import font and create a Svelte icon component.
-    - [ ] **Step 1.5: Typography Alignment**
+    - [x] **Step 1.5: Typography Alignment**
         - Standardize font stacks: `Inter` for UI, `Monaco` for Editor.
-    - [ ] **Step 1.6: Reactive Theme Store**
+    - [x] **Step 1.6: Reactive Theme Store**
         - Implement `assets/src/lib/state/theme.svelte.js` for real-time variable injection.
 
 ### Phase II: Structural Shell & Layout (The Skeleton)

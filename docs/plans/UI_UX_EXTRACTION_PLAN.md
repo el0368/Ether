@@ -47,12 +47,21 @@ A focused strategy to extract the Visual Studio Code user experience and interfa
     - [ ] **Step 2.6: Layout Persistence**
         - Integrate `localStorage` tracking for panel widths and visibility states to ensure session continuity.
 
-### Phase III: Interactive Component Logic
-- **Objective**: Capturing the "Feel".
-- **Key Components**:
-    - **Command Palette**: The logic for filtering and selecting commands.
-    - **Context Menus**: Standardizing the look and feel of right-click actions.
-    - **Custom Views**: The protocol for injecting Svelte components into the VS Code SideBar containers.
+### Phase III: Interactive Component Logic (The Muscle)
+- **Objective**: Capture and implement the high-fidelity behaviors and interactive components of VS Code.
+- **Micro-Plan**:
+    - [ ] **Step 3.1: The QuickPicker UI**
+        - Analyze `src/vs/platform/quickinput/browser/quickInput.ts` to replicate the floating command palette UI.
+    - [ ] **Step 3.2: Command Palette Logic**
+        - Implement fuzzy-search filtering and basic command execution triggers in Svelte.
+    - [ ] **Step 3.3: Unified Tree/List Component**
+        - Build a high-performance recursive Svelte tree component modeled after `ObjectTree.ts` for file and project views.
+    - [ ] **Step 3.4: Context Menu System**
+        - Implement the placement and interaction logic for context-aware menus across the workbench.
+    - [ ] **Step 3.5: Keyboard & Focus Management**
+        - Replicate the focus-trap and keyboard orchestration patterns from `src/vs/platform/keybinding`.
+    - [ ] **Step 3.6: Drag & Drop Logic**
+        - Implement the standard IDE feedback for file-move operations and editor tiling using `src/vs/base/browser/dnd`.
 
 ---
 

@@ -1,4 +1,5 @@
 <script>
+
     /**
      * Boundary.svelte - Svelte 5 Error Boundary (Revised)
      * 

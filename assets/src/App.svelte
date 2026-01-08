@@ -22,6 +22,7 @@
   import { menuState } from "./lib/state/menu.svelte";
   import { comms } from "./lib/state/comms.svelte";
   import { explorer } from "./lib/state/explorer.svelte";
+  import { layout } from "./lib/state/layout.svelte";
   
   // No longer needed here, orchestrated by explorer.svelte
   // import * as TauriFS from "./lib/tauri_fs";
@@ -169,90 +170,106 @@
 
 
   const emptyMenu = [];
+
+  import Workbench from "./lib/components/layout/Workbench.svelte";
 </script>
 
 <div
-  class="app-container bg-[var(--vscode-editor-background)] text-[var(--vscode-editor-foreground)] select-none font-sans"
+  class="app-container"
   onkeydown={handleGlobalKeydown}
   tabindex="-1"
   role="application"
 >
-  <TitleBar>
-    <DropdownMenu label="File" items={menuState.fileMenuItems} />
-    <DropdownMenu label="Edit" items={menuState.editMenuItems} />
-    <DropdownMenu label="Selection" items={menuState.selectionMenuItems} />
-    <DropdownMenu label="View" items={menuState.viewMenuItems} />
-    <DropdownMenu label="Go" items={emptyMenu} />
-    <DropdownMenu label="Run" items={emptyMenu} />
-    <DropdownMenu label="Terminal" items={emptyMenu} />
-    <DropdownMenu label="Help" items={menuState.helpMenuItems} />
-  </TitleBar>
+  <Workbench>
+    {#snippet titlebar()}
+      <TitleBar>
+        <DropdownMenu label="File" items={menuState.fileMenuItems} />
+        <DropdownMenu label="Edit" items={menuState.editMenuItems} />
+        <DropdownMenu label="Selection" items={menuState.selectionMenuItems} />
+        <DropdownMenu label="View" items={menuState.viewMenuItems} />
+        <DropdownMenu label="Go" items={emptyMenu} />
+        <DropdownMenu label="Run" items={emptyMenu} />
+        <DropdownMenu label="Terminal" items={emptyMenu} />
+        <DropdownMenu label="Help" items={menuState.helpMenuItems} />
+      </TitleBar>
+    {/snippet}
 
-  <main class="flex flex-1 overflow-hidden">
-    <ActivityBar 
+    {#snippet activitybar()}
+      <ActivityBar 
         activeSidebar={ui.activeSidebar} 
-        sidebarVisible={ui.sidebarVisible} 
-        onToggle={toggleSidebar} 
-    />
-
-    <Boundary name="SideBar">
-      <SideBar
-        activeSidebar={ui.activeSidebar}
-        sidebarVisible={ui.sidebarVisible}
-        fileTree={explorer.fileTree}
-        activeFile={editor.activeGroup.file}
-        isLoading={ui.isLoading}
-        channel={comms.channel}
-        onOpenFile={openFile}
-        onExpand={handleExpand}
-        onNewFile={() => editor.newUntitled()}
-        onNewFolder={() => {}}
-        onRefresh={() => {
-          if (comms.channel) {
-            ui.isLoading = true;
-            explorer.clear();
-            comms.channel.push("filetree:list_raw", { path: "." });
+        sidebarVisible={layout.sidebarVisible} 
+        onToggle={(section) => {
+          if (ui.activeSidebar === section && layout.sidebarVisible) {
+            layout.toggleSidebar();
+          } else {
+            ui.activeSidebar = section;
+            layout.sidebarVisible = true;
           }
-        }}
-        onMenuClick={() => {}}
-        onOpenProjectFolder={() => explorer.openFolder(comms.channel)}
+        }} 
       />
-    </Boundary>
+    {/snippet}
 
-      <div class="flex-1 flex flex-col min-w-0 bg-[var(--vscode-editor-background)]">
-        <Boundary name="MainEditor">
-          {#if editor.activeGroup.file}
-            <EditorLayout
-              bind:editorGroups={editor.groups}
-              bind:activeGroupIndex={editor.activeIndex}
-              channel={comms.channel}
-              onSplit={splitEditor}
-            />
-          {:else}
-            <WelcomePage 
-              {recentFiles}
-              onNewFile={() => editor.newUntitled()}
-              onOpenFile={(file) => openFile(file)}
-              onOpenFolder={() => explorer.openFolder(comms.channel)}
-            />
-          {/if}
-        </Boundary>
+    {#snippet sidebar()}
+      <Boundary name="SideBar">
+        <SideBar
+          activeSidebar={ui.activeSidebar}
+          sidebarVisible={layout.sidebarVisible}
+          fileTree={explorer.fileTree}
+          activeFile={editor.activeGroup.file}
+          isLoading={ui.isLoading}
+          channel={comms.channel}
+          onOpenFile={openFile}
+          onExpand={handleExpand}
+          onNewFile={() => editor.newUntitled()}
+          onNewFolder={() => {}}
+          onRefresh={() => {
+            if (comms.channel) {
+              ui.isLoading = true;
+              explorer.clear();
+              comms.channel.push("filetree:list_raw", { path: "." });
+            }
+          }}
+          onMenuClick={() => {}}
+          onOpenProjectFolder={() => explorer.openFolder(comms.channel)}
+        />
+      </Boundary>
+    {/snippet}
 
-        <!-- Bottom Panel (Terminal) -->
-        {#if ui.terminalVisible}
-          <div class="flex flex-col h-64 shrink-0 transition-all">
-            <Boundary name="Terminal">
-              <Terminal 
-                channel={comms.channel} 
-                onClose={() => ui.terminalVisible = false}
-              />
-            </Boundary>
-          </div>
+    <div class="flex-1 flex flex-col min-w-0 h-full">
+      <Boundary name="MainEditor">
+        {#if editor.activeGroup.file}
+          <EditorLayout
+            bind:editorGroups={editor.groups}
+            bind:activeGroupIndex={editor.activeIndex}
+            channel={comms.channel}
+            onSplit={splitEditor}
+          />
+        {:else}
+          <WelcomePage 
+            {recentFiles}
+            onNewFile={() => editor.newUntitled()}
+            onOpenFile={(file) => openFile(file)}
+            onOpenFolder={() => explorer.openFolder(comms.channel)}
+          />
         {/if}
-      </div>
-  </main>
+      </Boundary>
+    </div>
 
-  <StatusBar {nifPulse} activeFile={editor.activeGroup.file} />
+    {#snippet panel()}
+      {#if layout.panelVisible}
+        <Boundary name="Terminal">
+          <Terminal 
+            channel={comms.channel} 
+            onClose={() => layout.togglePanel()}
+          />
+        </Boundary>
+      {/if}
+    {/snippet}
+
+    {#snippet statusbar()}
+      <StatusBar {nifPulse} activeFile={editor.activeGroup.file} />
+    {/snippet}
+  </Workbench>
 </div>
 
 <!-- Modals -->

@@ -9,6 +9,7 @@ const resource = @import("resource.zig");
 
 // Configuration
 pub const CHUNK_SIZE: usize = 1000;
+pub const MAX_DEPTH: u8 = 64; // Safety valve for recursive scanning
 
 const w = std.os.windows;
 const CP_UTF8 = 65001;
@@ -85,7 +86,7 @@ pub export fn zig_scan_yieldable(
     argv: [*c]const api.ERL_NIF_TERM,
     nif_api: *const api.WinNifApi,
 ) api.ERL_NIF_TERM {
-    if (argc != 3) return nif_api.make_badarg(env);
+    if (argc != 4) return nif_api.make_badarg(env);
 
     // 1. Validate Context Resource
     var ctx_ptr: ?*anyopaque = undefined;
@@ -96,13 +97,18 @@ pub export fn zig_scan_yieldable(
     var pid: beam.ErlNifPid = undefined;
     if (nif_api.get_local_pid(env, argv[2], &pid) == 0) return nif_api.make_badarg(env);
 
-    // 3. Handle Initial Path (if stack empty)
+    // 3. Parse Depth Limit
+    var depth_limit_c: c_int = 0;
+    if (nif_api.get_int(env, argv[3], &depth_limit_c) == 0) return nif_api.make_badarg(env);
+    const depth_limit: u8 = @intCast(std.math.clamp(depth_limit_c, 0, MAX_DEPTH));
+
+    // 4. Handle Initial Path (if stack empty)
     const allocator = std.heap.c_allocator;
     if (res_obj.stack.items.len == 0) {
         var path_bin: api.ErlNifBinary = undefined;
         if (nif_api.inspect_binary(env, argv[1], &path_bin) == 0) return nif_api.make_badarg(env);
         const initial_path = allocator.dupe(u8, path_bin.data[0..path_bin.size]) catch return nif_api.make_badarg(env);
-        res_obj.stack.append(allocator, initial_path) catch {
+        res_obj.stack.append(allocator, .{ .path = initial_path, .depth = 0 }) catch {
             allocator.free(initial_path);
             return nif_api.make_badarg(env);
         };
@@ -120,18 +126,18 @@ pub export fn zig_scan_yieldable(
         .entry_count = 0,
     };
 
-    var iterations: usize = 0;
-    while (res_obj.stack.items.len > 0) {
-        iterations += 1;
-        if (iterations % 50 == 0) {
-            if (nif_api.consume_timeslice(env, 1) != 0) {
-                flush_buffer(&scan_ctx);
-                return nif_api.make_atom(env, "yield");
-            }
+    // 5. Iterative Stack Scan
+    while (res_obj.stack.items.len > 0 and res_obj.is_active) {
+        if (nif_api.consume_timeslice(env, 1) != 0) {
+            flush_buffer(&scan_ctx);
+            // Fix: Return {:cont, resource} tuple instead of atom :yield
+            const tag = nif_api.make_atom(env, "cont");
+            return nif_api.make_tuple2(env, tag, argv[0]);
         }
 
-        const current_path = res_obj.stack.items[res_obj.stack.items.len - 1];
-        res_obj.stack.items.len -= 1;
+        const current_entry = res_obj.stack.pop().?;
+        const current_path = current_entry.path;
+        const current_depth = current_entry.depth;
         defer allocator.free(current_path);
 
         const path_utf16 = sliceToHeapUTF16(allocator, current_path) catch continue;
@@ -141,6 +147,7 @@ pub export fn zig_scan_yieldable(
         if (attrs == 0xFFFFFFFF) continue;
 
         if ((attrs & 0x10) != 0) { // Directory
+            if (current_depth >= depth_limit) continue; // Safety valve / User limit
             var search_pattern_u8 = std.ArrayListUnmanaged(u8){};
             defer search_pattern_u8.deinit(allocator);
             search_pattern_u8.appendSlice(allocator, current_path) catch continue;
@@ -167,27 +174,51 @@ pub export fn zig_scan_yieldable(
                         defer allocator.free(name_u8);
                         _ = kernel32.WideCharToMultiByte(CP_UTF8, 0, name_u16.ptr, @intCast(name_u16.len), name_u8.ptr, name_len, null, null);
 
-                        // Skip ignore patterns
-                        if (!std.mem.eql(u8, name_u8, ".git") and
-                            !std.mem.eql(u8, name_u8, "node_modules") and
-                            !std.mem.eql(u8, name_u8, "_build") and
-                            !std.mem.eql(u8, name_u8, "deps") and
-                            !std.mem.eql(u8, name_u8, ".elixir_ls"))
-                        {
+                        // Dynamic Ignore Patterns
+                        var should_ignore = false;
+                        for (res_obj.ignore_patterns.items) |pattern| {
+                            if (std.mem.eql(u8, name_u8, pattern)) {
+                                should_ignore = true;
+                                break;
+                            }
+                        }
+                        if (!should_ignore) {
                             const full_path = std.fs.path.join(allocator, &.{ current_path, name_u8 }) catch continue;
 
-                            if ((find_data.dwFileAttributes & 0x10) != 0) {
-                                res_obj.stack.append(allocator, full_path) catch {
+                            const is_dir = (find_data.dwFileAttributes & 0x10) != 0;
+                            const type_code: u8 = if (is_dir) 2 else 1;
+
+                            // Add entry to buffer: [type (u8)] [depth (u8)] [len (u16)] [path]
+                            var success = true;
+                            local_buffer.append(allocator, type_code) catch {
+                                success = false;
+                            };
+                            if (success) local_buffer.append(allocator, current_depth + 1) catch {
+                                success = false;
+                            };
+                            if (success) {
+                                const len: u16 = @intCast(full_path.len);
+                                local_buffer.writer(allocator).writeInt(u16, len, .little) catch {
+                                    success = false;
+                                };
+                            }
+                            if (success) local_buffer.appendSlice(allocator, full_path) catch {
+                                success = false;
+                            };
+
+                            if (!success) {
+                                allocator.free(full_path);
+                                continue;
+                            }
+
+                            scan_ctx.entry_count += 1;
+                            res_obj.total_count += 1;
+
+                            if (is_dir) {
+                                res_obj.stack.append(allocator, .{ .path = full_path, .depth = current_depth + 1 }) catch {
                                     allocator.free(full_path);
                                 };
                             } else {
-                                // Add file entry to buffer
-                                local_buffer.append(allocator, 1) catch continue; // type_file
-                                const len: u16 = @intCast(full_path.len);
-                                local_buffer.writer(allocator).writeInt(u16, len, .little) catch continue;
-                                local_buffer.appendSlice(allocator, full_path) catch continue;
-                                scan_ctx.entry_count += 1;
-                                res_obj.total_count += 1;
                                 allocator.free(full_path);
                             }
                         }

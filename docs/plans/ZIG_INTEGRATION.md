@@ -15,17 +15,18 @@ We use a **Hybrid Shim + Binary Slabs** architecture to eliminate serialization 
 
 ## 📍 Integration Phases
 
-### Phase I: The Scanner Rewrite (LiveView Optimized)
-- **Chunked Delivery**: Modify `Ether.Native.Scanner` to deliver "slabs" (500 items/chunk).
-- **Binary Depth Calculation**: Calculate tree depth in Zig to save Elixir CPU cycles.
+### Phase I: The Scanner Rewrite (LiveView Optimized) [COMPLETED]
+- [x] **Chunked Delivery**: Modify `Ether.Native.Scanner` to deliver "slabs" (500 items/chunk).
+- [x] **Binary Depth Calculation**: Calculate tree depth in Zig to save Elixir CPU cycles.
 
-### Phase II: The Agent Bridge (Family Integration)
-- **RefactorAgent**: Connect Zig syntax-tree parsing (Tree-Sitter) for 10x refactor speed.
-- **SearchAgent**: Parallel multi-threaded `grep` in Zig, streaming to `GlobalSearch`.
+### Phase II: The Agent Bridge (Current Focus) [/]
+- [ ] **RefactorAgent**: Connect Zig syntax-tree parsing (Tree-Sitter) for 10x refactor speed.
+- [ ] **SearchAgent**: Parallel multi-threaded `grep` in Zig, streaming to `GlobalSearch`.
 
-### Phase III: DX & Stability
-- **Unified Build**: Automate Zig compilation with `mix compile` integration.
-- **Fail-Safe**: "Dead-Man's Switch" for NIFs to prevent scheduler locks.
+### Phase III: DX & Stability [COMPLETED]
+- [x] **Unified Build**: Automate Zig compilation with `mix compile` integration.
+- [x] **Fail-Safe**: Yieldable NIFs with `is_active` checks to prevent scheduler locks.
+- [x] **Unbreakable Builds**: "Shadow-Copying" logic in Mix task to allow native updates while app is running.
 
 ---
 > [!IMPORTANT]

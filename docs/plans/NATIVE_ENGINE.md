@@ -73,7 +73,7 @@ native/scanner/src/
 
 ## 🚀 Future Roadmap
 
-### Level 6: Intelligence (In-Progress)
+### Level 6: Intelligence [/]
 - [x] **Native Content Search:** Parallel grep engine with Win32 handles.
 - [ ] **Search Indexing:** Evaluation of Bloom filters or In-memory tries for instant lookup.
 - [ ] **File Watcher:** Implementation of `ReadDirectoryChangesW` as a persistent resource.

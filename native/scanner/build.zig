@@ -27,7 +27,9 @@ pub fn build(b: *std.Build) void {
     if (b.option([]const u8, "erl_include", "Path to Erlang include directory")) |path| {
         mod.addIncludePath(.{ .cwd_relative = path });
     } else {
+        // Fallback for local dev if not passed by Mix
         mod.addIncludePath(.{ .cwd_relative = "C:\\Program Files\\Erlang OTP\\erts-16.2\\include" });
+        // NOTE: In production/automation, this should always be passed by the Mix task.
     }
 
     lib.linkLibC();

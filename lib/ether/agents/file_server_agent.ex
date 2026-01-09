@@ -108,6 +108,12 @@ defmodule Ether.Agents.FileServerAgent do
   end
 
   @impl true
+  def handle_call({:find_files, query}, _from, state) do
+    results = perform_filename_search(".", query)
+    {:reply, {:ok, results}, state}
+  end
+
+  @impl true
   def handle_call(:get_recent, _from, state) do
     recent = Enum.map(state.recent_files, fn path ->
       %{name: Path.basename(path), path: path}
@@ -146,6 +152,32 @@ defmodule Ether.Agents.FileServerAgent do
         |> Enum.filter(fn {line, _} -> String.contains?(line, query) end)
         |> Enum.map(fn {line, index} ->
           %{path: path, line: index, content: String.trim(line)}
+        end)
+      _ -> []
+    end
+  end
+
+  def find_files(query) do
+    GenServer.call(@name, {:find_files, query})
+  end
+
+  defp perform_filename_search(dir, query) do
+    case File.ls(dir) do
+      {:ok, entries} ->
+        Enum.flat_map(entries, fn entry ->
+          path = Path.join(dir, entry)
+          cond do
+            String.starts_with?(entry, ".") -> []
+            entry == "_build" or entry == "deps" or entry == "assets/node_modules" or entry == ".git" -> []
+            true ->
+              matches = if String.contains?(String.downcase(entry), String.downcase(query)), do: [%{id: path, label: entry, description: path, active: false}], else: []
+              
+              if File.dir?(path) do
+                matches ++ perform_filename_search(path, query)
+              else
+                matches
+              end
+          end
         end)
       _ -> []
     end

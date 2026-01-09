@@ -22,15 +22,24 @@ FileServerAgent.write_file(path, content)  # :ok | {:error, reason}
 FileServerAgent.list_files(path)   # {:ok, [files]}
 ```
 
-### 2. Scanner (Level 4 Native)
+### 2. Scanner (Level 5 Native)
 **Module:** `Ether.Scanner`
-**Responsibility:** High-performance directory traversal using **Safe Zig NIFs**.
+**Responsibility:** High-performance directory traversal using **Safe Zig NIFs** (Binary Protocol).
 
 ```elixir
 # API
-Ether.Scanner.scan(directory)      # [list of {path, type} tuples]
-Ether.Scanner.scan_raw(directory)  # Streams binary chunks to calling process
+Ether.Scanner.scan(directory, ignores \\ [])
+# -> [list of {path, type} tuples]
+#
+# Examples: 
+# Ether.Scanner.scan(".")
+# Ether.Scanner.scan(".", [".git", "dist", "node_modules"])
 ```
+
+**Features:**
+*   **Dynamic Ignores**: Pass a list of folder names to skip at the native C-level.
+*   **Memory Safe**: Uses `BeamAllocator` to prevent leaks and Double-Frees.
+*   **Scheduler Friendly**: Consumes timeslices to prevent blocking other processes.
 
 ### 3. Explorer
 **Module:** `Ether.Explorer`

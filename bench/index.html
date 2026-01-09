@@ -159,6 +159,40 @@
             animation: spin 1s linear infinite;
         }
 
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .btn-sync {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-base);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-sync:hover {
+            background: var(--bg-activity);
+            color: var(--text-heading);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-sync:active {
+            transform: translateY(1px);
+        }
+
+        .btn-sync.spinning svg {
+            animation: spin 0.6s linear infinite;
+        }
+
         @keyframes spin {
             to {
                 transform: rotate(360deg);
@@ -175,7 +209,17 @@
 
     <header>
         <h1>⚡ Ether Studio <span class="latency-badge">REAL-TIME PERFORMANCE</span></h1>
-        <div id="latest-ts">Last sync: --:--:--</div>
+        <div class="header-controls">
+            <div id="latest-ts">Last sync: --:--:--</div>
+            <button id="sync-btn" class="btn-sync" onclick="refreshData()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Sync
+            </button>
+        </div>
     </header>
 
     <main class="dashboard-grid">
@@ -242,7 +286,7 @@
         <div class="card">
             <div class="card-header">
                 <div class="card-title">Frontend Component Timing</div>
-                <div class="badge">Tier 4: Svelte/JS</div>
+                <div class="badge">Tier 4: LiveView/JS</div>
             </div>
             <div class="stat-group">
                 <div class="stat">
@@ -250,7 +294,7 @@
                     <span class="stat-value" id="monaco-val">--<span class="stat-unit">ms</span></span>
                 </div>
                 <div class="stat">
-                    <span class="stat-label">Svelte Reactivity</span>
+                    <span class="stat-label">DOM Patching</span>
                     <span class="stat-value" id="svelte-val">--<span class="stat-unit">ms</span></span>
                 </div>
             </div>
@@ -261,11 +305,11 @@
     </main>
 
     <footer>
-        <div>Ether Professional IDE • Premium Performance Stack</div>
+        <div>Ether Studio • PLEX-Z Stack (Phoenix LiveView Elixir Zig)</div>
         <div>Total Samples: <span id="sample-count">0</span></div>
     </footer>
 
-    <script src="data.js"></script>
+    <!-- No script src="data.js" here, we load it dynamically or rely on global -->
     <script>
         const chartDefaults = {
             responsive: true,
@@ -281,104 +325,113 @@
             }
         };
 
-        if (typeof window.BENCHMARK_DATA !== 'undefined') {
-            const data = window.BENCHMARK_DATA;
-            const history = [...data].reverse();
+        let charts = {};
 
+        async function refreshData() {
+            const btn = document.getElementById('sync-btn');
+            btn.classList.add('spinning');
+
+            try {
+                // Hack: Use script injection instead of fetch to support file:// protocol
+                // fetch() is blocked by CORS on local files in modern browsers.
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'data.js?t=' + Date.now();
+                    script.onload = () => {
+                        script.remove(); // Cleanup
+                        resolve();
+                    };
+                    script.onerror = () => {
+                        script.remove();
+                        reject(new Error("Script load failed"));
+                    };
+                    document.body.appendChild(script);
+                });
+
+                // data.js assigns to global window.BENCHMARK_DATA
+                if (window.BENCHMARK_DATA) {
+                    updateDashboard(window.BENCHMARK_DATA);
+                    const now = new Date();
+                    document.getElementById('latest-ts').textContent = `Last sync: ${now.toLocaleTimeString()}`;
+                } else {
+                    throw new Error("Data loaded but BENCHMARK_DATA is missing");
+                }
+
+            } catch (e) {
+                console.error("Failed to sync:", e);
+                alert("Sync failed! Check console.\nTip: If using file://, this method normally works. Check if data.js exists.");
+            } finally {
+                setTimeout(() => btn.classList.remove('spinning'), 500);
+            }
+        }
+
+        function updateDashboard(data) {
+            const history = [...data];
             document.getElementById('loader').style.display = 'none';
             document.getElementById('sample-count').textContent = data.length;
 
-            // --- Tier 1: Scanner ---
-            const scannerEntries = history.filter(d => d.metric_type === 'scanner' || (!d.metric_type && d.zig_ops_sec));
-            if (scannerEntries.length > 0) {
-                const latest = scannerEntries[scannerEntries.length - 1];
-                document.getElementById('zig-val').textContent = Math.round(latest.zig_ops_sec).toLocaleString();
-                document.getElementById('gain-val').innerHTML = `${latest.speedup}<span class="stat-unit">x</span>`;
+            updateChart('scanner', history, 'scannerChart', 'zig_ops_sec',
+                (latest) => {
+                    document.getElementById('zig-val').textContent = Math.round(latest.zig_ops_sec).toLocaleString();
+                    const gain = latest.speedup > 0 ? `${latest.speedup}<span class="stat-unit">x</span>` : `<span class="stat-unit" style="font-size:0.8em; opacity:0.7">N/A</span>`;
+                    document.getElementById('gain-val').innerHTML = gain;
+                },
+                { borderColor: '#007acc', backgroundColor: 'rgba(0,122,204,0.1)' }
+            );
 
-                new Chart(document.getElementById('scannerChart'), {
-                    type: 'line',
-                    data: {
-                        labels: scannerEntries.map((_, i) => i),
-                        datasets: [{
-                            data: scannerEntries.map(d => d.zig_ops_sec),
-                            borderColor: '#007acc',
-                            backgroundColor: 'rgba(0,122,204,0.1)',
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: chartDefaults
-                });
-            }
+            updateChart('backend', history, 'backendChart', 'genserver_latency_us',
+                (latest) => {
+                    document.getElementById('gs-val').innerHTML = `${Math.round(latest.genserver_latency_us)}<span class="stat-unit">µs</span>`;
+                    document.getElementById('json-val').innerHTML = `${latest.json_encode_ms.toFixed(2)}<span class="stat-unit">ms</span>`;
+                },
+                { borderColor: '#C586C0', backgroundColor: 'rgba(197,134,192,0.1)' }
+            );
 
-            // --- Tier 2: Backend ---
-            const backendEntries = history.filter(d => d.metric_type === 'backend');
-            if (backendEntries.length > 0) {
-                const latest = backendEntries[backendEntries.length - 1];
-                document.getElementById('gs-val').innerHTML = `${Math.round(latest.genserver_latency_us)}<span class="stat-unit">µs</span>`;
-                document.getElementById('json-val').innerHTML = `${latest.json_encode_ms.toFixed(2)}<span class="stat-unit">ms</span>`;
+            updateChart('ipc', history, 'ipcChart', 'bridge_latency_us',
+                (latest) => {
+                    document.getElementById('ipc-val').innerHTML = `${Math.round(latest.bridge_latency_us)}<span class="stat-unit">µs</span>`;
+                },
+                { borderColor: '#4EC9B0', backgroundColor: 'rgba(78,201,176,0.1)' }
+            );
 
-                new Chart(document.getElementById('backendChart'), {
-                    type: 'line',
-                    data: {
-                        labels: backendEntries.map((_, i) => i),
-                        datasets: [{
-                            data: backendEntries.map(d => d.genserver_latency_us),
-                            borderColor: '#C586C0',
-                            backgroundColor: 'rgba(197,134,192,0.1)',
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: chartDefaults
-                });
-            }
-
-            // --- Tier 3: IPC ---
-            const ipcEntries = history.filter(d => d.metric_type === 'ipc');
-            if (ipcEntries.length > 0) {
-                const latest = ipcEntries[ipcEntries.length - 1];
-                document.getElementById('ipc-val').innerHTML = `${Math.round(latest.bridge_latency_us)}<span class="stat-unit">µs</span>`;
-
-                new Chart(document.getElementById('ipcChart'), {
-                    type: 'line',
-                    data: {
-                        labels: ipcEntries.map((_, i) => i),
-                        datasets: [{
-                            data: ipcEntries.map(d => d.bridge_latency_us),
-                            borderColor: '#4EC9B0',
-                            backgroundColor: 'rgba(78,201,176,0.1)',
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: chartDefaults
-                });
-            }
-
-            // --- Tier 4: Frontend ---
-            const frontendEntries = history.filter(d => d.metric_type === 'frontend');
-            if (frontendEntries.length > 0) {
-                const latest = frontendEntries[frontendEntries.length - 1];
-                document.getElementById('monaco-val').innerHTML = `${latest.monaco_mount_ms.toFixed(1)}<span class="stat-unit">ms</span>`;
-                document.getElementById('svelte-val').innerHTML = `${latest.svelte_reactivity_ms.toFixed(1)}<span class="stat-unit">ms</span>`;
-
-                new Chart(document.getElementById('frontendChart'), {
-                    type: 'line',
-                    data: {
-                        labels: frontendEntries.map((_, i) => i),
-                        datasets: [{
-                            data: frontendEntries.map(d => d.monaco_mount_ms),
-                            borderColor: '#DCDCAA',
-                            backgroundColor: 'rgba(220,221,170,0.1)',
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: chartDefaults
-                });
-            }
+            updateChart('frontend', history, 'frontendChart', 'monaco_mount_ms',
+                (latest) => {
+                    document.getElementById('monaco-val').innerHTML = `${latest.monaco_mount_ms.toFixed(1)}<span class="stat-unit">ms</span>`;
+                    document.getElementById('svelte-val').innerHTML = `${latest.svelte_reactivity_ms.toFixed(1)}<span class="stat-unit">ms</span>`;
+                },
+                { borderColor: '#DCDCAA', backgroundColor: 'rgba(220,221,170,0.1)' }
+            );
         }
+
+        function updateChart(metricType, history, canvasId, dataKey, updateStatFn, style) {
+            const entries = history.filter(d => d.metric_type === metricType || (!d.metric_type && metricType === 'scanner' && d.zig_ops_sec));
+            if (entries.length === 0) return;
+
+            const latest = entries[entries.length - 1];
+            updateStatFn(latest);
+
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+
+            charts[canvasId] = new Chart(document.getElementById(canvasId), {
+                type: 'line',
+                data: {
+                    labels: entries.map((_, i) => i),
+                    datasets: [{
+                        data: entries.map(d => d[dataKey]),
+                        borderColor: style.borderColor,
+                        backgroundColor: style.backgroundColor,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: chartDefaults
+            });
+        }
+
+        // Initial load
+        refreshData();
     </script>
 </body>
 

@@ -9,17 +9,17 @@ Elixir serves as the "Brain" of the Ether IDE, responsible for state management,
 We leverage the `Jido` framework for modular, action-oriented intelligence.
 
 ### 1. Agent Roles
-| Agent | Responsibility | Key Tools |
-| :--- | :--- | :--- |
-| **Commander** | High-level planning & delegation. | Goal-state management. |
-| **Refactor** | Safe code transformations. | `Sourceror` (AST manipulation). |
-| **Git** | Automated version control. | `System.cmd("git")`, Auto-commits. |
-| **Command** | Generic task execution. | `Task.async`, PTY (Planned). |
+| Agent | Responsibility | Key Tools | Status |
+| :--- | :--- | :--- | :--- |
+| **Commander** | High-level planning & delegation. | Goal-state management. | [ ] |
+| **Refactor** | Safe code transformations. | `Sourceror` (AST manipulation). | [/] |
+| **Git** | Automated version control. | `System.cmd("git")`, Auto-commits. | [/] |
+| **Command** | Generic task execution. | `Task.async`, PTY (Planned). | [x] |
 
 ### 2. Implementation Status
 - [x] Initial agent definitions in `lib/ether/agents/`.
-- [ ] Transition to standard `Jido.Action` primitives.
-- [ ] Integration of `Instructor` for structured LLM completions.
+- [ ] **Jido.Action**: Transition to standard `Jido.Action` primitives.
+- [ ] **Instructor**: Integration of `Instructor` for structured LLM completions.
 
 ---
 
@@ -27,8 +27,8 @@ We leverage the `Jido` framework for modular, action-oriented intelligence.
 PostgreSQL provides long-term memory and project context.
 
 ### 1. DB Capabilities
-- **Project Metadata:** Store open files, cursor positions, and per-project configurations.
-- **AI Memory:** Utilize `pgvector` for storing code embeddings to enable semantic search.
+- [x] **Project Metadata:** Store open files, cursor positions, and per-project configurations.
+- [ ] **AI Memory:** Utilize `pgvector` for storing code embeddings to enable semantic search.
 
 ### 2. Roadmap
 - [ ] **Re-Activation:** Fix startup/migration logic and re-enable `Ether.Repo`.
@@ -41,34 +41,34 @@ PostgreSQL provides long-term memory and project context.
 "Zero Friction" workflow for Windows-based development.
 
 ### 1. Current Tooling
-- **`start_dev.bat`:** Sequential ignition (Port cleanup -> Deps check -> Backend ready -> UI launch).
-- **`verify_setup.bat`:** Full-stack environment sanity check.
-- **`check_env.bat`:** Version parity verification.
+- [x] **`start_dev.bat`:** Sequential ignition (Port cleanup -> Deps check -> Backend ready -> UI launch).
+- [x] **`verify_setup.bat`:** Full-stack environment sanity check.
+- [x] **`check_env.bat`:** Version parity verification.
 
 ### 2. Roadmap
 - [ ] **`install_deps.bat`:** One-click environment setup via Scoop/Winget.
 - [ ] **CI Pipeline:** GitHub Actions for multi-platform (Windows/Linux) validation.
-- [ ] **Auto-Updater:** Tauri-native update delivery.
+- [x] **Auto-Updater:** Tauri-native update delivery.
 
 ---
 
 ## 🧪 Testing & Quality Strategy
 A multi-layered pyramid ensuring "Unbreakable" status.
 
-1. **Unit (Elixir):** `mix test` for agent logic and channel handlers.
-2. **Integrity (Hybrid):** Verifying NIF/BEAM interaction (politeness, memory).
-3. **Fuzzing:** `StreamData` for boundary protection on binary protocols.
-4. **End-to-End:** Verification of setup scripts and environment integration.
+1. [x] **Unit (Elixir):** `mix test` for agent logic and channel handlers.
+2. [x] **Integrity (Hybrid):** Verifying NIF/BEAM interaction (politeness, memory).
+3. [ ] **Fuzzing:** `StreamData` for boundary protection on binary protocols.
+4. [x] **End-to-End:** Verification of setup scripts and environment integration.
 
 ---
 
 ## 💾 Data Strategy (PostgreSQL + Vector)
 The database in Ether is **not** for storing your files (those live on the disk). It is for **Code Intelligence**.
 
-### 1. Why a Database for an IDE?
-- **Vector Search (`pgvector`):** Stores AI-generated embeddings of your code. This allows the AI to "know" which functions are related across 10,000 files instantly.
-- **Symbol Index:** Caching Go-to-Definition and Find-All-References data so the IDE doesn't lag during navigation.
-- **Workspace State:** Persisting your tabs, search history, and window layouts so they remain identical when you switch between Desktop and Cloud.
+### 1. Feature Set
+- [ ] **Vector Search (`pgvector`):** Stores AI-generated embeddings of your code.
+- [ ] **Symbol Index:** Caching Go-to-Definition and Find-All-References data.
+- [x] **Workspace State:** Persisting your tabs, search history, and window layouts.
 
 ---
 
@@ -76,9 +76,9 @@ The database in Ether is **not** for storing your files (those live on the disk)
 Ether is designed to be **Platform Agnostic**. The SPEL-AI stack allows it to run as a native Tauri app or a web-based Cloud IDE.
 
 ### 1. Strategy
-- **Shared Backend:** The Elixir/Phoenix backend runs locally on your machine for Desktop, and in a container (Docker/Fly.io) for the Cloud.
-- **Zig in the Cloud:** Our high-performance Native Engine runs on the server to handle massive repository scans without slow I/O.
-- **LiveView Everywhere:** The frontend logic remains 100% identical between the Tauri shell and the Chrome/Firefox browser, served directly from the BEAM.
+- [x] **Shared Backend:** The Elixir/Phoenix backend runs locally on your machine for Desktop, and in a container (Docker/Fly.io) for the Cloud.
+- [x] **Zig in the Cloud:** Our high-performance Native Engine runs on the server.
+- [x] **LiveView Everywhere:** The frontend logic remains 100% identical.
 
 ---
 
@@ -86,13 +86,13 @@ Ether is designed to be **Platform Agnostic**. The SPEL-AI stack allows it to ru
 The ultimate goal of Ether is to be **Self-Healing**. 
 
 ### 1. The Maintenance Loop
-- **Continuous Quality Agent:** An internal GenServer that constantly runs `mix test`, `credo`, and `zig build` in the background.
-- **Gemini Integration:** If a build fails, the internal agent uses the Gemini API to analyze the error and propose a refactor *before* the developer even sees the bug.
-- **Dependency Sentinel:** Automatically detects updates (like Zig 0.15+) and runs a shadow build to verify compatibility before suggesting an upgrade to the user.
+- [ ] **Continuous Quality Agent:** An internal GenServer that constantly runs checks.
+- [ ] **Gemini Integration:** Automated analysis of build errors.
+- [ ] **Dependency Sentinel:** Automatically detects and verifies updates.
 
 ### 2. The Self-Updater
-- **Tauri Native Updater:** Using Tauri's signature-based update system to push production binaries.
-- **Git-Native Evolution:** Ether can "commit its own changes" to its own repository if the user approves an AI-suggested refactor.
+- [x] **Tauri Native Updater:** Using Tauri's signature-based update system.
+- [ ] **Git-Native Evolution:** AI-suggested refactors with user approval.
 
 ---
 
@@ -100,7 +100,7 @@ The ultimate goal of Ether is to be **Self-Healing**.
 - [ ] **LSP Integration:** Full `ElixirLS` support via a dedicated LSP Agent.
 - [ ] **PTY Support:** Real terminal integration for `CommandAgent`.
 - [ ] **Global Search:** Connecting the Zig Searcher results to the DB/UI.
-- [ ] **Agent Registry:** A central hub for managing localized AI agents (Gemini/Local LLM).
+- [ ] **Agent Registry:** A central hub for managing localized AI agents.
 - [ ] **Recursive CI:** The IDE runs its own CI pipeline internally.
 - [ ] **Web-Shell Auth:** Standardized session management for the Cloud version.
 
@@ -110,16 +110,16 @@ The ultimate goal of Ether is to be **Self-Healing**.
 Phoenix 1.8+ provides the high-speed backbone for the Ether IDE.
 
 ### 1. Strategy
-- **LiveView-First:** Unified state management where UI exists in the same process as the agents.
-- **HEEx Templates:** Leveraging the power of server-side rendering for complex IDE layouts.
-- **JS Hooks:** Surgical interop for heavy components like Monaco and Xterm.js.
-- **Streams:** Efficient data patching for the file tree and massive logs.
-- **Presence:** Utilizing `Phoenix.Presence` for multi-window/multi-session synchronization.
+- [x] **LiveView-First:** Unified state management.
+- [x] **HEEx Templates:** leveraging server-side rendering for complex layouts.
+- [x] **JS Hooks:** Surgical interop for heavy components.
+- [x] **Streams:** Efficient data patching.
+- [ ] **Presence:** Utilizing `Phoenix.Presence` for multi-window sync.
 
 ### 2. Roadmap
 - [ ] **Code Intelligence API:** Expose LSP-backed endpoints for hover/definition lookups.
-- [ ] **Presence Tracking:** Shared "Current File" and cursor position across instances.
-- [ ] **LiveTelemetry:** Dashboard integration for real-time monitoring of NIF memory and CPU.
+- [ ] **Presence Tracking:** Shared "Current File" across instances.
+- [ ] **LiveTelemetry:** Dashboard integration for NIF monitoring.
 
 ---
 
@@ -127,13 +127,13 @@ Phoenix 1.8+ provides the high-speed backbone for the Ether IDE.
 The Rust layer serves as the native OS container for the IDE.
 
 ### 1. Strategy
-- **Thin Shell:** Rust focuses on window management and OS integration, delegating logic to the BEAM or WebView.
-- **Sidecar Management:** Tauri orchestrates the lifecycle of the Elixir backend.
+- [x] **Thin Shell:** Rust focuses on window management.
+- [x] **Sidecar Management:** Tauri orchestrates the Elixir backend.
 
 ### 2. Roadmap
-- [ ] **Window Mastery:** Implement frameless mode, Windows 11 Acrylic/Mica effects, and custom drag regions.
-- [ ] **Native Integration:** Restore system menus (File/Edit), implement single-instance locks, and handle OS file associations (`.ex`, `.zig`).
-- [ ] **Advanced Protocols:** Register a custom `ether://` protocol for deep linking.
+- [ ] **Window Mastery:** Implement frameless mode, Acrylic/Mica effects.
+- [ ] **Native Integration:** Restore system menus (File/Edit), OS file associations.
+- [ ] **Advanced Protocols:** Register custom `ether://` protocol.
 
 ---
 

@@ -16,9 +16,13 @@ const MonacoEditor = {
       renderLineHighlight: "all"
     });
 
+    this.debounceTimer = null;
     this.editor.onDidChangeModelContent(() => {
-      const text = this.editor.getValue();
-      this.pushEvent("editor_change", { text });
+      if (this.debounceTimer) clearTimeout(this.debounceTimer);
+      this.debounceTimer = setTimeout(() => {
+        const text = this.editor.getValue();
+        this.pushEvent("editor_change", { text });
+      }, 1000);
     });
 
     this.handleEvent("load_file", ({ text, language, path }) => {

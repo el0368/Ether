@@ -7,28 +7,37 @@ defmodule Ether.Scanner.Utils do
   Decodes a binary slab into a list of file items.
   Optimized for direct binary pattern matching without conversion overhead.
   """
-  @spec decode_slab(binary(), String.t()) :: [{String.t(), atom()}]
-  def decode_slab(binary, root) when is_binary(binary) do
-    decode_entries(binary, root, [])
+  @spec decode_slab(binary(), String.t()) :: [{String.t(), atom(), integer()}]
+  def decode_slab(binary, _root) when is_binary(binary) do
+    decode_entries(binary, [])
   end
 
-  defp decode_entries(<<>>, _root, acc), do: acc
-  defp decode_entries(<<type::8, len::16-little, path_bin::binary-size(len), rest::binary>>, root, acc) do
-    abs_path = Path.join(root, path_bin)
+  defp decode_entries(<<>>, acc), do: Enum.reverse(acc)
+  defp decode_entries(<<type::8, depth::8, len::16-little, path_bin::binary-size(len), rest::binary>>, acc) do
+    # Normalize slashes for consistency across OS/Tools
+    path = String.replace(path_bin, "\\", "/")
     type_atom = if type == 2, do: :directory, else: :file
-    decode_entries(rest, root, [{abs_path, type_atom} | acc])
+    decode_entries(rest, [{path, type_atom, depth} | acc])
   end
-  defp decode_entries(_junk, _root, acc), do: acc
+  defp decode_entries(_junk, acc), do: Enum.reverse(acc)
 
   @doc """
-  Transforms a {path, type} tuple into a UI-ready map.
-  Calculates depth by counting path separators for O(1) performance.
+  Transforms a {path, type, depth} or {path, type} tuple into a UI-ready map.
+  Uses pre-calculated native depth if available, otherwise falls back to calculation.
   """
-  @spec to_ui_item({String.t(), atom()}, String.t()) :: map()
+  @spec to_ui_item({String.t(), atom(), integer()} | {String.t(), atom()}, String.t()) :: map()
+  def to_ui_item({path, type, depth}, _root) do
+    build_ui_map(path, type, depth)
+  end
+
   def to_ui_item({path, type}, root) do
+    depth = calculate_depth(path, root)
+    build_ui_map(path, type, depth)
+  end
+
+  defp build_ui_map(path, type, depth) do
     name = Path.basename(path)
     is_dir = type == :directory
-    depth = calculate_depth(path, root)
 
     %{
       id: path,
@@ -42,15 +51,21 @@ defmodule Ether.Scanner.Utils do
 
   # O(1) depth calculation by counting separators in the relative portion
   defp calculate_depth(path, root) do
-    # Get the relative path length after the root
+    root = String.replace(root, "\\", "/")
+    path = String.replace(path, "\\", "/")
+    
     root_len = byte_size(root)
     path_len = byte_size(path)
 
     if path_len > root_len do
       # Get relative portion (skip root + separator)
       rel_start = root_len + 1
-      rel_part = binary_part(path, rel_start, path_len - rel_start)
-      count_separators(rel_part, 0) + 1
+      if path_len > rel_start do
+        rel_part = binary_part(path, rel_start, path_len - rel_start)
+        count_separators(rel_part, 0) + 1
+      else
+        0
+      end
     else
       0
     end

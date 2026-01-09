@@ -138,10 +138,15 @@ typedef struct {
     void* (*realloc)(void* ptr, size_t size);
     int (*realloc_binary)(ErlNifBinary* bin, size_t size);
     
+    // List accessors
+    int (*get_list_cell)(ErlNifEnv* env, ERL_NIF_TERM list, ERL_NIF_TERM* head, ERL_NIF_TERM* tail);
+    int (*get_list_length)(ErlNifEnv* env, ERL_NIF_TERM list, unsigned* len);
+
     // Phase 5: Thread-Safe Messaging
     ErlNifEnv* (*alloc_env)(void);
     void (*free_env)(ErlNifEnv* env);
     ERL_NIF_TERM (*make_uint64)(ErlNifEnv* env, ErlNifUInt64 val);
+    int (*get_int)(ErlNifEnv* env, ERL_NIF_TERM term, int* ip);
 } WinNifApi;
 
 // =============================================================================
@@ -185,10 +190,15 @@ static WinNifApi build_api(void) {
     api.realloc = wrap_realloc;
     api.realloc_binary = wrap_realloc_binary;
 
+    // List accessors
+    api.get_list_cell = enif_get_list_cell;
+    api.get_list_length = enif_get_list_length;
+
     // Phase 5: Thread-Safe Messaging
     api.alloc_env = enif_alloc_env;
     api.free_env = enif_free_env;
     api.make_uint64 = enif_make_uint64;
+    api.get_int = enif_get_int;
 
     return api;
 }
@@ -221,8 +231,8 @@ ERL_NIF_TERM search_wrapper(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 // NIF Registration
 // =============================================================================
 static ErlNifFunc nif_funcs[] = {
-    {"scan_yield_nif", 3, scan_yield_wrapper, ERL_NIF_DIRTY_JOB_IO_BOUND},
-    {"create_context_nif", 0, create_context_wrapper, 0},
+    {"scan_yield_nif", 4, scan_yield_wrapper, ERL_NIF_DIRTY_JOB_IO_BOUND},
+    {"create_context_nif", 1, create_context_wrapper, 0},
     {"close_context_nif", 1, close_context_wrapper, 0},
     {"search_nif", 3, search_wrapper, ERL_NIF_DIRTY_JOB_IO_BOUND}
 };

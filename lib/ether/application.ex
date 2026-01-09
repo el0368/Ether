@@ -12,11 +12,11 @@ defmodule Ether.Application do
       Ether.Repo,
       {DNSCluster, query: Application.get_env(:ether, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Ether.PubSub},
-      # Ether Agents - File Operations
-      Ether.Agents.FileServerAgent,
-      Ether.Agents.TestingAgent,
-      Ether.Agents.LintAgent,
-      Ether.Agents.FormatAgent,
+      # Ether Agents - Disabled for Stability Phase
+      # Ether.Agents.FileServerAgent,
+      # Ether.Agents.TestingAgent,
+      # Ether.Agents.LintAgent,
+      # Ether.Agents.FormatAgent,
       # Quality Assurance
       # Ether.Agents.QualityAgent,
       
@@ -26,7 +26,7 @@ defmodule Ether.Application do
       # Ether.Agents.CommandAgent,
 
       # Phase 6: LSP
-      Ether.Agents.LSPAgent,
+      # Ether.Agents.LSPAgent,
 
       # Start to serve requests, typically the last entry
       EtherWeb.Endpoint

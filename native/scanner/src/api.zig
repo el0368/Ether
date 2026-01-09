@@ -37,10 +37,15 @@ pub const WinNifApi = extern struct {
     // Phase 3-4: Memory Optimization
     realloc: *const fn (ptr: ?*anyopaque, size: usize) callconv(.c) ?*anyopaque,
     realloc_binary: *const fn (bin: *ErlNifBinary, size: usize) callconv(.c) c_int,
+    // List accessors
+    get_list_cell: *const fn (env: ?*ErlNifEnv, list: ERL_NIF_TERM, head: *ERL_NIF_TERM, tail: *ERL_NIF_TERM) callconv(.c) c_int,
+    get_list_length: *const fn (env: ?*ErlNifEnv, list: ERL_NIF_TERM, len: *c_uint) callconv(.c) c_int,
+
     // Phase 5: Thread-Safe Messaging
     alloc_env: *const fn () callconv(.c) ?*ErlNifEnv,
     free_env: *const fn (env: ?*ErlNifEnv) callconv(.c) void,
     make_uint64: *const fn (env: ?*ErlNifEnv, val: u64) callconv(.c) ERL_NIF_TERM,
+    get_int: *const fn (env: ?*ErlNifEnv, term: ERL_NIF_TERM, ip: *c_int) callconv(.c) c_int,
 };
 
 /// Helper to create {:error, reason} tuple

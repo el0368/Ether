@@ -1,4 +1,8 @@
-<div class="h-screen w-screen flex flex-col bg-[var(--vscode-editor-background)] text-[var(--vscode-foreground)] overflow-hidden font-sans">
+<div 
+  class="h-screen w-screen flex flex-col bg-[var(--vscode-editor-background)] text-[var(--vscode-foreground)] overflow-hidden font-sans"
+  phx-hook="GlobalShortcuts"
+  id="global-shortcuts"
+>
   <%!-- TitleBar --%>
   <EtherWeb.Components.Workbench.TitleBar.title_bar active_file={@active_file} />
 
@@ -30,4 +34,13 @@
 
   <%!-- StatusBar --%>
   <EtherWeb.Components.Workbench.StatusBar.status_bar active_file={@active_file} />
+
+  <%!-- Global Overlays --%>
+  <%= if @quick_pick_visible do %>
+    <.live_component 
+      module={EtherWeb.Workbench.QuickPick} 
+      id="quick-pick"
+      mode={@quick_pick_mode}
+    />
+  <% end %>
 </div>

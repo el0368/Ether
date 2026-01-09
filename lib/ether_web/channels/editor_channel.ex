@@ -272,7 +272,7 @@ defmodule EtherWeb.EditorChannel do
   end
 
   @impl true
-  def handle_in("benchmark:report", %{"latency" => latency, "metric" => metric} = payload, socket) do
+  def handle_in("benchmark:report", %{"latency" => latency, "metric" => metric} = _payload, socket) do
     Logger.info("PERF: Client reported #{metric} latency: #{latency}ms")
     
     # Map frontend metrics to unified 'frontend' sample

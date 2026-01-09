@@ -34,15 +34,15 @@ pub const BeamAllocator = struct {
     }
 
     fn resize(ctx: *anyopaque, buf: []u8, buf_align: std.mem.Alignment, new_len: usize, ret_addr: usize) bool {
+        _ = ctx;
+        _ = buf;
         _ = buf_align;
+        _ = new_len;
         _ = ret_addr;
-        const self: *BeamAllocator = @ptrCast(@alignCast(ctx));
-        // Phase 3-4: Use enif_realloc for in-place resize
-        const new_ptr = self.nif_api.realloc(buf.ptr, new_len);
-        // If realloc returns same pointer, resize succeeded in-place
-        if (new_ptr) |ptr| {
-            return @intFromPtr(ptr) == @intFromPtr(buf.ptr);
-        }
+        // Phase 3-4 Fix: enif_realloc does NOT support the semantic "try to resize in place, otherwise fail".
+        // If it moves memory, it frees the old pointer. Zig expects us to return false if we couldn't resize IN PLACE,
+        // implying the old pointer is still valid.
+        // Therefore, we MUST return false to force Zig to alloc + copy + free safely.
         return false;
     }
 

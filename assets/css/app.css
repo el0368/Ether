@@ -1,7 +1,5 @@
-/* See the Tailwind configuration guide for advanced usage
-   https://tailwindcss.com/docs/configuration */
-
 @import "tailwindcss" source(none);
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 @import "./vscode-tokens.css";
 @source "../css";
 @source "../js";
@@ -25,38 +23,107 @@
   display: contents
 }
 
-/* This file is for your main application CSS */
+/* Premium Design System */
 
 @layer base {
   :root {
-    /* Light Mode (Default) */
-    --color-bg-base: #ffffff;
-    --color-bg-surface: #f3f4f6;
-    --color-bg-highlight: #e5e7eb;
+    /* Fonts */
+    --font-ui: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    
+    /* Vibrant Palette - Brand Blue/Purple */
+    --brand-primary: #6366f1;
+    --brand-accent: #8b5cf6;
+    --brand-glow: rgba(99, 102, 241, 0.15);
 
-    --color-text-base: #1f2937;
+    /* Light Mode (Integrated Glass) */
+    --color-bg-base: #f9fafb;
+    --color-bg-glass: rgba(255, 255, 255, 0.7);
+    --color-bg-surface: #ffffff;
+    --color-bg-highlight: #f3f4f6;
+
+    --color-text-base: #111827;
     --color-text-muted: #6b7280;
     --color-text-inverted: #ffffff;
 
     --color-border-base: #e5e7eb;
+    --color-border-glass: rgba(255, 255, 255, 0.2);
   }
 
   :root[class~="dark"] {
-    /* Dark Mode */
-    --color-bg-base: #1e1e1e;
-    --color-bg-surface: #252526;
-    --color-bg-highlight: #3e3e42;
+    /* Dark Mode (Deep Nebula) */
+    --color-bg-base: #0f172a; /* Deep Slate Blue */
+    --color-bg-glass: rgba(15, 23, 42, 0.6);
+    --color-bg-surface: #1e293b;
+    --color-bg-highlight: #334155;
 
-    --color-text-base: #cccccc;
-    --color-text-muted: #858585;
-    --color-text-inverted: #1e1e1e;
+    --color-text-base: #f1f5f9;
+    --color-text-muted: #94a3b8;
+    --color-text-inverted: #0f172a;
 
-    --color-border-base: #ffffff0d;
+    --color-border-base: rgba(255, 255, 255, 0.05);
+    --color-border-glass: rgba(148, 163, 184, 0.1);
   }
 }
 
 body {
+  font-family: var(--font-ui);
   background-color: var(--color-bg-base);
   color: var(--color-text-base);
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+.glass {
+  background: var(--color-bg-glass);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--color-border-glass);
+}
+
+.premium-glow {
+  box-shadow: 0 0 20px var(--brand-glow);
+}
+
+/* Custom Scrollbar (VS Code Style) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: transparent;
+}
+
+/* Show thumb on hover or active */
+*:hover::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb:hover {
+  background-color: #424242;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: #4f4f4f;
+}
+
+/* Light mode overrides */
+:root:not([class~="dark"]) *::-webkit-scrollbar-thumb:hover {
+  background-color: #aaa;
+}
+:root:not([class~="dark"]) *::-webkit-scrollbar-thumb:active {
+  background-color: #999;
+}
+
+/* Performance Optimizations */
+.file-item {
+  contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 22px;
+}
+
+#file-tree {
+  will-change: transform;
 }

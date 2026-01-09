@@ -8,10 +8,12 @@ defmodule Ether.MixProject do
       elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
+      compilers: [:zig] ++ Mix.compilers(),
       aliases: aliases(),
       deps: deps(),
       listeners: [Phoenix.CodeReloader],
-      releases: releases()
+      releases: releases(),
+      clean_paths: ["_build", "priv/native"]
     ]
   end
 
@@ -109,6 +111,12 @@ defmodule Ether.MixProject do
   defp aliases do
     [
       setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
+      compile: ["compile.bootstrap", "compile"],
+      "compile.bootstrap": fn _ ->
+        if File.exists?("lib/mix/tasks/compile.zig.ex") do
+          Code.compile_file("lib/mix/tasks/compile.zig.ex")
+        end
+      end,
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],

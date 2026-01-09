@@ -10,16 +10,16 @@
 **Goal:** A stable, high-performance project explorer with "Zero-Panic" native internals.
 - [x] **Native Stabilization:** Stack-safe Win32 bypass and iterative scanning.
 - [x] **Fair Benchmarking:** Verified 7x speedup over Elixir.
-- [ ] **Performance Master Plan:** Formalized observability roadmap in [PERFORMANCE.md](PERFORMANCE.md).
+- [x] **Performance Master Plan:** Formalized observability roadmap in [PERFORMANCE.md](PERFORMANCE.md).
 - [x] **VS Code Aesthetic:** Complete migration from DaisyUI to native CSS variables.
-- [ ] **Precise Sync:** Transition to raw binary WebSocket frames for the file tree.
+- [x] **Precise Sync:** Transition to raw binary WebSocket frames for the file tree. (Implemented via Binary Slabs)
 
 ### Milestone 2: "The Editor" [/]
 **Goal:** Robust file editing with multi-tab management and scannable visual cues.
 > [!NOTE]
 > Progress on this milestone depends on the **[VSC_IDE_STUDY.md](VSC_IDE_STUDY.md)** phased analysis.
 
-- [ ] **Monaco/CodeMirror:** High-performance text editor integration.
+- [/] **Monaco/CodeMirror:** High-performance text editor integration. (Integrated & Hardened with Debouncing)
 - [ ] **Tab System:** Managing multiple open buffers with save/dirty states.
 - [x] **File Icons:** Integration of Seti/Material icon sets (Codicons).
 
@@ -44,7 +44,7 @@
 ---
 
 ## 🏃 Project Velocity (Jan 2026)
-- **Week 1:** Foundational stability. Moved from "Zigler" to "Hybrid Shim" architecture. Achieved production-ready Windows NIF status. Implemented high-fidelity interactive component layer (QuickPicker, Tree, ContextMenu).
+- **Week 2:** UI/UX Hardening Phase. Eliminated File Explorer re-render lag via CSS Highlights. Implemented debounced Editor sync (1000ms). Hardened Windows Build pipeline with "Shadow-Copy" NIF updates.
 - **Current Focus:** Transitioning to Milestone 3: "The Intelligence" (LSP and Agentic integration) while polishing the Phase IV "Quality" layer.
 
 ---
@@ -56,8 +56,8 @@
 - [ ] **Aesthetic Debt:** Residual DaisyUI classes causing "web-app" look (refactor to VS Code vars).
 
 ### Major (P1)
-- [ ] **Windows Symlinks:** Verify/Fix symlink following logic in the iterative Zig scanner.
-- [ ] **Backpressure:** Refine Svelte batching engine for massive directory (100k+) rendering.
+- [x] **Windows Symlinks:** Verify/Fix symlink following logic in the iterative Zig scanner. (Iterative stack handles paths natively)
+- [x] **Backpressure:** Refine rendering for massive directory (100k+). (Implemented via Chunked UI Streaming)
 
 ---
 

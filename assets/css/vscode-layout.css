@@ -1,0 +1,8 @@
+/* VS Code Layout Varibles for Ether */
+:root {
+  --vscode-titlebar-height: 35px;
+  --vscode-activitybar-width: 48px;
+  --vscode-sidebar-width: 300px;
+  --vscode-statusbar-height: 22px;
+  --vscode-panel-height: 300px;
+}

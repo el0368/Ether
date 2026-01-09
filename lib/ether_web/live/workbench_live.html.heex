@@ -1,0 +1,146 @@
+<div class="h-screen w-screen flex flex-col bg-[var(--vscode-editor-background)] text-[var(--vscode-foreground)] overflow-hidden font-sans">
+  <%!-- TitleBar --%>
+  <div class="h-[var(--vscode-titleBar-height)] min-h-[var(--vscode-titleBar-height)] bg-[var(--vscode-titleBar-activeBackground)] flex items-center justify-between px-2 select-none border-b border-[#2b2b2b]">
+    <div class="flex items-center gap-4 h-full">
+      <div class="flex items-center gap-2">
+        <img src="/images/logo.svg" class="w-4 h-4" />
+      </div>
+      <div class="flex items-center gap-1 h-full text-[13px]">
+        <div class="px-2 py-1 hover:bg-[#505050] rounded cursor-default">File</div>
+        <div class="px-2 py-1 hover:bg-[#505050] rounded cursor-default">Edit</div>
+        <div class="px-2 py-1 hover:bg-[#505050] rounded cursor-default">Selection</div>
+        <div class="px-2 py-1 hover:bg-[#505050] rounded cursor-default">View</div>
+        <div class="px-2 py-1 hover:bg-[#505050] rounded cursor-default">Go</div>
+        <div class="px-2 py-1 hover:bg-[#505050] rounded cursor-default">Run</div>
+        <div class="px-2 py-1 hover:bg-[#505050] rounded cursor-default">Terminal</div>
+        <div class="px-2 py-1 hover:bg-[#505050] rounded cursor-default">Help</div>
+      </div>
+    </div>
+    <div class="absolute left-1/2 -translate-x-1/2 text-[12px] opacity-60 font-medium">
+      <%= if @active_file, do: @active_file.name, else: "Ether" %>
+    </div>
+    <div class="flex items-center gap-2 pr-2">
+      <div class="w-3 h-3 rounded-full bg-[#ff5f57] cursor-pointer"></div>
+      <div class="w-3 h-3 rounded-full bg-[#febc2e] cursor-pointer"></div>
+      <div class="w-3 h-3 rounded-full bg-[#28c840] cursor-pointer"></div>
+    </div>
+  </div>
+
+  <div class="flex-1 flex min-h-0 overflow-hidden">
+    <%!-- ActivityBar --%>
+    <div class="w-[var(--vscode-activityBar-width)] min-w-[var(--vscode-activityBar-width)] bg-[var(--vscode-activityBar-background)] flex flex-col items-center py-2 gap-4 border-r border-[#2b2b2b]">
+       <div class={"p-2 cursor-pointer transition-colors duration-200 #{if @active_sidebar == "files", do: "text-white opacity-100", else: "text-[#858585] hover:text-white"}"}>
+         <.icon name="hero-document-duplicate" class="w-6 h-6" />
+       </div>
+       <div class={"p-2 cursor-pointer transition-colors duration-200 #{if @active_sidebar == "search", do: "text-white", else: "text-[#858585] hover:text-white"}"}>
+         <.icon name="hero-magnifying-glass" class="w-6 h-6" />
+       </div>
+       <div class={"p-2 cursor-pointer transition-colors duration-200 #{if @active_sidebar == "git", do: "text-white", else: "text-[#858585] hover:text-white"}"}>
+         <.icon name="hero-share" class="w-6 h-6" />
+       </div>
+       <div class="mt-auto p-2 cursor-pointer text-[#858585] hover:text-white">
+         <.icon name="hero-cog-6-tooth" class="w-6 h-6" />
+       </div>
+    </div>
+
+    <%!-- SideBar --%>
+    <%= if @sidebar_visible do %>
+      <div class="w-[var(--vscode-sidebar-width)] min-w-[var(--vscode-sidebar-width)] bg-[var(--vscode-sideBar-background)] flex flex-col border-r border-[#2b2b2b]">
+        <div class="h-[35px] flex items-center justify-between px-4 text-[11px] font-bold uppercase tracking-wider text-[#bbbbbb] opacity-80">
+          <span>Explorer</span>
+          <.icon name="hero-ellipsis-horizontal" class="w-4 h-4 cursor-pointer" />
+        </div>
+        <div class="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar text-[var(--vscode-sideBar-foreground)] py-1">
+          <%!-- File Tree --%>
+          <div id="file-tree" phx-update="stream" class="w-full">
+            <div 
+              :for={{id, file} <- @streams.files} 
+              id={id} 
+              class={"group flex items-center pr-2 cursor-pointer hover:bg-[#2a2d2e] select-none text-[13px] leading-[22px] #{if @active_file && @active_file.path == file.path, do: "bg-[#37373d]"}"}
+              style={"padding-left: #{file.depth * 12 + 8}px"}
+              phx-click="select_file"
+              phx-value-path={file.path}
+            >
+              <div class="flex items-center gap-1.5 w-full overflow-hidden">
+                <%= if file.is_dir do %>
+                  <.icon name={if file.expanded, do: "hero-chevron-down-micro", else: "hero-chevron-right-micro"} class="w-3.5 h-3.5 text-[#858585]" />
+                  <.icon name="hero-folder-solid" class="w-4 h-4 text-[#858585]" />
+                <% else %>
+                  <div class="w-3.5"></div> <%!-- Indent spacer for files --%>
+                  <.icon name="hero-document-text" class="w-4 h-4 text-[#858585]" />
+                <% end %>
+                <span class="truncate"><%= file.name %></span>
+              </div>
+            </div>
+          </div>
+
+          <%= if @file_count == 0 && !@isLoading do %>
+            <div class="flex flex-col items-center justify-center p-8 text-center h-full gap-4">
+              <p class="text-[12px] opacity-60">You have not yet opened a folder.</p>
+              <button 
+                phx-click="open_folder"
+                class="px-4 py-2 bg-[#007acc] hover:bg-[#0062a3] text-white text-[12px] rounded transition-colors font-medium shadow-lg"
+              >
+                Open Folder
+              </button>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <%!-- Main Content Area --%>
+    <div class="flex-1 flex flex-col min-w-0 bg-[var(--vscode-editor-background)]">
+      <div class="flex-1 relative">
+         <div 
+           id="monaco-editor-container" 
+           class="h-full w-full"
+           phx-hook="MonacoEditor"
+           phx-update="ignore"
+           data-path={if @active_file, do: @active_file.path, else: ""}
+         >
+           <%= if !@active_file do %>
+             <%!-- Welcome Page placeholder --%>
+             <div class="h-full flex flex-col items-center justify-center gap-8 opacity-40 select-none">
+                <img src="/images/logo.svg" class="w-32 h-32 brightness-50" />
+                <div class="flex flex-col items-center gap-2 text-[var(--vscode-editor-foreground)] text-sm italic font-light tracking-widest">
+                  <span>ctrl + p to search files</span>
+                  <span>ctrl + shift + f to search text</span>
+                  <span>ctrl + \ to split editor</span>
+                </div>
+             </div>
+           <% end %>
+         </div>
+      </div>
+
+      <%!-- Panel (Terminal) --%>
+      <%= if @panel_visible do %>
+        <div class="h-[var(--vscode-panel-height)] border-t border-[#2b2b2b] bg-[var(--vscode-editor-background)] flex flex-col">
+          <div class="h-[35px] flex items-center px-4 gap-4 text-[11px] font-bold uppercase border-b border-[#2b2b2b]">
+            <span class="text-white border-b border-white pb-1">Terminal</span>
+            <span class="opacity-50">Output</span>
+            <span class="opacity-50">Debug Console</span>
+          </div>
+          <div class="flex-1 bg-black overflow-hidden font-mono text-[13px] p-2 leading-tight">
+            <div class="text-green-500">ether@desktop:~/project$ _</div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%!-- StatusBar --%>
+  <div class="h-[var(--vscode-statusbar-height)] min-h-[var(--vscode-statusbar-height)] bg-[var(--vscode-statusBar-background)] flex items-center justify-between px-3 text-[12px] text-[var(--vscode-statusBar-foreground)]">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1 hover:bg-[#ffffff22] px-1 cursor-pointer">
+        <.icon name="hero-signal" class="w-3 h-3" />
+        <span>Connected</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="hover:bg-[#ffffff22] px-1 cursor-pointer">UTF-8</div>
+      <div class="hover:bg-[#ffffff22] px-1 cursor-pointer">Spaces: 2</div>
+      <div class="hover:bg-[#ffffff22] px-1 cursor-pointer">LiveView</div>
+    </div>
+  </div>
+</div>

@@ -9,7 +9,7 @@ defmodule Ether.Application do
   def start(_type, _args) do
     children = [
       EtherWeb.Telemetry,
-      # Ether.Repo,
+      Ether.Repo,
       {DNSCluster, query: Application.get_env(:ether, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Ether.PubSub},
       # Ether Agents - File Operations

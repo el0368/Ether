@@ -2,6 +2,7 @@
    https://tailwindcss.com/docs/configuration */
 
 @import "tailwindcss" source(none);
+@import "./vscode-tokens.css";
 @source "../css";
 @source "../js";
 @source "../../lib/aether_web";

@@ -1,18 +1,18 @@
-# Aether IDE - Agent Architecture
-**Last Updated:** 2026-01-01
+# Ether IDE - Agent Architecture
+**Last Updated:** 2026-01-09
 
 ---
 
 ## Overview
 
-Aether uses a multi-agent architecture where specialized agents handle different aspects of IDE functionality. All agents are Pure Elixir GenServers orchestrated via Phoenix Channels.
+Ether uses a multi-agent architecture where specialized agents handle different aspects of IDE functionality. With the transition to **Phoenix LiveView**, agents are now integrated directly into the UI process, eliminating the manual JSON serialization layer.
 
 ---
 
 ## Core Agents
 
 ### 1. FileServerAgent
-**Module:** `Aether.Agents.FileServerAgent`
+**Module:** `Ether.Agents.FileServerAgent`
 **Responsibility:** Safe file I/O operations
 
 ```elixir
@@ -22,61 +22,33 @@ FileServerAgent.write_file(path, content)  # :ok | {:error, reason}
 FileServerAgent.list_files(path)   # {:ok, [files]}
 ```
 
-### 2. Scanner
-**Module:** `Aether.Scanner`
-**Responsibility:** Fast directory traversal using `Task.async_stream`
+### 2. Scanner (Level 4 Native)
+**Module:** `Ether.Scanner`
+**Responsibility:** High-performance directory traversal using **Safe Zig NIFs**.
 
 ```elixir
 # API
-Aether.Scanner.scan(directory)  # [list of absolute paths]
+Ether.Scanner.scan(directory)      # [list of {path, type} tuples]
+Ether.Scanner.scan_raw(directory)  # Streams binary chunks to calling process
 ```
 
-### 3. ShellAgent
-**Module:** `Aether.Agents.ShellAgent`
-**Responsibility:** Execute system commands via Elixir Ports
-
-```elixir
-# API
-ShellAgent.run(command)  # Broadcasts output via PubSub
-```
+### 3. Explorer
+**Module:** `Ether.Explorer`
+**Responsibility:** UI-centric file transformation and tree building for LiveView.
 
 ---
 
-## Future Agents (Planned)
+## Communication Pattern (Unified Stack)
 
-### 4. CommanderAgent
-**Responsibility:** Orchestrate multi-step AI workflows
-- Uses `Jido` for action planning
-- Uses `Instructor` for structured LLM outputs
-
-### 5. IndexerAgent
-**Responsibility:** Build and maintain code search index
-- AST parsing for Elixir/JavaScript
-- Semantic embeddings for search
-
-### 6. DiagnosticsAgent
-**Responsibility:** Run linters, formatters, type checkers
-- `mix format --check-formatted`
-- `mix credo`
-- Language-specific LSP integration
-
----
-
-## Communication Pattern
-
-```
-Frontend (Svelte)
-    ↓ Phoenix Channel
-EditorChannel
-    ↓ GenServer.call
-Agent (FileServer, Shell, etc.)
-    ↓ PubSub broadcast
-EditorChannel
-    ↓ push
-Frontend (Svelte)
+```mermaid
+graph TD
+    User([User Interaction]) --> LV[WorkbenchLive]
+    LV --> Agent[FileServerAgent / Scanner]
+    Agent -- "Direct Messaging / Streams" --> LV
+    LV -- "DOM Diffing" --> Client[Browser]
 ```
 
-All agents are supervised under `Aether.Application`.
+By leveraging **Phoenix Streams**, we achieve low-latency updates for large file trees without the "Communication Tax" of the previous Svelte/Channel architecture.
 
 ---
 
@@ -86,7 +58,7 @@ All agents are supervised under `Aether.Application`.
 # After cloning on any PC:
 .\check_env.bat      # Check tools installed
 mix deps.get         # Install backend deps
-cd assets && bun install && cd ..  # Frontend deps
-.\verify_setup.bat   # TEST EVERYTHING
-.\start_dev.bat      # Run if all tests pass
+cd assets && npm install && cd ..  # Asset deps (Monaco, etc.)
+mix compile          # Build everything
+.\start_dev.bat      # Run
 ```

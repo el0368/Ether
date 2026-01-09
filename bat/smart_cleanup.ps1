@@ -6,8 +6,8 @@ $ProjectName = "Ether"
 
 Write-Host "[Smart Cleanup] Project: $ProjectRoot"
 
-# 1. Kill processes holding ports 4000 and 5173
-$ports = @(4000, 5173)
+# 1. Kill processes holding port 4000
+$ports = @(4000)
 foreach ($port in $ports) {
     $connections = netstat -ano | Select-String ":$port " | Select-String "LISTENING"
     foreach ($conn in $connections) {
@@ -19,7 +19,7 @@ foreach ($port in $ports) {
                 if ($proc) {
                     # Check if this process is related to our project
                     $cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId = $procId" -ErrorAction SilentlyContinue).CommandLine
-                    if ($cmdLine -match $ProjectName -or $cmdLine -match "mix" -or $cmdLine -match "vite" -or $cmdLine -match "bun") {
+                    if ($cmdLine -match $ProjectName -or $cmdLine -match "mix" -or $cmdLine -match "bun") {
                         Write-Host "  Killing $($proc.Name) (PID: $procId) on port $port"
                         Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue
                     }

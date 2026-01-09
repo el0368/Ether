@@ -29,11 +29,11 @@ native/scanner/src/
 ---
 
 ## 🔗 Native Data Pipeline
-- **AetherProtocol:** Unified binary format: `[Type:u8][PayloadLen:u16][Payload:Bytes]`.
+- **Unified Binary Protocol:** Symmetrical binary format: `[Type:u8][PayloadLen:u16][Payload:Bytes]`.
 - **Zero-Copy Pipeline:**
-  1. **Zig:** Fires binary slabs via `enif_send`.
-  2. **Elixir:** Passes raw binary frames through Phoenix Channels (no decoding).
-  3. **FrontEnd:** `nif_decoder.ts` transforms slabs directly into Svelte stores.
+  1. **Zig:** Fires binary slabs via `enif_send` directly to the LiveView process.
+  2. **LiveView:** Decodes binary slabs using native Elixir pattern matching (high-speed bitstrings).
+  3. **HEEx:** Renders resulting state into the DOM via Phoenix Streams.
 
 ---
 
@@ -84,4 +84,4 @@ native/scanner/src/
 - [ ] **LSP Hard-Loading:** Shifting heavy LSP compute from ElixirLS to localized Zig workers.
 
 ---
-*Last Updated: 2026-01-07*
+*Last Updated: 2026-01-09 (Post-LiveView Migration)*

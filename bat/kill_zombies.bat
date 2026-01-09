@@ -10,9 +10,4 @@ for /f "tokens=5" %%a in ('netstat -ano ^| findstr :4000 ^| findstr LISTENING') 
     taskkill /F /PID %%a >nul 2>nul
 )
 
-for /f "tokens=5" %%a in ('netstat -ano ^| findstr :5173 ^| findstr LISTENING') do (
-    echo       Killing zombie frontend on port 5173 (PID: %%a)
-    taskkill /F /PID %%a >nul 2>nul
-)
-
-echo [Cleaner] Ports 4000 and 5173 are clear.
+echo [Cleaner] Port 4000 is clear.

@@ -14,10 +14,10 @@ defmodule Ether.Native.StreamingTest do
       File.write!(Path.join(tmp_dir, "file_#{i}.txt"), "content")
     end
 
-    assert :ok = Ether.Native.Scanner.scan_raw(tmp_dir)
+    assert {:ok, _} = Ether.Native.Scanner.scan_raw(tmp_dir)
 
     receive do
-      {:binary, bin1} when is_binary(bin1) ->
+      {:scanner_chunk, bin1} when is_binary(bin1) ->
         assert byte_size(bin1) > 0
         IO.puts("Received Chunk 1: #{byte_size(bin1)} bytes")
     after
@@ -25,7 +25,7 @@ defmodule Ether.Native.StreamingTest do
     end
 
     receive do
-      {:binary, bin2} when is_binary(bin2) ->
+      {:scanner_chunk, bin2} when is_binary(bin2) ->
         assert byte_size(bin2) > 0
         IO.puts("Received Chunk 2: #{byte_size(bin2)} bytes")
     after
@@ -33,7 +33,7 @@ defmodule Ether.Native.StreamingTest do
     end
 
     receive do
-      {:scan_completed, :ok} ->
+      {:scanner_done, _} ->
         IO.puts("Scan Completed Signal Received")
     after
       1000 -> flunk("Timeout waiting for Completion Signal")
@@ -65,16 +65,16 @@ defmodule Ether.Native.StreamingTest do
       File.write!(Path.join(tmp_dir, name), "content")
     end
 
-    assert :ok = Ether.Native.Scanner.scan_raw(tmp_dir)
+    assert {:ok, _} = Ether.Native.Scanner.scan_raw(tmp_dir)
 
     # Drain all messages
     results = drain_messages([])
 
     # Verify we got data and completion
-    assert Enum.any?(results, fn msg -> match?({:binary, _}, msg) end),
-           "Expected at least one binary chunk"
+    assert Enum.any?(results, fn msg -> match?({:scanner_chunk, _}, msg) end),
+           "Expected at least one scanner_chunk"
 
-    assert Enum.any?(results, fn msg -> msg == {:scan_completed, :ok} end),
+    assert Enum.any?(results, fn msg -> match?({:scanner_done, _}, msg) end),
            "Expected completion signal"
 
     IO.puts("Unicode test passed with #{length(unicode_names)} special filenames")
@@ -101,7 +101,7 @@ defmodule Ether.Native.StreamingTest do
     tasks =
       Enum.map(dirs, fn dir ->
         Task.async(fn ->
-          :ok = Ether.Native.Scanner.scan_raw(dir)
+          {:ok, _} = Ether.Native.Scanner.scan_raw(dir)
           drain_messages([])
         end)
       end)
@@ -111,7 +111,7 @@ defmodule Ether.Native.StreamingTest do
 
     # Each scan should have completed successfully
     for result <- results do
-      assert Enum.any?(result, fn msg -> msg == {:scan_completed, :ok} end),
+      assert Enum.any?(result, fn msg -> match?({:scanner_done, _}, msg) end),
              "Expected completion signal for each concurrent scan"
     end
 

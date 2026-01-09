@@ -9,10 +9,9 @@ description: how to start the development server
 1. Open a terminal in the Aether project directory
 2. Run the start script:
    ```cmd
-   .\start_dev.bat
+   .\bat\start_tauri.bat
    ```
-3. Wait for the message: `Running AetherWeb.Endpoint with Bandit... at http://localhost:4000`
-4. Open browser to http://localhost:4000
+3. This will launch both the Phoenix backend (port 4000) and the Tauri window.
 
 ## Troubleshooting
 

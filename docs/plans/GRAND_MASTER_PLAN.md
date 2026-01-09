@@ -13,13 +13,13 @@ Ether is a high-performance, AI-native development environment designed for two 
 ### Milestone 1: "The Core" (FINISHED)
 - [x] **Unbreakable Native Layer:** Stack-safe Win32 bypass for Windows stability.
 - [x] **Hardened Launcher:** Robust sub-second cleanup of ports and processes.
-- [x] **Performance Observatory 2.0:** Multi-tier (Native/BEAM/IPC/Frontend) monitoring studio (sub-16ms verified).
+- [x] **Performance Observatory 2.0:** Multi-tier (Native/BEAM/LiveView) monitoring studio via Phoenix Dashboard.
 
 ### Milestone 2: "The Editor" (FINISHED)
 - [x] **Aesthetic Refinement:** Implementation of the VS Code variable system (100% Visual Fidelity).
 - [x] **Industrial UI Polish:** Functional dropdown menus, file operations, and terminal orchestration.
-- [x] **Monaco Integration:** Pro-grade editor buffer with shared state.
-- [x] **Standalone Capability:** IDE functions without backend for core file I/O.
+- [x] **Monaco Bridge:** JS Hook integration for pro-grade editor buffer.
+- [x] **Unified Architecture:** Migration to Phoenix LiveView (SPEL-AI Stack) for zero-latency system sync.
 
 ### Milestone 3: "The Academy & Intelligence" (CURRENT)
 - [ ] **Math-Native Authoring:** KaTeX integration for real-time LaTeX rendering.
@@ -40,20 +40,19 @@ Ether is a high-performance, AI-native development environment designed for two 
 - **Hybrid I/O:** Rust/Tauri handles core file operations (Read/Write/Browse) for offline stability.
 - **Level 5 Native Zig:** Direct Win32 interaction for high-speed file scanning and IPC.
 - **Cooperative Scheduling:** Politeness at the BEAM level (yielding every 100 items).
-- **AetherProtocol:** Symmetrical binary serialization for zero-copy UI updates.
+- **Native Decoding:** LiveView decodes scanner binaries using native Elixir pattern matching (the fastest path to the UI).
 - **Red-Line:** Scanner throughput must maintain **>125,000 files/sec**.
 
 ### 2. System Core (Elixir - "The Brain")
-- **Agent Orchestration:** GenServer-based agents for logic-heavy tasks (Git, LSP, Intelligence).
-- **Offline Resilience:** System remains functional for editing even if the BEAM shuts down.
+- **Unified Shell:** LiveView acts as the 'Soul' of the IDE, owning all UI state in the same process as the agents.
 - **Intelligence Strategy:** PostgreSQL used for vector search and long-term memory, not required for boot.
-- **Self-Healing:** Continuous background quality checks and AI-driven crash recovery.
+- **Self-Healing:** Continuous background quality checks and AI-driven crash recovery via BEAM Supervision.
 
-### 3. Frontend & UX (Svelte 5 - "The Face")
-- **Runes Power:** Fine-grained reactivity for zero-lag UI.
-- **Direct Pipeline:** Slabs of binary data transformed directly into Svelte stores.
-- **VS Code Aesthetic:** Pure CSS variable-driven theme with Lucide Icons.
-- **Red-Line:** Sub-10ms UI update for all local user interactions.
+### 3. Frontend & UX (Phoenix LiveView - "The Face")
+- **Unified Engine:** All UI state resides in Socket Assigns—no more 1/1 serialization tax.
+- **Phoenix Streams:** O(1) rendering for massive lists (File Explorer, Logs).
+- **VS Code Aesthetic:** Pure CSS variable-driven theme with Heroicons integration.
+- **Red-Line:** Zero-lag UI updates for state-driven interactions.
 
 ---
 
@@ -74,4 +73,4 @@ Ether is designed to eventually **outgrow external aids**.
 - **Autonomous Recovery:** Automatically fixes its own build errors and handles dependency upgrades (e.g., Zig 0.15+ transition).
 
 ---
-*Grand Master Plan Synthesized: 2026-01-08*
+*Grand Master Plan Synthesized: 2026-01-09 (Post-LiveView Migration)*

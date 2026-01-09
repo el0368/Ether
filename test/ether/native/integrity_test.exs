@@ -14,7 +14,7 @@ defmodule Ether.Native.IntegrityTest do
 
       # Heavy scan: 1,000 iterations
       Enum.each(1..1000, fn _ ->
-        :ok = Ether.Native.Scanner.scan_raw(".")
+        {:ok, _} = Ether.Native.Scanner.scan_raw(".")
         # Flush messages to prevent mailbox explosion
         flush_messages()
       end)
@@ -77,10 +77,10 @@ defmodule Ether.Native.IntegrityTest do
           assert is_atom(reason), "Expected atom error, got: #{inspect(reason)}"
           IO.puts("✅ Error Clarity Check: Pass (Error: :#{reason})")
 
-        :ok ->
+        {:ok, _} ->
            # This means it started successfully?
            # Wait, does openDir fail before streaming starts? Yes.
-           flunk("Expected error for non-existent path, got :ok")
+           flunk("Expected error for non-existent path, got {:ok, _}")
       end
     end
   end

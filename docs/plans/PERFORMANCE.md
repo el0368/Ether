@@ -34,10 +34,10 @@ In Ether, performance is not a feature; it is a fundamental requirement. We meas
 - **Target:** **> 10,000 lines/sec** for initial parse; **< 50ms** for incremental AST updates.
 - **Why:** Instant syntax highlighting and "Go to Definition" require extreme parsing speed on every keystroke.
 
-### 3. Tauri IPC Overhead
-- **Goal:** Quantify the delay in the Rust (Host) ➔ Svelte (WebView) bridge via `tauri::event`.
-- **Target:** **Sub-microsecond** message overhead.
-- **Why:** Large-scale IDEs generate thousands of messages (diagnostics, file updates). Any overhead here compounds into visible UI stutter.
+### 3. Socket & Diff Overhead
+- **Goal:** Quantify the delay and bandwidth of the Phoenix LiveView diff engine.
+- **Target:** **Sub-millisecond** message overhead; **< 1KB** diffs for high-frequency updates (e.g., cursor position).
+- **Why:** Large-scale IDEs generate thousands of events (diagnostics, file updates). Phoenix Streams ensure O(1) rendering regardless of collection size.
 
 ### 4. Extreme Filesystem Edges (Stability Test)
 - **Goal:** Stress-test the Zig crawler against 1,000,000+ files and circular symbolic links.
@@ -56,4 +56,4 @@ Performance metrics are tracked in `bench/data.js` and visualized in `bench/inde
 - **Rule:** Any PR that introduces a >10% regression in core metrics must be blocked for architectural review.
 
 ---
-*Last Updated: 2026-01-07*
+*Last Updated: 2026-01-09 (Post-LiveView Migration)*

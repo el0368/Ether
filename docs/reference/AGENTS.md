@@ -58,7 +58,7 @@ By leveraging **Phoenix Streams**, we achieve low-latency updates for large file
 # After cloning on any PC:
 .\check_env.bat      # Check tools installed
 mix deps.get         # Install backend deps
-cd assets && npm install && cd ..  # Asset deps (Monaco, etc.)
+cd assets && bun install && cd ..  # Asset deps (Monaco, Tailwind)
 mix compile          # Build everything
 .\start_dev.bat      # Run
 ```

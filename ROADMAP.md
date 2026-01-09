@@ -22,7 +22,7 @@ This is the central index for all project plans.
 -   **[💧 Elixir Backend Plan](docs/plans/elixir.md)**: Agents, GenServers Logic.
 -   **[🔥 Phoenix Plan](docs/plans/phoenix.md)**: Channels, Presence.
 -   **[🔄 All Synchronize Plan](docs/plans/all-synchronize.md)**: Cross-layer data flow.
--   **[🎨 Svelte Frontend Plan](docs/plans/svelte.md)**: UI, Runes, Virtualization.
+-   **[🎨 LiveView Frontend Plan](docs/plans/FRONTEND_UX.md)**: UI, Streams, JS Hooks.
 
 ### Features & Infrastructure
 -   **[🤖 AI Agent Plan](docs/plans/ai_agent.md)**: Jido, Commander, Vector Memory.

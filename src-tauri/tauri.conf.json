@@ -4,9 +4,9 @@
     "version": "0.1.0",
     "identifier": "com.ether.app",
     "build": {
-        "beforeDevCommand": "bun run --cwd assets dev",
-        "devUrl": "http://localhost:5173",
-        "beforeBuildCommand": "bun run --cwd assets build",
+        "beforeDevCommand": "",
+        "devUrl": "http://localhost:4000",
+        "beforeBuildCommand": "",
         "frontendDist": "../priv/static"
     },
     "app": {

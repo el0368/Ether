@@ -2,12 +2,10 @@
   "name": "aether-frontend",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "tauri": "tauri"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.18",
     "@tauri-apps/cli": "^2.9.6",
     "autoprefixer": "^10.4.23",
     "postcss": "^8.5.6",

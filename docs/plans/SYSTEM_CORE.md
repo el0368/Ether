@@ -78,7 +78,7 @@ Ether is designed to be **Platform Agnostic**. The SPEL-AI stack allows it to ru
 ### 1. Strategy
 - **Shared Backend:** The Elixir/Phoenix backend runs locally on your machine for Desktop, and in a container (Docker/Fly.io) for the Cloud.
 - **Zig in the Cloud:** Our high-performance Native Engine runs on the server to handle massive repository scans without slow I/O.
-- **Svelte Anywhere:** The frontend remains 100% identical between the Tauri shell and the Chrome/Firefox browser.
+- **LiveView Everywhere:** The frontend logic remains 100% identical between the Tauri shell and the Chrome/Firefox browser, served directly from the BEAM.
 
 ---
 
@@ -106,12 +106,14 @@ The ultimate goal of Ether is to be **Self-Healing**.
 
 ---
 
-## 📡 Networking & Channels (Phoenix)
-Phoenix 1.8+ provides the high-speed bridge between Elixir and the Svelte frontend.
+## 📡 LiveView & Channels (Phoenix)
+Phoenix 1.8+ provides the high-speed backbone for the Ether IDE.
 
 ### 1. Strategy
-- **Channel-First:** Strictly using WebSockets for real-time data flow.
-- **No HTML:** The backend serves only JSON and binary frames; no `.heex` templates.
+- **LiveView-First:** Unified state management where UI exists in the same process as the agents.
+- **HEEx Templates:** Leveraging the power of server-side rendering for complex IDE layouts.
+- **JS Hooks:** Surgical interop for heavy components like Monaco and Xterm.js.
+- **Streams:** Efficient data patching for the file tree and massive logs.
 - **Presence:** Utilizing `Phoenix.Presence` for multi-window/multi-session synchronization.
 
 ### 2. Roadmap
@@ -135,4 +137,4 @@ The Rust layer serves as the native OS container for the IDE.
 
 ---
 
-*Last Updated: 2026-01-07*
+*Last Updated: 2026-01-09 (Post-LiveView Migration)*

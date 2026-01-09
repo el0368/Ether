@@ -21,9 +21,9 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-:: 🧹 KILL ZOMBIE PROCESSES (Ports 4000 & 5173)
+:: 🧹 KILL ZOMBIE PROCESSES (Port 4000)
 echo [2/5] Cleaning up old processes...
-powershell -Command "Get-NetTCPConnection -LocalPort 4000, 5173 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }"
+powershell -Command "Get-NetTCPConnection -LocalPort 4000 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }"
 
 :: 📦 DEPENDENCY CHECK
 echo [3/5] Checking dependencies...
@@ -49,7 +49,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 :: 🚀 LAUNCH
-echo [5/5] Launching Aether...
+echo [5/5] Launching Ether...
 echo.
 echo       Starting Backend (Port 4000)...
 

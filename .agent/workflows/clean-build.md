@@ -28,7 +28,7 @@ Use this when you have strange compilation errors or stale artifacts.
 
 5. Start server:
    ```cmd
-   .\start_dev.bat
+   .\bat\start_tauri.bat
    ```
 
 ## When to Use

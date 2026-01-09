@@ -1,45 +1,47 @@
-# Ether Frontend: Stability & Performance Constitution
+# Ether Frontend: Stability & Performance Constitution (LiveView Edition)
 
-This document defines the high-level engineering standards for all frontend development within the Ether IDE. Stability and Performance are NOT features; they are foundational requirements.
+This document defines the high-level engineering standards for the Ether IDE UI. Stability and Performance are NOT features; they are foundational requirements.
 
-## 1. Rune Discipline (Svelte 5)
+## 1. LiveView Discipline (Elixir-First)
 
 ### State Management
-- **Rule of Locality**: Keep `$state` as close to the usage as possible.
-- **Raw by Default**: Use `$state.raw` for large data objects (like the file tree or Monaco content) that do not require deep reactivity. This prevents massive overhead.
-- **Class-Based Logic**: Prefer class-based state modules (like `UIState`, `EditorState`) over plain objects. This enforces a clear API and encapsulation.
+- **Rule of Locality**: Keep assigns in the specific LiveComponent or LiveView that owns the data.
+- **Minimal Diffs**: Avoid massive socket assigns. Use `Phoenix.LiveView.stream/3` for large collections (file trees, logs) to ensure the server only sends minimal patches to the client.
+- **No Client State**: All UI decisions (visibility, active files) should be managed as Server Assigns to eliminate synchronization bugs between frontend and backend.
 
-### Derivations & Effects
-- **Pure Derivations**: `$derived` runes must be pure and side-effect free.
-- **Effect Restraint**: Use `$effect` ONLY for side effects (syncing with DOM, external APIs). Do NOT use effects to update state that could be handled by `$derived`.
-- **Cleanup Requirement**: Every `$effect` must return a cleanup function to prevent memory leaks, especially when dealing with event listeners or timers.
+### Concurrency & Backpressure
+- **Rate-Limiting**: High-frequency events (binary scanner chunks) must be processed into manageable UI updates (batching in the GenServer loop).
+- **Asynchronous Work**: Time-consuming IO (opening large files) must use `Task.async` or specialized Agents to prevent blocking the LiveView process.
 
 ## 2. Unbreakable UI (Stability)
 
-### Error Boundaries
-- **Component isolation**: Wrap major UI zones (Sidebar, Editor, Terminal) in Error Boundaries to ensure a failure in one does not crash the entire workbench.
-- **Graceful Degradation**: When a component fails, display a "Reload Component" button rather than a white screen.
+### Process Isolation
+- **Individual GenServers**: Every major UI feature (File Tree, LSP, Terminal) is backed by its own GenServer agent. A crash in one agent does not bring down the IDE shell.
+- **Auto-Recovery**: Use Supervisor strategies to automatically restart failed agent processes and restore the UI state gracefully.
 
-### Defensive Props
-- **Type Safety**: Use TypeScript interfaces for all component props.
-- **Presence Check**: Always verify the existence of complex objects (e.g., `activeFile?.path`) before accessing properties.
+### Defensive Rendering
+- **Pattern Matching**: Use Elixir pattern matching in HEEx templates to handle `@active_file == nil` or error states without crashing.
+- **Fail-Safe Defaults**: Provide sensible default values for all assigns.
 
 ## 3. Performance & Benchmarks
 
 ### Reactivity Budgets
-- **Frame Rate**: The UI must maintain 60FPS during typing and navigation.
-- **Latency Monitoring**: Any interaction taking longer than 16ms (1 frame) must be reported to the internal `PerformanceMonitor`.
+- **Frame Rate**: The Monaco Editor (via JS Hook) must maintain 60FPS. All state updates from LiveView must be lightweight enough to avoid JANK in the editor.
+- **Socket Latency**: Local socket communication (Tauri <-> LiveView) must aim for <1ms latency for instant "Perceived Performance."
 
-### Reactive Pressure (System Pressure ADR-005)
-- **Batching**: Rapid-fire data from the backend (like file tree chunks) MUST be batched using a `flushBatch` pattern to prevent UI locking.
-- **Lazy Ignition**: All heavy data requests must wait for the initial UI paint (minimum 800ms) to ensure instant "Perceived Performance."
+### System Pressure (ADR-005)
+- **Throttling**: Rapid-fire telemetry or scan data MUST be throttled to prevent Event Loop starvation in the browser engine.
+- **Lazy Loading**: Complex UI panels should be loaded on-demand using `phx-trigger-action` or conditional rendering.
 
 ## 4. Testing & Verification
 
-### The Testing Pyramid
-1. **Unit Tests (Vitest)**: For logical state classes (`ui.svelte.js`, `editor.svelte.js`).
-2. **Integration Tests**: Connectivity and Channel logic.
-3. **E2E (Playwright)**: Critical paths (File Open -> Edit -> Save).
+### The Unified Testing Stack
+1. **LiveView Tests (ExUnit)**: Comprehensive verification of UI state and rendering logic (replaces Vitest/Svelte tests).
+2. **Native Integrity (Zig)**: Verifying memory safety of the scanner NIF.
+3. **Telemetry Benchmarks**: Real-time measurements using `Telemetry` and `Benchee`.
 
 ### No Technical Debt
-- Code that is hard to test is considered technical debt and should be refactored immediately.
+- Code that requires manual JSON serialization for internal communication is considered technical debt. Use the direct BEAM process-to-process communication.
+
+---
+*Last Updated: 2026-01-09 (Post-LiveView Migration)*

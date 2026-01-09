@@ -1,6 +1,10 @@
 defmodule EtherWeb.WorkbenchLive do
   use EtherWeb, :live_view
 
+  alias Ether.Scanner.Utils
+
+  @flush_interval_ms 100
+
   def mount(_params, _session, socket) do
     # Subscribe to filesystem deltas
     if connected?(socket) do
@@ -18,7 +22,21 @@ defmodule EtherWeb.WorkbenchLive do
      |> assign(:root_path, File.cwd!())
      |> assign(:isLoading, false)
      |> assign(:file_count, 0)
+     |> assign(:scan_buffer, [])
+     |> assign(:flush_pending, false)
      |> stream(:files, [])}
+  end
+
+  def handle_event("toggle_sidebar", _params, socket) do
+    {:noreply, assign(socket, :sidebar_visible, !socket.assigns.sidebar_visible)}
+  end
+
+  def handle_event("set_sidebar", %{"panel" => panel}, socket) do
+    {:noreply, assign(socket, :active_sidebar, panel)}
+  end
+
+  def handle_event("toggle_panel", _params, socket) do
+    {:noreply, assign(socket, :panel_visible, !socket.assigns.panel_visible)}
   end
 
   # Handle "Open Folder" equivalent (triggered by UI button)
@@ -68,46 +86,73 @@ defmodule EtherWeb.WorkbenchLive do
     end
   end
 
-  # Scanner Callbacks
+  # Scanner Callbacks - Buffered for UI Performance
   def handle_info({:scanner_chunk, binary}, socket) do
     root = socket.assigns.root_path
+    
+    # Decode with optimized Utils
     items = 
-      decode_slab(binary, root, [])
-      |> Enum.map(&Ether.Explorer.process_scan_item(&1, root))
+      Utils.decode_slab(binary, root)
+      |> Enum.map(&Utils.to_ui_item(&1, root))
 
+    # Buffer items instead of immediate UI update
+    buffer = socket.assigns.scan_buffer ++ items
+    
+    # Schedule a flush if not already pending
+    socket = 
+      if socket.assigns.flush_pending do
+        assign(socket, :scan_buffer, buffer)
+      else
+        Process.send_after(self(), :flush_scan_buffer, @flush_interval_ms)
+        socket
+        |> assign(:scan_buffer, buffer)
+        |> assign(:flush_pending, true)
+      end
+
+    {:noreply, socket}
+  end
+
+  # Flush buffered items to the UI stream
+  def handle_info(:flush_scan_buffer, socket) do
+    buffer = socket.assigns.scan_buffer
+    
     socket = 
       socket
-      |> update(:file_count, &(&1 + length(items)))
-      |> stream(:files, items)
+      |> update(:file_count, &(&1 + length(buffer)))
+      |> stream(:files, buffer)
+      |> assign(:scan_buffer, [])
+      |> assign(:flush_pending, false)
 
     {:noreply, socket}
   end
 
   def handle_info({:scanner_done, _status}, socket) do
+    # Final flush of any remaining items
+    socket = flush_remaining_buffer(socket)
     {:noreply, assign(socket, :isLoading, false)}
   end
 
-  def handle_info({:scanner_error, reason}, socket) do
-    # Handle error...
+  def handle_info({:scanner_error, _reason}, socket) do
     {:noreply, assign(socket, :isLoading, false)}
   end
 
   # File Delta Support (Watcher)
   def handle_info({:file_delta, %{path: path, type: type}}, socket) do
     root = socket.assigns.root_path
-    item = Ether.Explorer.process_scan_item({path, type}, root)
-    
-    # LiveView streams handle updates automatically by ID
+    item = Utils.to_ui_item({path, type}, root)
     {:noreply, stream(socket, :files, [item])}
   end
 
-  # Helper copied from Scanner (private or shared later)
-  defp decode_slab(<<>>, _root, acc), do: Enum.reverse(acc)
-  defp decode_slab(<<type::8, len::16-little, path_bin::binary-size(len), rest::binary>>, root, acc) do
-    rel_path = String.to_charlist(path_bin) |> List.to_string()
-    abs_path = Path.join(root, rel_path)
-    type_atom = if type == 2, do: :directory, else: :file
-    decode_slab(rest, root, [{abs_path, type_atom} | acc])
+  defp flush_remaining_buffer(socket) do
+    buffer = socket.assigns.scan_buffer
+    if buffer == [] do
+      socket
+    else
+      socket
+      |> update(:file_count, &(&1 + length(buffer)))
+      |> stream(:files, buffer)
+      |> assign(:scan_buffer, [])
+      |> assign(:flush_pending, false)
+    end
   end
-  defp decode_slab(rest, _root, acc), do: Enum.reverse(acc)
 end

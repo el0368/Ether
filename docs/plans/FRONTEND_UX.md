@@ -1,60 +1,55 @@
-# Master Plan: Frontend & UX (Svelte 5)
+# Master Plan: Frontend & UX (Phoenix LiveView)
 
 ## 🎨 Design Philosophy: "Native-First"
-Ether aims for a premium, high-performance desktop feel. We avoid generic web-app aesthetics in favor of a customized VS Code-inspired dark theme.
+Ether aims for a premium, high-performance desktop feel. We avoid generic web-app aesthetics in favor of a customized VS Code-inspired dark theme. By using LiveView, we eliminate the "Context-Switch Tax" and "Polyglot Fatigue."
 
-- **Stack:** Svelte 5 (Runes) + Tailwind v4 (Oxide) + Lucide Icons.
-- **No Component Libraries:** We are removing DaisyUI in favor of raw CSS variables and Tailwind utilities to maintain total control over the look and feel.
-- **Virtualized Lists:** Rendering 100k+ files requires strict virtualization (no DOM bloat).
+- **Stack:** Phoenix LiveView + Tailwind CSS + Heroicons.
+- **Unified Engine:** All UI state resides in the Elixir GenServer (Socket Assigns), eliminating the need for client-side stores.
+- **Direct Backend Access:** UI elements talk directly to Backend Agents (FileServer, Testing) without intermediary APIs.
 
 ---
 
 ## ⚡ Reactivity & State Management
-We use Svelte 5 Runes for fine-grained, high-performance reactivity.
+We lead with server-side reactivity, leveraging the BEAM's inherent stability.
 
-- **`$state`:** All global and component state.
-- **`$effect`:** Used sparingly for side effects (e.g., updating the OS window title).
-- **Batching:** High-frequency events (like scanning 1k files/sec) are batched to a 20 FPS refresh rate to prevent main-thread starvation.
+- **Socket Assigns:** Single source of truth for visibility, active files, and workspace state.
+- **Phoenix Streams:** O(1) rendering for the file tree and massive lists, managing data efficiently on the server and over the wire.
+- **JS Hooks:** Narrowly focused Interop for heavy-weight web components (Monaco Editor, Xterm.js).
 
 ---
 
 ## 🔗 High-Performance Sync Pipeline
-The path from Disk to DOM must be as direct as possible.
+The path from Disk to DOM is now unified within the Erlang runtime.
 
-### 1. Zero-Copy Decoder
-- **Binary Slabs:** Svelte receives raw binary chunks (AetherProtocol) from the Phoenix Channel.
-- **NifDecoder:** TypeScript-optimized decoder transforms binary directly into JSON-like structures for the store.
-- **Performance Target:** <100ms initial sync for 10k files.
+### 1. Direct Scanner Integration
+- **Binary Slabs:** The Native Zig Scanner pushes binary chunks directly to the LiveView process.
+- **Native Decoding:** LiveView decodes scanner binaries using `<<...>>` pattern matching (the fastest way to parse binary in Elixir).
+- **Performance Target:** <50ms initial sync for 10k files across the backend-frontend boundary.
 
-### 2. Delta Engine
-- **Smart Merging:** Instead of replacing the tree, incoming `filetree:delta` events are merged in-place using indexed lookups.
-- **Performance Target:** <5ms from disk-write to UI-update.
+### 2. LiveView Streams
+- **Smart Patching**: Phoenix Streams handle insertions and deletions automatically via standard DOM patching.
+- **Zero-JavaScript logic**: File tree expansion and selection logic are handled in pure Elixir.
 
 ---
 
 ## 🚧 Feature Roadmap & Priority
 
-### 🔥 P0: Foundation (Milestone 1)
-- [ ] **VS Code Theme:** Define `--vscode-*` variables and refactor all components to use them.
-- [ ] **DaisyUI Removal:** Finalize the cleanup of all library-dependent classes.
-- [ ] **Raw Binary Frames:** Switch from Base64 to raw binary on the WebSocket for the file tree.
+### 🔥 P0: Foundation (COMPLETED)
+- [x] **VS Code Theme:** standard CSS tokens for IDE identity.
+- [x] **LiveView Shell:** Replaced Svelte frontend with `WorkbenchLive`.
+- [x] **Monaco Bridge:** High-performance JS Hook for the editor.
 
-### ⚡ P1: Polish & Interaction
-- [ ] **File Icons:** Integration of Seti/Material icon sets for improved scannability.
-- [ ] **Resizing Layout:** Robust split-pane management for Sidebar/Editor.
-- [ ] **Tabs & Navigation:** Simple tab bar for managing multiple open buffers.
-
-### 🚀 P3: Advanced Capabilities
-- [ ] **The Editor:** Integration of Monaco or CodeMirror as the primary IDE buffer.
-- [ ] **Native Terminal:** Embedding Xterm.js for the `CommandAgent` output.
-- [ ] **Frameless Window:** Custom title bar styling via Tauri `window-start-dragging`.
+### ⚡ P1: Polish & Interaction (IN PROGRESS)
+- [ ] **LSP Integration**: Real-time diagnostics from the Elixir LS agent directly into the LiveView UI.
+- [ ] **Integrated Terminal**: Streaming `CommandAgent` output via Xterm.js Hook.
+- [ ] **Advanced QuickPick**: Unified search/palette using LiveView search-as-you-type.
 
 ---
 
 ## 🛡️ Performance Red-Lines
-- **Memory:** <1MB additional RAM per 10k tracked elements in the Svelte store.
-- **Frame Rate:** Zero drops below 60fps during UI interactions.
-- **Latency:** Sub-10ms UI update for all local user interactions.
+- **Memory:** <500KB additional RAM per 10k tracked elements in the LiveView Stream.
+- **Latency:** Sub-10ms UI update for state-driven interactions (toggle sidebar, menu).
+- **Communication:** Eliminate all manual JSON serialization for internal IDE state.
 
 ---
-*Last Updated: 2026-01-07*
+*Last Updated: 2026-01-09 (Post-LiveView Migration)*

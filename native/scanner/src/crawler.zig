@@ -8,7 +8,7 @@ const beam = @import("beam/erl_nif.zig");
 const resource = @import("resource.zig");
 
 // Configuration
-pub const CHUNK_SIZE: usize = 1000;
+pub const CHUNK_SIZE: usize = 250;
 pub const MAX_DEPTH: u8 = 64; // Safety valve for recursive scanning
 
 const w = std.os.windows;
@@ -227,7 +227,7 @@ pub export fn zig_scan_yieldable(
                 if (!kernel32.FindNextFileW(find_handle, &find_data)) break;
 
                 // Pre-emptive flush to avoid giant messages
-                if (local_buffer.items.len > 1024 * 64) {
+                if (local_buffer.items.len > 1024 * 16) {
                     flush_buffer(&scan_ctx);
                 }
             }

@@ -1,6 +1,7 @@
 defmodule EtherWeb.Components.Workbench.Sidebar do
   use Phoenix.Component
-  import EtherWeb.Workbench.ViewPaneContainer
+  import EtherWeb.CoreComponents
+  alias EtherWeb.Workbench.ExplorerView
 
   attr :active_sidebar, :string, required: true
   attr :active_file, :map, default: nil
@@ -9,66 +10,65 @@ defmodule EtherWeb.Components.Workbench.Sidebar do
   attr :files, :list, required: true
 
   def sidebar(assigns) do
-    # Define the pane configuration based on active sidebar
-    panes = get_panes(assigns)
-    assigns = assign(assigns, :panes, panes)
-    
     ~H"""
-    <div class="w-[var(--vscode-sidebar-width)] min-w-[var(--vscode-sidebar-width)] bg-[var(--vscode-sidebar-background)] border-r border-[#2b2b2b]">
-      <.view_pane_container 
-        id="sidebar-container"
-        title={panel_title(@active_sidebar)}
-        panes={@panes}
-      />
+    <div class="w-[var(--vscode-sidebar-width)] min-w-[var(--vscode-sidebar-width)] bg-[var(--vscode-sidebar-background)] border-r border-[#2b2b2b] flex flex-col">
+      <%!-- Files Panel (Always Rendered, Hidden via CSS) --%>
+      <div class={"flex-1 flex flex-col min-h-0 overflow-hidden #{if @active_sidebar != "files", do: "hidden"}"}>
+        <div class="title px-5 flex items-center h-[35px] min-h-[35px] text-[11px] font-normal uppercase tracking-wide text-[#cccccc] select-none">
+          Explorer
+        </div>
+        <div class="flex-1 overflow-y-auto">
+          <.live_component
+            module={ExplorerView}
+            id="explorer-view"
+            files={@files}
+            active_file={@active_file}
+            file_count={@file_count}
+            is_loading={@is_loading}
+          />
+        </div>
+      </div>
+
+      <%!-- Search Panel --%>
+      <div class={"flex-1 flex flex-col min-h-0 #{if @active_sidebar != "search", do: "hidden"}"}>
+        <div class="title px-5 flex items-center h-[35px] min-h-[35px] text-[11px] font-normal uppercase tracking-wide text-[#cccccc] select-none">
+          Search
+        </div>
+        <div class="flex-1 flex items-center justify-center text-[12px] text-[#858585] italic">
+          Search functionality coming soon...
+        </div>
+      </div>
+
+      <%!-- Git Panel --%>
+      <div class={"flex-1 flex flex-col min-h-0 #{if @active_sidebar != "git", do: "hidden"}"}>
+        <div class="title px-5 flex items-center h-[35px] min-h-[35px] text-[11px] font-normal uppercase tracking-wide text-[#cccccc] select-none">
+          Source Control
+        </div>
+        <div class="flex-1 flex items-center justify-center text-[12px] text-[#858585] italic">
+          Git integration coming soon...
+        </div>
+      </div>
+      
+      <%!-- Debug Panel --%>
+      <div class={"flex-1 flex flex-col min-h-0 #{if @active_sidebar != "debug", do: "hidden"}"}>
+        <div class="title px-5 flex items-center h-[35px] min-h-[35px] text-[11px] font-normal uppercase tracking-wide text-[#cccccc] select-none">
+          Run and Debug
+        </div>
+        <div class="flex-1 flex items-center justify-center text-[12px] text-[#858585] italic">
+          Debug configuration coming soon...
+        </div>
+      </div>
+      
+      <%!-- Extensions Panel --%>
+      <div class={"flex-1 flex flex-col min-h-0 #{if @active_sidebar != "extensions", do: "hidden"}"}>
+        <div class="title px-5 flex items-center h-[35px] min-h-[35px] text-[11px] font-normal uppercase tracking-wide text-[#cccccc] select-none">
+          Extensions
+        </div>
+        <div class="flex-1 flex items-center justify-center text-[12px] text-[#858585] italic">
+          Extension marketplace coming soon...
+        </div>
+      </div>
     </div>
     """
-  end
-
-  defp panel_title("files"), do: "Explorer"
-  defp panel_title("search"), do: "Search"
-  defp panel_title("git"), do: "Source Control"
-  defp panel_title(_), do: "Explorer"
-
-  defp get_panes(assigns) do
-    case assigns.active_sidebar do
-      "files" ->
-        [
-          %{
-            id: "open_editors",
-            title: "Open Editors",
-            component: EtherWeb.Workbench.FilterWidget, 
-            expanded: true,
-            assigns: %{placeholder: "Search editors..."}
-          },
-          %{
-            id: "folders",
-            title: "Folders", # Should technically be folder name
-            component: EtherWeb.Workbench.ExplorerView,
-            expanded: true,
-            assigns: %{
-              files: assigns.files,
-              active_file: assigns.active_file,
-              file_count: assigns.file_count,
-              is_loading: assigns.is_loading
-            }
-          },
-          %{
-            id: "outline",
-            title: "Outline",
-            component: nil,
-            expanded: false,
-            assigns: %{}
-          },
-          %{
-            id: "timeline",
-            title: "Timeline",
-            component: nil,
-            expanded: false,
-            assigns: %{}
-          }
-        ]
-      
-      _ -> []
-    end
   end
 end

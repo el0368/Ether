@@ -22,7 +22,7 @@ defmodule EtherWeb.Workbench.ViewPane do
         tabindex="0"
       >
         <div class="mr-[2px] transition-transform duration-100 flex items-center justify-center p-0.5" x-bind:class="expanded && 'rotate-90'">
-            <.icon name="hero-chevron-right" class="w-4 h-4 text-[#cccccc]" />
+            <.icon name="lucide-chevron-right" class="w-4 h-4 text-[#cccccc]" />
         </div>
         <span class="text-[11px] font-bold text-[#cccccc] uppercase truncate select-none"><%= @title %></span>
         <div class="flex-1"></div>

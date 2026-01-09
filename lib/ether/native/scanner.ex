@@ -62,6 +62,8 @@ defmodule Ether.Native.Scanner do
       {:cont, ^resource} ->
         # Yielding happened! Elixir loop resumes execution
         # The scheduler will naturally preempt this process if needed.
+        # ADR-042: Explicit Throttling to prevent Main Thread Congestion
+        Process.sleep(5)
         do_scan_loop(resource, path, pid, depth_limit)
       {:error, _} = err -> err
       unknown -> {:error, {:unknown_native_failure, unknown}}

@@ -144,7 +144,7 @@ defmodule EtherWeb.WorkbenchLive do
   # Flush buffered items to the UI stream (Chunked for UI Stability)
   def handle_info(:flush_scan_buffer, socket) do
     all_items = socket.assigns.scan_buffer
-    {to_stream, remaining} = Enum.split(all_items, 500)
+    {to_stream, remaining} = Enum.split(all_items, 200)
     
     socket = 
       socket

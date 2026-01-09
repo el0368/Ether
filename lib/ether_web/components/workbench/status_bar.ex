@@ -13,7 +13,7 @@ defmodule EtherWeb.Components.Workbench.StatusBar do
     <div class="h-[var(--vscode-statusbar-height)] min-h-[var(--vscode-statusbar-height)] bg-[var(--vscode-statusbar-background)] flex items-center justify-between px-3 text-[12px] text-[var(--vscode-statusbar-foreground)]">
       <div class="flex items-center gap-3">
         <div class="flex items-center gap-1 hover:bg-[#ffffff22] px-1 cursor-pointer">
-          <.icon name="hero-signal" class="w-3 h-3" />
+          <.icon name="lucide-signal" class="w-3 h-3" />
           <span>Connected</span>
         </div>
       </div>

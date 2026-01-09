@@ -16,7 +16,7 @@ defmodule EtherWeb.Workbench.ViewMenuActions do
         phx-click="toggle_menu"
         phx-target={@myself}
       >
-        <.icon name="hero-ellipsis-horizontal" class="w-4 h-4" />
+        <.icon name="lucide-more-horizontal" class="w-4 h-4" />
       </div>
 
       <%= if @menu_visible do %>
@@ -40,7 +40,7 @@ defmodule EtherWeb.Workbench.ViewMenuActions do
               phx-target={@myself}
             >
               <div class={"w-4 mr-1 flex items-center justify-center #{if !pane.expanded, do: "invisible"}"}>
-                 <.icon name="hero-check" class="w-3 h-3" />
+                 <.icon name="lucide-check" class="w-3 h-3" />
               </div>
               <span><%= pane.title %></span>
             </div>

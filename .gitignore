@@ -42,6 +42,6 @@ zig-out/
 **/zig-out/ 
 /priv/native/*.dll
 
-# External Source (commented out for AI access)
-# /vscode-main/
-# /vscode-main.zip
+# External Source (excluded from repo)
+/vscode-main/
+/vscode-main.zip

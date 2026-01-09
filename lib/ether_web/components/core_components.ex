@@ -57,15 +57,15 @@ defmodule EtherWeb.CoreComponents do
         @kind == :info && "bg-blue-100 border-blue-200 text-blue-800",
         @kind == :error && "bg-red-100 border-red-200 text-red-800"
       ]}>
-        <.icon :if={@kind == :info} name="hero-information-circle" class="size-5 shrink-0" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
+        <.icon :if={@kind == :info} name="lucide-info" class="size-5 shrink-0" />
+        <.icon :if={@kind == :error} name="lucide-alert-circle" class="size-5 shrink-0" />
         <div>
           <p :if={@title} class="font-semibold">{@title}</p>
           <p>{msg}</p>
         </div>
         <div class="flex-1" />
         <button type="button" class="group self-start cursor-pointer" aria-label={gettext("close")}>
-          <.icon name="hero-x-mark" class="size-5 opacity-40 group-hover:opacity-70" />
+          <.icon name="lucide-x" class="size-5 opacity-40 group-hover:opacity-70" />
         </button>
       </div>
     </div>
@@ -291,7 +291,7 @@ defmodule EtherWeb.CoreComponents do
   defp error(assigns) do
     ~H"""
     <p class="mt-1.5 flex gap-2 items-center text-sm text-red-600">
-      <.icon name="hero-exclamation-circle" class="size-5" />
+      <.icon name="lucide-alert-circle" class="size-5" />
       {render_slot(@inner_block)}
     </p>
     """
@@ -432,7 +432,7 @@ defmodule EtherWeb.CoreComponents do
   attr :name, :string, required: true
   attr :class, :any, default: "size-4"
 
-  def icon(%{name: "hero-" <> _} = assigns) do
+  def icon(assigns) do
     ~H"""
     <span class={[@name, @class]} />
     """

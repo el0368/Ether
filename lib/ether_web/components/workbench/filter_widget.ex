@@ -20,7 +20,7 @@ defmodule EtherWeb.Workbench.FilterWidget do
          />
          <div class="actions flex items-center pr-1">
             <div class="w-4 h-4 cursor-pointer hover:text-white flex items-center justify-center" title="Filter">
-                <.icon name="hero-funnel" class="w-3 h-3" />
+                <.icon name="lucide-filter" class="w-3 h-3" />
             </div>
          </div>
       </div>

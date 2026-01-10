@@ -3,13 +3,15 @@ defmodule Ether.Agents.CommandAgent do
   The Executor of Ether.
   Responsible for running system commands (builds, tests, verifications).
   """
+
   # use Jido.Agent,
   #   name: "command_agent",
   #   description: "Safely executes system commands with timeout and logging."
 
   require Logger
 
-  @default_timeout 30_000 # 30 seconds
+  # 30 seconds
+  @default_timeout 30_000
 
   # Valid basic module for now
   def exec(_cmd, _args, _opts \\ []) do

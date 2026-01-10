@@ -44,21 +44,27 @@ defmodule Ether.Agents.LSPAgent do
 
   def handle_cast({:did_change, path, text}, state) do
     new_docs = Map.put(state.documents, path, text)
-    
+
     # Run diagnostics
     diagnostics = diagnose(text)
-    
+
     # Broadcast diagnostics to all editors
-    EtherWeb.Endpoint.broadcast("editor:lobby", "lsp:diagnostics", %{path: path, diagnostics: diagnostics})
+    EtherWeb.Endpoint.broadcast("editor:lobby", "lsp:diagnostics", %{
+      path: path,
+      diagnostics: diagnostics
+    })
 
     {:noreply, %{state | documents: new_docs}}
   end
 
   defp diagnose(text) do
     case Code.string_to_quoted(text) do
-      {:ok, _ast} -> []
+      {:ok, _ast} ->
+        []
+
       {:error, {meta, message, _token}} ->
         line = meta[:line] || 1
+
         [
           %{
             from: %{line: line, col: 1},
@@ -72,20 +78,27 @@ defmodule Ether.Agents.LSPAgent do
 
   def handle_call({:completion, path, line, column}, _from, state) do
     text = Map.get(state.documents, path)
-    
+
     # Call ElixirSense to get real suggestions (or mock in test)
     suggestions =
       if text do
         if Mix.env() == :test do
           # Mock response for tests to avoid heavy indexing
-          [%{label: "defmodule", kind: :keyword, detail: "Kernel", documentation: "Defines a module"}]
+          [
+            %{
+              label: "defmodule",
+              kind: :keyword,
+              detail: "Kernel",
+              documentation: "Defines a module"
+            }
+          ]
         else
           results = ElixirSense.suggestions(text, line, column)
-          
+
           Enum.map(results, fn item ->
             %{
               label: item[:label] || item[:name],
-              kind: item[:type], 
+              kind: item[:type],
               detail: item[:detail] || item[:summary],
               documentation: item[:doc]
             }
@@ -100,14 +113,14 @@ defmodule Ether.Agents.LSPAgent do
 
   def handle_call({:document_symbols, path}, _from, state) do
     text = Map.get(state.documents, path)
-    
+
     symbols =
       if text do
         extract_symbols(text)
       else
         []
       end
-    
+
     {:reply, {:ok, symbols}, state}
   end
 
@@ -115,6 +128,7 @@ defmodule Ether.Agents.LSPAgent do
     case Code.string_to_quoted(text) do
       {:ok, ast} ->
         extract_from_ast(ast, [])
+
       {:error, _} ->
         []
     end

@@ -34,8 +34,6 @@ defmodule Ether.Agents.FileServerAgent do
     GenServer.call(@name, :get_recent)
   end
 
-
-
   # Server Callbacks
 
   @impl true
@@ -46,19 +44,21 @@ defmodule Ether.Agents.FileServerAgent do
 
   @impl true
   def handle_call({:read, path}, _from, state) do
-    result = 
+    result =
       case File.read(path) do
-        {:ok, content} -> {:ok, content}
-        {:error, reason} -> 
+        {:ok, content} ->
+          {:ok, content}
+
+        {:error, reason} ->
           Logger.error("Failed to read #{path}: #{inspect(reason)}")
           {:error, reason}
       end
-    
+
     # Track this file as recently opened
-    new_recent = 
+    new_recent =
       [path | Enum.reject(state.recent_files, &(&1 == path))]
       |> Enum.take(20)
-    
+
     {:reply, result, %{state | recent_files: new_recent}}
   end
 
@@ -66,26 +66,28 @@ defmodule Ether.Agents.FileServerAgent do
   def handle_call({:write, path, content}, _from, state) do
     result =
       case File.write(path, content) do
-        :ok -> :ok
+        :ok ->
+          :ok
+
         {:error, reason} ->
           Logger.error("Failed to write #{path}: #{inspect(reason)}")
           {:error, reason}
       end
+
     {:reply, result, state}
   end
-
-
 
   @impl true
   def handle_call({:list, path}, _from, state) do
     result =
       case File.ls(path) do
         {:ok, entries} ->
-          files = 
+          files =
             entries
             |> Enum.sort()
             |> Enum.map(fn name ->
               full_path = Path.join(path, name)
+
               %{
                 name: name,
                 path: full_path,
@@ -93,11 +95,14 @@ defmodule Ether.Agents.FileServerAgent do
               }
             end)
             |> Enum.sort_by(fn f -> {!f.is_dir, f.name} end)
+
           {:ok, files}
+
         {:error, reason} ->
           Logger.error("Failed to list #{path}: #{inspect(reason)}")
           {:error, reason}
       end
+
     {:reply, result, state}
   end
 
@@ -115,9 +120,11 @@ defmodule Ether.Agents.FileServerAgent do
 
   @impl true
   def handle_call(:get_recent, _from, state) do
-    recent = Enum.map(state.recent_files, fn path ->
-      %{name: Path.basename(path), path: path}
-    end)
+    recent =
+      Enum.map(state.recent_files, fn path ->
+        %{name: Path.basename(path), path: path}
+      end)
+
     {:reply, {:ok, recent}, state}
   end
 
@@ -126,6 +133,7 @@ defmodule Ether.Agents.FileServerAgent do
       {:ok, entries} ->
         Enum.flat_map(entries, fn entry ->
           path = Path.join(dir, entry)
+
           cond do
             String.starts_with?(entry, ".") -> []
             entry == "_build" or entry == "deps" or entry == "assets/node_modules" -> []
@@ -134,7 +142,9 @@ defmodule Ether.Agents.FileServerAgent do
             true -> []
           end
         end)
-      _ -> []
+
+      _ ->
+        []
     end
   end
 
@@ -153,7 +163,9 @@ defmodule Ether.Agents.FileServerAgent do
         |> Enum.map(fn {line, index} ->
           %{path: path, line: index, content: String.trim(line)}
         end)
-      _ -> []
+
+      _ ->
+        []
     end
   end
 
@@ -166,12 +178,21 @@ defmodule Ether.Agents.FileServerAgent do
       {:ok, entries} ->
         Enum.flat_map(entries, fn entry ->
           path = Path.join(dir, entry)
+
           cond do
-            String.starts_with?(entry, ".") -> []
-            entry == "_build" or entry == "deps" or entry == "assets/node_modules" or entry == ".git" -> []
+            String.starts_with?(entry, ".") ->
+              []
+
+            entry == "_build" or entry == "deps" or entry == "assets/node_modules" or
+                entry == ".git" ->
+              []
+
             true ->
-              matches = if String.contains?(String.downcase(entry), String.downcase(query)), do: [%{id: path, label: entry, description: path, active: false}], else: []
-              
+              matches =
+                if String.contains?(String.downcase(entry), String.downcase(query)),
+                  do: [%{id: path, label: entry, description: path, active: false}],
+                  else: []
+
               if File.dir?(path) do
                 matches ++ perform_filename_search(path, query)
               else
@@ -179,7 +200,9 @@ defmodule Ether.Agents.FileServerAgent do
               end
           end
         end)
-      _ -> []
+
+      _ ->
+        []
     end
   end
 end

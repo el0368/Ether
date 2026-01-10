@@ -4,7 +4,7 @@ defmodule EtherWeb.WorkbenchLiveTest do
 
   test "renders the workbench shell", %{conn: conn} do
     {:ok, _view, html} = live(conn, ~p"/")
-    
+
     # Verify VS Code Layout Elements (via CSS variables/classes)
     assert html =~ "vscode-titleBar-height"
     assert html =~ "vscode-activityBar-width"
@@ -14,14 +14,14 @@ defmodule EtherWeb.WorkbenchLiveTest do
 
   test "renders welcome page when no file is active", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
-    
+
     assert render(view) =~ "ctrl + p to search files"
     assert render(view) =~ "monaco-editor-container"
   end
 
   test "opens project folder on click", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
-    
+
     # Simulate clicking Open Folder
     view
     |> element("button", "Open Folder")

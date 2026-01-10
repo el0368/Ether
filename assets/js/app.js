@@ -24,12 +24,49 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import hooks from "./hooks"
 import topbar from "../vendor/topbar"
+import { getHooks } from "live_svelte"
+import Workbench from "../svelte/Workbench.svelte"
+import ActivityBar from "../svelte/ActivityBar.svelte"
+import Explorer from "../svelte/Explorer.svelte"
+import Editor from "../svelte/Editor.svelte"
+
+const Components = {
+  Workbench,
+  ActivityBar,
+  Explorer,
+  Editor
+}
+
+// Performance Audit: svelte-render-scan
+if (process.env.NODE_ENV === "development") {
+  import("svelte-render-scan").then(({ scan }) => {
+    scan({
+      enabled: true,
+      log: true,
+    })
+  })
+}
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: hooks,
+  hooks: {
+    ...hooks,
+    ...getHooks(Components)
+  },
+  dom: {
+    onBeforeElUpdated(from, to) {
+      if (from._svelte) {
+        from._svelte.$set({
+          name: to.getAttribute("name"),
+          props: JSON.parse(to.getAttribute("props")),
+        })
+        return false
+      }
+      return true
+    },
+  },
 })
 
 // Show progress bar on live navigation and form submits

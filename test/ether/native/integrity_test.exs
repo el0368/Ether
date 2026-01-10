@@ -46,11 +46,13 @@ defmodule Ether.Native.IntegrityTest do
       # The NIF function `zig_scan` in `scanner_safe.zig` runs to completion.
       # So `scan_raw` WILL block until the scan is finished.
       # This means scheduler responsiveness test is still valid.
-      
-      _task = Task.async(fn -> 
-          Ether.Native.Scanner.scan_raw(".") 
-          flush_messages() # Cleanup
-      end)
+
+      _task =
+        Task.async(fn ->
+          Ether.Native.Scanner.scan_raw(".")
+          # Cleanup
+          flush_messages()
+        end)
 
       # Check that Elixir can still respond immediately
       :ok = :timer.sleep(10)
@@ -69,7 +71,7 @@ defmodule Ether.Native.IntegrityTest do
       # OR sent as messages?
       # In scanner_safe.zig, `dir.openDir` failure returns error tuple synchronously.
       # So this test should still work if we inspect the return value.
-      
+
       result = Ether.Native.Scanner.scan_raw("Z:/nonexistent/path/that/does/not/exist/123456789")
 
       case result do
@@ -78,9 +80,9 @@ defmodule Ether.Native.IntegrityTest do
           IO.puts("✅ Error Clarity Check: Pass (Error: :#{reason})")
 
         {:ok, _} ->
-           # This means it started successfully?
-           # Wait, does openDir fail before streaming starts? Yes.
-           flunk("Expected error for non-existent path, got {:ok, _}")
+          # This means it started successfully?
+          # Wait, does openDir fail before streaming starts? Yes.
+          flunk("Expected error for non-existent path, got {:ok, _}")
       end
     end
   end

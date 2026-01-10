@@ -10,12 +10,13 @@ defmodule Ether.Explorer do
   def process_scan_item({path, type}, root) do
     name = Path.basename(path)
     is_dir = type == :directory
-    
+
     # Calculate depth relative to root
     # e.g. root = "c:/foo", path = "c:/foo/bar/baz.ex"
     # rel = "bar/baz.ex", depth = 2
     rel_path = Path.relative_to(path, root)
-    depth = 
+
+    depth =
       if rel_path == "." do
         0
       else

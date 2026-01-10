@@ -1,5 +1,6 @@
 defmodule EtherWeb.WorkbenchLive do
   use EtherWeb, :live_view
+  import LiveSvelte
 
   alias Ether.Scanner.Utils
   alias Ether.Workbench.LayoutState
@@ -12,7 +13,7 @@ defmodule EtherWeb.WorkbenchLive do
     if connected?(socket) do
       Phoenix.PubSub.subscribe(Ether.PubSub, "filetree:deltas")
     end
-    
+
     layout = Storage.load()
 
     {:ok,
@@ -32,6 +33,8 @@ defmodule EtherWeb.WorkbenchLive do
      |> assign(:quick_pick_visible, false)
      |> assign(:quick_pick_mode, "files")
      |> assign(:context_menu, nil)
+     |> assign(:editor_content, "")
+     |> assign(:files_list, [])
      |> stream(:files, [])}
   end
 
@@ -39,15 +42,17 @@ defmodule EtherWeb.WorkbenchLive do
     # VS Code behavior: show ALL views with checkmarks
     all_views = Registry.all()
     pinned_ids = socket.assigns.workbench_layout.pinned_ids
-    
-    items = 
+
+    items =
       all_views
-      |> Enum.map(fn view -> 
+      |> Enum.map(fn view ->
         is_pinned = view.id in pinned_ids
+
         %{
           label: view.label,
           checked: is_pinned,
-          action: JS.push(if(is_pinned, do: "unpin_view", else: "pin_view"), value: %{panel: view.id})
+          action:
+            JS.push(if(is_pinned, do: "unpin_view", else: "pin_view"), value: %{panel: view.id})
         }
       end)
       |> Enum.concat([
@@ -70,32 +75,35 @@ defmodule EtherWeb.WorkbenchLive do
   def handle_event("unpin_view", %{"panel" => panel}, socket) do
     layout = LayoutState.unpin_view(socket.assigns.workbench_layout, panel)
     Storage.save(layout)
-    {:noreply, 
-     socket 
+
+    {:noreply,
+     socket
      |> assign(:workbench_layout, layout)
      |> assign(:context_menu, nil)}
   end
 
   def handle_event("reset_layout", _params, socket) do
-     layout = LayoutState.reset()
-     Storage.save(layout)
-     {:noreply, 
-      socket 
-      |> assign(:workbench_layout, layout)
-      |> assign(:active_sidebar, layout.active_id)
-      |> assign(:sidebar_visible, layout.visible)
-      |> assign(:context_menu, nil)}
+    layout = LayoutState.reset()
+    Storage.save(layout)
+
+    {:noreply,
+     socket
+     |> assign(:workbench_layout, layout)
+     |> assign(:active_sidebar, layout.active_id)
+     |> assign(:sidebar_visible, layout.visible)
+     |> assign(:context_menu, nil)}
   end
 
   def handle_event("pin_view", %{"panel" => panel}, socket) do
     layout = LayoutState.pin_view(socket.assigns.workbench_layout, panel)
     Storage.save(layout)
-    {:noreply, 
-     socket 
+
+    {:noreply,
+     socket
      |> assign(:workbench_layout, layout)
      |> assign(:context_menu, nil)}
   end
-  
+
   def handle_event("reorder_icons", %{"panel" => panel, "to_index" => to_index}, socket) do
     layout = LayoutState.reorder_views(socket.assigns.workbench_layout, panel, to_index)
     Storage.save(layout)
@@ -103,10 +111,15 @@ defmodule EtherWeb.WorkbenchLive do
   end
 
   def handle_event("toggle_sidebar", _params, socket) do
-    layout = %{socket.assigns.workbench_layout | visible: !socket.assigns.workbench_layout.visible}
+    layout = %{
+      socket.assigns.workbench_layout
+      | visible: !socket.assigns.workbench_layout.visible
+    }
+
     Storage.save(layout)
-    {:noreply, 
-     socket 
+
+    {:noreply,
+     socket
      |> assign(:workbench_layout, layout)
      |> assign(:sidebar_visible, layout.visible)}
   end
@@ -114,8 +127,9 @@ defmodule EtherWeb.WorkbenchLive do
   def handle_event("set_sidebar", %{"panel" => panel}, socket) do
     layout = LayoutState.toggle_view(socket.assigns.workbench_layout, panel)
     Storage.save(layout)
-    {:noreply, 
-     socket 
+
+    {:noreply,
+     socket
      |> assign(:workbench_layout, layout)
      |> assign(:active_sidebar, layout.active_id)
      |> assign(:sidebar_visible, layout.visible)}
@@ -131,14 +145,15 @@ defmodule EtherWeb.WorkbenchLive do
     # For now, we scan the current directory.
     path = socket.assigns.root_path || File.cwd!()
     Ether.Scanner.scan_async(path, [".git", "node_modules", "_build", "deps"], 2)
-    
+
     {:noreply, socket |> assign(:isLoading, true) |> assign(:root_path, path)}
   end
 
   def handle_event("open_quick_pick", params, socket) do
     mode = Map.get(params, "mode", "files")
-    {:noreply, 
-     socket 
+
+    {:noreply,
+     socket
      |> assign(:quick_pick_visible, true)
      |> assign(:quick_pick_mode, mode)}
   end
@@ -155,15 +170,18 @@ defmodule EtherWeb.WorkbenchLive do
     if not File.dir?(path) do
       case File.read(path) do
         {:ok, content} ->
-          socket = 
+          socket =
             socket
             |> assign(:active_file, %{name: Path.basename(path), path: path})
+            |> assign(:editor_content, content)
             |> push_event("load_file", %{
               text: content,
               language: get_language(path),
               path: path
             })
+
           {:noreply, socket}
+
         {:error, _reason} ->
           {:noreply, socket}
       end
@@ -173,29 +191,29 @@ defmodule EtherWeb.WorkbenchLive do
     end
   end
 
-
   def handle_event("flow_ack", _params, socket) do
     # Frontend Painted. Resume Backend.
     if pid = socket.assigns[:scanner_pid] do
       send(pid, :scanner_continue)
     end
+
     {:noreply, socket}
   end
-
 
   # Scanner Callbacks - Automatic Flow Control (ADR-005)
   def handle_info({:scanner_chunk, binary}, socket) do
     root = socket.assigns.root_path
-    
+
     # Decode directly
-    items = 
+    items =
       Utils.decode_slab(binary, root)
       |> Enum.map(&Utils.to_ui_item(&1, root))
 
-    # Zero Buffer: Stream immediately to DOM
-    socket = 
+    # Prop-Bridge: Update files_list for Svelte
+    socket =
       socket
       |> update(:file_count, &(&1 + length(items)))
+      |> update(:files_list, &(&1 ++ items))
       |> stream(:files, items)
 
     {:noreply, socket}
@@ -203,11 +221,11 @@ defmodule EtherWeb.WorkbenchLive do
 
   def handle_info({:scanner_sync, pid}, socket) do
     # Pause backend, ask Frontend for Paint Acknowledgment
-    socket = 
-      socket 
+    socket =
+      socket
       |> assign(:scanner_pid, pid)
       |> push_event("flow_sync", %{})
-      
+
     {:noreply, socket}
   end
 
@@ -226,8 +244,6 @@ defmodule EtherWeb.WorkbenchLive do
     {:noreply, stream(socket, :files, [item])}
   end
 
-
-
   def handle_info({:execute_command, id}, socket) do
     handle_command_execution(id, socket)
   end
@@ -235,22 +251,23 @@ defmodule EtherWeb.WorkbenchLive do
   def handle_info({:close_quick_pick, _}, socket) do
     {:noreply, assign(socket, :quick_pick_visible, false)}
   end
-  
+
   def handle_info({:select_file, %{"path" => path}}, socket) do
-     # Reuse existing logic via self-send or duplicate logic
-     handle_event("select_file", %{"path" => path}, socket)
+    # Reuse existing logic via self-send or duplicate logic
+    handle_event("select_file", %{"path" => path}, socket)
   end
 
   defp handle_command_execution(id, socket) do
     socket = assign(socket, :quick_pick_visible, false)
-    
+
     case id do
       "show_commands" ->
-        {:noreply, assign(socket, :quick_pick_visible, true)} # Re-open for now
-      
-      "toggle_sidebar" -> 
+        # Re-open for now
+        {:noreply, assign(socket, :quick_pick_visible, true)}
+
+      "toggle_sidebar" ->
         {:noreply, assign(socket, :sidebar_visible, !socket.assigns.sidebar_visible)}
-      
+
       _ ->
         {:noreply, socket}
     end
@@ -270,6 +287,4 @@ defmodule EtherWeb.WorkbenchLive do
       _ -> "text"
     end
   end
-
-
 end

@@ -21,7 +21,11 @@ defmodule EtherWeb.EditorChannelLSPTest do
     end
 
     test "lsp:completion returns suggestions", %{socket: socket} do
-      push(socket, "lsp:did_open", %{"path" => "lib/foo.ex", "text" => "defmodule Foo do\n  \nend"})
+      push(socket, "lsp:did_open", %{
+        "path" => "lib/foo.ex",
+        "text" => "defmodule Foo do\n  \nend"
+      })
+
       ref = push(socket, "lsp:completion", %{"path" => "lib/foo.ex", "line" => 2, "column" => 3})
       assert_reply ref, :ok, %{items: items}, 10_000
       assert is_list(items)
@@ -32,24 +36,26 @@ defmodule EtherWeb.EditorChannelLSPTest do
     test "lsp:did_change triggers diagnostics", %{socket: socket} do
       # Subscribe to the broadcast topic (as if we were the client channel)
       EtherWeb.Endpoint.subscribe("editor:lobby")
-  
+
       push(socket, "lsp:did_open", %{"path" => "lib/error.ex", "text" => "defmodule Err do"})
-      
+
       # Push invalid code (missing end)
       push(socket, "lsp:did_change", %{"path" => "lib/error.ex", "text" => "defmodule Err do"})
-      
+
       # Expect diagnostics broadcast for this path
       assert_receive %Phoenix.Socket.Broadcast{
-        event: "lsp:diagnostics", 
-        payload: %{path: "lib/error.ex", diagnostics: diags}
-      }, 2000
-      
+                       event: "lsp:diagnostics",
+                       payload: %{path: "lib/error.ex", diagnostics: diags}
+                     },
+                     2000
+
       # In this mock testenv, it might be empty because we mocked ElixirSense?
       # Wait, diagnose/1 uses Code.string_to_quoted, which is NATIVE.
       # So it SHOULD return an error because "defmodule Err do" is incomplete.
       # "missing terminator: end"
-      
+
       assert is_list(diags)
+
       if length(diags) > 0 do
         first = hd(diags)
         assert first.severity == :error

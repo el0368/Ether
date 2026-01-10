@@ -51,8 +51,6 @@ defmodule Ether.MixProject do
       {:phoenix_live_view, "~> 1.1.0"},
       {:lazy_html, ">= 0.1.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.3"},
-      {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
-      {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
       {:lucide_liveview, "~> 0.1"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
@@ -70,12 +68,13 @@ defmodule Ether.MixProject do
       {:zigler, "~> 0.15.0", runtime: false},
       # File Watching (Incremental Deltas)
       {:file_system, "~> 1.0"},
-      
+
       # Agent Framework & Intelligence
       {:jido, "~> 1.0.0"},
       {:sourceror, "~> 1.0"},
       {:httpoison, "~> 2.0"},
-      {:elixir_sense, github: "elixir-lsp/elixir_sense"}
+      {:elixir_sense, github: "elixir-lsp/elixir_sense"},
+      {:live_svelte, "~> 0.15.0"}
       # {:instructor, "~> 0.1.0"}
     ]
   end
@@ -114,11 +113,10 @@ defmodule Ether.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
-      "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
-      "assets.build": ["compile", "tailwind ether", "esbuild ether"],
+      "assets.setup": ["cmd /c bun install"],
+      "assets.build": ["cmd /c bun run build"],
       "assets.deploy": [
-        "tailwind ether --minify",
-        "esbuild ether --minify",
+        "cmd /c bun run build",
         "phx.digest"
       ],
       precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"],

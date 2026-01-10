@@ -6,7 +6,7 @@ defmodule Ether.Agents.QualityAgent do
   use Jido.Agent,
     name: "ether_quality_agent",
     description: "Verifies system stability, native performance, and schema integrity."
-  
+
   require Logger
 
   @doc """
@@ -44,6 +44,7 @@ defmodule Ether.Agents.QualityAgent do
 
   defp check_elixir_logic do
     Logger.debug("Quality Agent: Running ExUnit logic tests...")
+
     case System.cmd("mix", ["test"], stderr_to_stdout: true) do
       {_output, 0} -> :ok
       {output, _} -> {:error, :logic, output}

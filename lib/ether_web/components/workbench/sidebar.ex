@@ -15,27 +15,30 @@ defmodule EtherWeb.Components.Workbench.Sidebar do
 
   def sidebar(assigns) do
     ~H"""
-    <div 
+    <div
       id="sidebar-container"
       class={[
         "bg-[var(--vscode-sidebar-background)] border-r border-[#2b2b2b] flex flex-col relative overflow-hidden transition-all duration-150",
-        @sidebar_visible && "w-[var(--vscode-sidebar-width)] min-w-[var(--vscode-sidebar-width)] opacity-100",
+        @sidebar_visible &&
+          "w-[var(--vscode-sidebar-width)] min-w-[var(--vscode-sidebar-width)] opacity-100",
         !@sidebar_visible && "w-0 min-w-0 opacity-0 border-none"
-      ]}>
-      
+      ]}
+    >
       <% active_container = Ether.Workbench.LayoutState.active_container(@workbench_layout) %>
-      
-      <div 
-        id={"sidebar-panel-#{active_container.id}"} 
+      <div
+        id={"sidebar-panel-#{active_container.id}"}
         class="sidebar-panel absolute inset-0 flex flex-col bg-[var(--vscode-sidebar-background)]"
       >
         <div class="px-4 flex items-center justify-between h-[35px] min-h-[35px] text-[11px] font-bold uppercase tracking-wider text-[#bbbbbb] select-none">
           <span>{active_container.label}</span>
           <div class="flex items-center gap-2">
-            <.icon name="lucide-more-horizontal" class="w-4 h-4 cursor-pointer hover:bg-[#ffffff1a] rounded" />
+            <.icon
+              name="lucide-more-horizontal"
+              class="w-4 h-4 cursor-pointer hover:bg-[#ffffff1a] rounded"
+            />
           </div>
         </div>
-
+        
         <div class="flex-1 overflow-y-auto">
           <%= if active_container.module do %>
             <%= if active_container.id == "files" do %>
@@ -54,9 +57,9 @@ defmodule EtherWeb.Components.Workbench.Sidebar do
               />
             <% end %>
           <% else %>
-             <div class="flex-1 flex items-center justify-center text-[12px] text-[#858585] italic">
-               {active_container.label} functionality coming soon...
-             </div>
+            <div class="flex-1 flex items-center justify-center text-[12px] text-[#858585] italic">
+              {active_container.label} functionality coming soon...
+            </div>
           <% end %>
         </div>
       </div>

@@ -16,13 +16,15 @@ defmodule Ether.Workbench.Registry do
         id: "search",
         icon: "lucide-search",
         label: "Search",
-        module: nil # Placeholder
+        # Placeholder
+        module: nil
       },
       %ViewContainer{
         id: "git",
         icon: "lucide-git-branch",
         label: "Source Control",
-        module: nil # Placeholder
+        # Placeholder
+        module: nil
       },
       %ViewContainer{
         id: "debug",

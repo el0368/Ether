@@ -32,8 +32,7 @@ defmodule EtherWeb.Components.Workbench.Editor do
     <div class="h-full flex flex-col items-center justify-center gap-8 opacity-40 select-none">
       <img src="/images/logo.png" class="w-32 h-32" />
       <div class="flex flex-col items-center gap-2 text-[var(--vscode-editor-foreground)] text-sm italic font-light tracking-widest">
-        <span>ctrl + p to search files</span>
-        <span>ctrl + shift + f to search text</span>
+        <span>ctrl + p to search files</span> <span>ctrl + shift + f to search text</span>
         <span>ctrl + \ to split editor</span>
       </div>
     </div>

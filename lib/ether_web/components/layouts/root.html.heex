@@ -7,13 +7,16 @@
     <.live_title default="Ether" suffix=" · Phoenix Framework">
       {assigns[:page_title]}
     </.live_title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
+     <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    /> <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <link phx-track-static rel="stylesheet" href={~p"/fonts/codicon.css"} />
     <script defer phx-track-static type="module" src={~p"/assets/js/app.js"}>
     </script>
+    
     <script>
       (() => {
         const setTheme = (theme) => {
@@ -34,7 +37,6 @@
       })();
     </script>
   </head>
-  <body class="bg-[#1e1e1e] text-[#cccccc] overflow-hidden h-full">
-    {@inner_content}
-  </body>
+  
+  <body class="bg-[#1e1e1e] text-[#cccccc] overflow-hidden h-full">{@inner_content}</body>
 </html>

@@ -9,7 +9,7 @@ defmodule Aether.BenchmarkFCP do
     # 1. Setup: Ensure we have a directory to scan
     # We'll usage the current directory (project root) to be realistic
     path = "."
-    
+
     IO.puts("\n🚀 Aether FCP Benchmark")
     IO.puts("=======================")
     IO.puts("Target: < 5.0 ms")
@@ -22,29 +22,31 @@ defmodule Aether.BenchmarkFCP do
     IO.puts(" Done.")
 
     # Measure
-    measurements = for i <- 1..100 do
-      t0 = System.monotonic_time(:microsecond)
-      
-      :ok = Aether.Scanner.scan_raw(path)
-      
-      receive do
-        {:binary, _} -> 
-          t1 = System.monotonic_time(:microsecond)
-          # Flush rest
-          flush()
-          t1 - t0
-      after
-        1000 -> 
-          IO.puts("Timeout waiting for chunk!")
-          1_000_000 # Penalty
+    measurements =
+      for i <- 1..100 do
+        t0 = System.monotonic_time(:microsecond)
+
+        :ok = Aether.Scanner.scan_raw(path)
+
+        receive do
+          {:binary, _} ->
+            t1 = System.monotonic_time(:microsecond)
+            # Flush rest
+            flush()
+            t1 - t0
+        after
+          1000 ->
+            IO.puts("Timeout waiting for chunk!")
+            # Penalty
+            1_000_000
+        end
       end
-    end
 
     # Stats
     avg_us = Enum.sum(measurements) / length(measurements)
     min_us = Enum.min(measurements)
     max_us = Enum.max(measurements)
-    
+
     avg_ms = avg_us / 1000.0
     min_ms = min_us / 1000.0
     max_ms = max_us / 1000.0

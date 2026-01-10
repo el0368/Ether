@@ -1,6 +1,6 @@
 defmodule EtherWeb.EditorChannelTest do
   use EtherWeb.ChannelCase
-  
+
   setup do
     {:ok, _, socket} =
       EtherWeb.UserSocket
@@ -24,34 +24,38 @@ defmodule EtherWeb.EditorChannelTest do
 
     # 2. Push event
     ref = push(socket, "filetree:list_raw", %{"path" => tmp_dir})
-    
+
     # 3. Expect initial generic reply
     assert_reply ref, :ok, %{status: "streaming"}
 
     # 4. Expect Chunks (push from server)
     # We should receive at least one chunk
     assert_push "filetree:chunk", %{chunk: encoded_chunk}
-    
+
     # Verify we can decode it (basic sanity)
     decoded = Base.decode64!(encoded_chunk)
     assert byte_size(decoded) > 0
-    
+
     # Verify content format (Type + Len + Path)
     # <<type::8, len::16-little, path_bin::binary-size(len), rest::binary>>
-    
+
     # Helper to decode one entry
     decode_entry = fn binary ->
-       case binary do
-         <<type::8, len::16-little, name::binary-size(len), rest::binary>> ->
-           {{type, name}, rest}
-         _ -> :error
-       end
+      case binary do
+        <<type::8, len::16-little, name::binary-size(len), rest::binary>> ->
+          {{type, name}, rest}
+
+        _ ->
+          :error
+      end
     end
 
     # Decode first entry
     {{type, name}, rest} = decode_entry.(decoded)
-    assert type in [1, 2, 3] # File, Dir, Symlink
-    assert String.starts_with?(name, "f") # Should be one of our files
+    # File, Dir, Symlink
+    assert type in [1, 2, 3]
+    # Should be one of our files
+    assert String.starts_with?(name, "f")
 
     # 5. Expect Done
     assert_push "filetree:done", %{}

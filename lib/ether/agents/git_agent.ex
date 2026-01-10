@@ -16,7 +16,7 @@ defmodule Ether.Agents.GitAgent do
   def status(repo_path \\ ".") do
     run_git(repo_path, ["status", "--porcelain"])
   end
-  
+
   @doc """
   Adds files to the staging area.
   """
@@ -35,12 +35,13 @@ defmodule Ether.Agents.GitAgent do
 
   defp run_git(repo_path, args) do
     Logger.debug("GitAgent: Running git #{Enum.join(args, " ")} in #{repo_path}")
-    
+
     opts = [cd: repo_path, stderr_to_stdout: true]
-    
+
     case System.cmd("git", args, opts) do
-      {output, 0} -> 
+      {output, 0} ->
         {:ok, String.trim(output)}
+
       {output, code} ->
         Logger.error("GitAgent: Command failed (exit #{code}): #{output}")
         {:error, output}

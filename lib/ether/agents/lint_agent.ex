@@ -58,12 +58,13 @@ defmodule Ether.Agents.LintAgent do
 
   defp execute_credo(args) do
     Logger.info("Running Credo: mix credo #{Enum.join(args, " ")}")
-    
+
     full_args = ["credo", "--format", "json"] ++ args
-    
+
     case System.cmd("mix", full_args, stderr_to_stdout: true, cd: File.cwd!()) do
       {output, 0} ->
         {:ok, parse_credo_output(output, :clean)}
+
       {output, _exit_code} ->
         {:ok, parse_credo_output(output, :issues_found)}
     end
@@ -88,6 +89,7 @@ defmodule Ether.Agents.LintAgent do
           issue_count: length(issues),
           timestamp: DateTime.utc_now()
         }
+
       _ ->
         # Fallback for non-JSON output
         %{

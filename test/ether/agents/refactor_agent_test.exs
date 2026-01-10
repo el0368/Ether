@@ -11,11 +11,11 @@ defmodule Ether.Agents.RefactorAgentTest do
     """
 
     {:ok, new_code} = RefactorAgent.rename_variable(code, "name", "recipient")
-    
+
     assert new_code =~ "recipient = \"World\""
     assert new_code =~ "IO.puts(\"Hello \" <> recipient)"
   end
-  
+
   test "handles complex nesting" do
     code = """
     def complex do
@@ -26,12 +26,13 @@ defmodule Ether.Agents.RefactorAgentTest do
       x
     end
     """
-    
+
     {:ok, new_code} = RefactorAgent.rename_variable(code, "x", "count")
-    
+
     assert new_code =~ "count = 1"
     assert new_code =~ "count = count + 1"
     # Ensure the last line is just the variable name
-    assert String.ends_with?(String.trim(new_code), "count\nend") or String.ends_with?(String.trim(new_code), "count")
+    assert String.ends_with?(String.trim(new_code), "count\nend") or
+             String.ends_with?(String.trim(new_code), "count")
   end
 end

@@ -13,7 +13,7 @@ defmodule EtherWeb.Components.Workbench.ActivityBar do
 
   def activity_bar(assigns) do
     ~H"""
-    <div 
+    <div
       id="activity-bar"
       phx-hook="ActivityBarSort"
       data-active-sidebar={@active_sidebar}
@@ -21,14 +21,15 @@ defmodule EtherWeb.Components.Workbench.ActivityBar do
       class="w-[var(--vscode-activitybar-width)] min-w-[var(--vscode-activitybar-width)] bg-[var(--vscode-activitybar-background)] flex flex-col items-center py-2 gap-4 border-r border-[#2b2b2b]"
     >
       <%= for container <- @pinned_containers do %>
-        <.nav_item 
-          id={"activity-icon-#{container.id}"} 
-          panel={container.id} 
-          title={container.label} 
-          icon={container.icon} 
-          active={@active_sidebar == container.id} 
+        <.nav_item
+          id={"activity-icon-#{container.id}"}
+          panel={container.id}
+          title={container.label}
+          icon={container.icon}
+          active={@active_sidebar == container.id}
         />
       <% end %>
+      
       <div class="mt-auto p-2 cursor-pointer text-[#858585] hover:text-white" title="Settings">
         <.icon name="lucide-settings" class="w-6 h-6" />
       </div>

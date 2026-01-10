@@ -70,28 +70,33 @@ defmodule Ether.Agents.FormatAgent do
 
   defp execute_format(args) do
     Logger.info("Running format: mix format #{Enum.join(args, " ")}")
-    
+
     case System.cmd("mix", ["format"] ++ args, stderr_to_stdout: true, cd: File.cwd!()) do
       {_output, 0} ->
-        {:ok, %{
-          status: :formatted,
-          files_changed: count_formatted_files(args),
-          timestamp: DateTime.utc_now()
-        }}
+        {:ok,
+         %{
+           status: :formatted,
+           files_changed: count_formatted_files(args),
+           timestamp: DateTime.utc_now()
+         }}
+
       {output, 1} ->
         # Exit code 1 means files need formatting (when using --check-formatted)
-        {:error, %{
-          status: :needs_formatting,
-          output: output,
-          files: parse_unformatted_files(output),
-          timestamp: DateTime.utc_now()
-        }}
+        {:error,
+         %{
+           status: :needs_formatting,
+           output: output,
+           files: parse_unformatted_files(output),
+           timestamp: DateTime.utc_now()
+         }}
+
       {output, _} ->
-        {:error, %{
-          status: :error,
-          output: output,
-          timestamp: DateTime.utc_now()
-        }}
+        {:error,
+         %{
+           status: :error,
+           output: output,
+           timestamp: DateTime.utc_now()
+         }}
     end
   end
 

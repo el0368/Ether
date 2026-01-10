@@ -58,10 +58,11 @@ defmodule Ether.Agents.TestingAgent do
 
   defp execute_tests(args) do
     Logger.info("Running tests: mix #{Enum.join(args, " ")}")
-    
+
     case System.cmd("mix", args, stderr_to_stdout: true, cd: File.cwd!()) do
       {output, 0} ->
         {:ok, parse_test_output(output, :passed)}
+
       {output, _exit_code} ->
         {:error, parse_test_output(output, :failed)}
     end
@@ -80,11 +81,12 @@ defmodule Ether.Agents.TestingAgent do
   defp parse_test_output(output, status) do
     # Parse test output for structured results
     lines = String.split(output, "\n")
-    
+
     # Look for summary line like "5 tests, 0 failures"
-    summary = Enum.find(lines, fn line -> 
-      String.contains?(line, "test") && String.contains?(line, "failure")
-    end)
+    summary =
+      Enum.find(lines, fn line ->
+        String.contains?(line, "test") && String.contains?(line, "failure")
+      end)
 
     %{
       status: status,

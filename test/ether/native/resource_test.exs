@@ -24,7 +24,7 @@ defmodule Ether.Native.ResourceTest do
     test "destructor called on garbage collection" do
       # Create resource in a spawned process
       parent = self()
-      
+
       spawn(fn ->
         {:ok, ref} = Ether.Native.Scanner.create_context()
         send(parent, {:created, ref})

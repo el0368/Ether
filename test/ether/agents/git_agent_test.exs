@@ -1,5 +1,6 @@
 defmodule Ether.Agents.GitAgentTest do
-  use ExUnit.Case, async: false # Git operations are stateful
+  # Git operations are stateful
+  use ExUnit.Case, async: false
   alias Ether.Agents.GitAgent
 
   # use a temporary directory for git tests
@@ -7,7 +8,7 @@ defmodule Ether.Agents.GitAgentTest do
 
   test "initializes and checks status", %{tmp_dir: dir} do
     # Init git repo
-    File.cd!(dir, fn -> 
+    File.cd!(dir, fn ->
       System.cmd("git", ["init"])
       System.cmd("git", ["config", "user.email", "test@example.com"])
       System.cmd("git", ["config", "user.name", "Test User"])
@@ -25,8 +26,8 @@ defmodule Ether.Agents.GitAgentTest do
   end
 
   test "commits changes", %{tmp_dir: dir} do
-    File.cd!(dir, fn -> 
-      System.cmd("git", ["init"]) 
+    File.cd!(dir, fn ->
+      System.cmd("git", ["init"])
       System.cmd("git", ["config", "user.email", "test@example.com"])
       System.cmd("git", ["config", "user.name", "Test User"])
     end)
@@ -35,7 +36,7 @@ defmodule Ether.Agents.GitAgentTest do
 
     assert {:ok, _} = GitAgent.add(dir, ["readme.md"])
     assert {:ok, output} = GitAgent.commit(dir, "feat: Initial commit")
-    
+
     assert output =~ "Initial commit"
     assert output =~ "1 file changed"
   end

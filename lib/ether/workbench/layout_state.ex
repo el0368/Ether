@@ -11,12 +11,10 @@ defmodule Ether.Workbench.LayoutState do
           pinned_ids: [String.t()],
           sidebar_width: integer()
         }
-  defstruct [
-    active_id: "files",
-    visible: true,
-    pinned_ids: ["files", "search", "git", "debug", "extensions"],
-    sidebar_width: 260
-  ]
+  defstruct active_id: "files",
+            visible: true,
+            pinned_ids: ["files", "search", "git", "debug", "extensions"],
+            sidebar_width: 260
 
   def new do
     %__MODULE__{}
@@ -63,8 +61,8 @@ defmodule Ether.Workbench.LayoutState do
     from_index = Enum.find_index(ids, &(&1 == id))
 
     if from_index do
-      new_ids = 
-        ids 
+      new_ids =
+        ids
         |> List.delete_at(from_index)
         |> List.insert_at(to_index, id)
 

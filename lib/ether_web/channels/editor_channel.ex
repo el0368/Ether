@@ -17,7 +17,6 @@ defmodule EtherWeb.EditorChannel do
     {:ok, %{status: "connected"}, socket}
   end
 
-
   # Handle file delta broadcasts from Watcher
   @impl true
   def handle_info({:file_delta, %{path: path, type: type}}, socket) do
@@ -37,7 +36,10 @@ defmodule EtherWeb.EditorChannel do
 
   @impl true
   def handle_info({:scanner_done, _status}, socket) do
-    Logger.info("CH: Scan Completed in #{System.monotonic_time(:millisecond) - socket.assigns[:scan_start]}ms")
+    Logger.info(
+      "CH: Scan Completed in #{System.monotonic_time(:millisecond) - socket.assigns[:scan_start]}ms"
+    )
+
     push(socket, "filetree:done", %{})
     {:noreply, socket}
   end
@@ -49,6 +51,7 @@ defmodule EtherWeb.EditorChannel do
     case Ether.Agents.FileServerAgent.list_files(path) do
       {:ok, files} ->
         {:reply, {:ok, %{files: files}}, socket}
+
       {:error, reason} ->
         {:reply, {:error, %{reason: inspect(reason)}}, socket}
     end
@@ -61,30 +64,30 @@ defmodule EtherWeb.EditorChannel do
     abs_path = Path.expand(path)
     Logger.info("CH: Requested Raw Scan for: #{abs_path}")
     Logger.info("CH: Current working directory: #{File.cwd!()}")
-    
+
     # Debug: List files using Elixir directly to compare
     case File.ls(abs_path) do
       {:ok, files} -> Logger.info("CH: Elixir sees #{length(files)} files in #{abs_path}")
       {:error, reason} -> Logger.error("CH: Elixir can't read dir: #{inspect(reason)}")
     end
-    
+
     start_time = System.monotonic_time(:millisecond)
-    
+
     case Ether.Scanner.scan_raw(abs_path) do
       :ok ->
         {:reply, {:ok, %{status: "streaming"}}, assign(socket, :scan_start, start_time)}
+
       {:error, reason} ->
         {:reply, {:error, %{reason: inspect(reason)}}, socket}
     end
   end
-
-
 
   @impl true
   def handle_in("editor:read", %{"path" => path}, socket) do
     case Ether.Agents.FileServerAgent.read_file(path) do
       {:ok, content} ->
         {:reply, {:ok, %{content: content}}, socket}
+
       {:error, reason} ->
         {:reply, {:error, %{reason: inspect(reason)}}, socket}
     end
@@ -95,6 +98,7 @@ defmodule EtherWeb.EditorChannel do
     case Ether.Agents.FileServerAgent.get_recent_files() do
       {:ok, files} ->
         {:reply, {:ok, %{files: files}}, socket}
+
       {:error, reason} ->
         {:reply, {:error, %{reason: inspect(reason)}}, socket}
     end
@@ -105,6 +109,7 @@ defmodule EtherWeb.EditorChannel do
     case Ether.Agents.FileServerAgent.write_file(path, content) do
       :ok ->
         {:reply, {:ok, %{status: "saved"}}, socket}
+
       {:error, reason} ->
         {:reply, {:error, %{reason: inspect(reason)}}, socket}
     end
@@ -117,6 +122,7 @@ defmodule EtherWeb.EditorChannel do
     case Ether.Agents.TestingAgent.run_all() do
       {:ok, result} ->
         {:reply, {:ok, result}, socket}
+
       {:error, result} ->
         {:reply, {:error, result}, socket}
     end
@@ -127,6 +133,7 @@ defmodule EtherWeb.EditorChannel do
     case Ether.Agents.TestingAgent.run_file(path) do
       {:ok, result} ->
         {:reply, {:ok, result}, socket}
+
       {:error, result} ->
         {:reply, {:error, result}, socket}
     end
@@ -139,6 +146,7 @@ defmodule EtherWeb.EditorChannel do
     case Ether.Agents.LintAgent.check_all() do
       {:ok, result} ->
         {:reply, {:ok, result}, socket}
+
       {:error, result} ->
         {:reply, {:error, result}, socket}
     end
@@ -149,6 +157,7 @@ defmodule EtherWeb.EditorChannel do
     case Ether.Agents.LintAgent.check_file(path) do
       {:ok, result} ->
         {:reply, {:ok, result}, socket}
+
       {:error, result} ->
         {:reply, {:error, result}, socket}
     end
@@ -161,6 +170,7 @@ defmodule EtherWeb.EditorChannel do
     case Ether.Agents.FormatAgent.format_all() do
       {:ok, result} ->
         {:reply, {:ok, result}, socket}
+
       {:error, result} ->
         {:reply, {:error, result}, socket}
     end
@@ -171,6 +181,7 @@ defmodule EtherWeb.EditorChannel do
     case Ether.Agents.FormatAgent.format_file(path) do
       {:ok, result} ->
         {:reply, {:ok, result}, socket}
+
       {:error, result} ->
         {:reply, {:error, result}, socket}
     end
@@ -181,14 +192,20 @@ defmodule EtherWeb.EditorChannel do
     case Ether.Agents.FormatAgent.check() do
       {:ok, result} ->
         {:reply, {:ok, result}, socket}
+
       {:error, result} ->
         {:reply, {:error, result}, socket}
     end
   end
+
   # Advanced Agents (Phase 4/5)
 
   @impl true
-  def handle_in("refactor:rename", %{"code" => code, "old_name" => old, "new_name" => new}, socket) do
+  def handle_in(
+        "refactor:rename",
+        %{"code" => code, "old_name" => old, "new_name" => new},
+        socket
+      ) do
     case Ether.Agents.RefactorAgent.rename_variable(code, old, new) do
       {:ok, result} -> {:reply, {:ok, %{code: result}}, socket}
       {:error, reason} -> {:reply, {:error, %{reason: inspect(reason)}}, socket}
@@ -226,6 +243,7 @@ defmodule EtherWeb.EditorChannel do
       {:error, reason} -> {:reply, {:error, %{reason: inspect(reason)}}, socket}
     end
   end
+
   # Phase 6: LSP
 
   @impl true
@@ -272,15 +290,24 @@ defmodule EtherWeb.EditorChannel do
   end
 
   @impl true
-  def handle_in("benchmark:report", %{"latency" => latency, "metric" => metric} = _payload, socket) do
+  def handle_in(
+        "benchmark:report",
+        %{"latency" => latency, "metric" => metric} = _payload,
+        socket
+      ) do
     Logger.info("PERF: Client reported #{metric} latency: #{latency}ms")
-    
+
     # Map frontend metrics to unified 'frontend' sample
-    metrics = 
+    metrics =
       case metric do
-        "monaco_mount" -> %{metric_type: "frontend", monaco_mount_ms: latency, svelte_reactivity_ms: 0.0}
-        "svelte_reactivity" -> %{metric_type: "frontend", svelte_reactivity_ms: latency, monaco_mount_ms: 0.0}
-        _ -> %{metric_type: "frontend", "#{metric}_ms": latency}
+        "monaco_mount" ->
+          %{metric_type: "frontend", monaco_mount_ms: latency, svelte_reactivity_ms: 0.0}
+
+        "svelte_reactivity" ->
+          %{metric_type: "frontend", svelte_reactivity_ms: latency, monaco_mount_ms: 0.0}
+
+        _ ->
+          %{metric_type: "frontend", "#{metric}_ms": latency}
       end
 
     if Code.ensure_loaded?(Ether.Benchmark) do
@@ -294,4 +321,3 @@ defmodule EtherWeb.EditorChannel do
   # NOTE: Window controls are now handled by Tauri (Rust).
   # Legacy Desktop.Window handlers removed.
 end
-

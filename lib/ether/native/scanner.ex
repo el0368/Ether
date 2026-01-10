@@ -2,7 +2,7 @@ defmodule Ether.Native.Scanner do
   @moduledoc """
   NIF Loader for the Native Scanner.
   Loads the manually compiled `scanner_nif.dll` from `priv/native`.
-  
+
   Supports:
   - File scanning via `scan/1` and `scan_raw/1`
   - Resource contexts via `create_context/0` and `close_context/1` (ADR-017)
@@ -11,11 +11,14 @@ defmodule Ether.Native.Scanner do
   @on_load :load_nif
 
   def load_nif do
-    path = Application.app_dir(:ether, "priv/native/scanner_nif")
-    |> String.to_charlist()
+    path =
+      Application.app_dir(:ether, "priv/native/scanner_nif")
+      |> String.to_charlist()
 
     case :erlang.load_nif(path, 0) do
-      :ok -> :ok
+      :ok ->
+        :ok
+
       {:error, reason} ->
         Logger.error("Failed to load Native Scanner NIF: #{path}")
         Logger.error("Reason: #{inspect(reason)}")
@@ -26,55 +29,68 @@ defmodule Ether.Native.Scanner do
   # =============================================================================
   # File Scanning (Level 5 Stability)
   # =============================================================================
-  
+
   @doc """
   Initiates a file scan.
   Isolates the NIF call in a supervised Task to prevent blocking the caller.
   """
   def scan(path, ignores \\ [], depth_limit \\ 64) do
     caller = self()
+
     Task.start(fn ->
       {:ok, resource} = create_context_nif(ignores)
+
       case do_scan_loop(resource, path, caller, depth_limit) do
-        {:ok, count} -> 
+        {:ok, count} ->
           close_context_nif(resource)
           {:ok, count}
+
         :ok ->
           close_context_nif(resource)
           :ok
-        {:error, reason} -> 
+
+        {:error, reason} ->
           Logger.error("Scanner NIF failed: #{inspect(reason)}")
           send(caller, {:scanner_error, reason})
           close_context_nif(resource)
-        unknown -> 
+
+        unknown ->
           Logger.error("Scanner NIF returned unknown result: #{inspect(unknown)}")
           send(caller, {:scanner_error, :unknown_native_failure})
           close_context_nif(resource)
       end
     end)
+
     :ok
   end
 
   defp do_scan_loop(resource, path, pid, depth_limit) do
     case scan_yield_nif(resource, path, pid, depth_limit) do
-      count when is_integer(count) -> {:ok, count}
-      :ok -> :ok
+      count when is_integer(count) ->
+        {:ok, count}
+
+      :ok ->
+        :ok
+
       {:cont, ^resource} ->
         # ADR-005 Flow Control Protocol
         # Pause backend until frontend acknowledges receipt and paint.
         send(pid, {:scanner_sync, self()})
-        
+
         receive do
-          :scanner_continue -> 
+          :scanner_continue ->
             do_scan_loop(resource, path, pid, depth_limit)
         after
-          5000 -> 
-             Logger.warning("Scanner paused for 5s without ack. Terminating.")
-             {:error, :consumer_timeout}
+          5000 ->
+            Logger.warning("Scanner paused for 5s without ack. Terminating.")
+            {:error, :consumer_timeout}
         end
-        
-      {:error, _} = err -> err
-      unknown -> {:error, {:unknown_native_failure, unknown}}
+
+      {:error, _} = err ->
+        err
+
+      unknown ->
+        {:error, {:unknown_native_failure, unknown}}
     end
   end
 

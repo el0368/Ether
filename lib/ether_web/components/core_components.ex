@@ -61,9 +61,10 @@ defmodule EtherWeb.CoreComponents do
         <.icon :if={@kind == :error} name="lucide-alert-circle" class="size-5 shrink-0" />
         <div>
           <p :if={@title} class="font-semibold">{@title}</p>
+          
           <p>{msg}</p>
         </div>
-        <div class="flex-1" />
+         <div class="flex-1" />
         <button type="button" class="group self-start cursor-pointer" aria-label={gettext("close")}>
           <.icon name="lucide-x" class="size-5 opacity-40 group-hover:opacity-70" />
         </button>
@@ -87,24 +88,26 @@ defmodule EtherWeb.CoreComponents do
   slot :inner_block, required: true
 
   def button(%{rest: rest} = assigns) do
-    variants = %{"primary" => "bg-blue-600 hover:bg-blue-700 text-white", nil => "bg-blue-600 hover:bg-blue-700 text-white"}
+    variants = %{
+      "primary" => "bg-blue-600 hover:bg-blue-700 text-white",
+      nil => "bg-blue-600 hover:bg-blue-700 text-white"
+    }
 
     assigns =
       assign_new(assigns, :class, fn ->
-        ["px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500", Map.fetch!(variants, assigns[:variant])]
+        [
+          "px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
+          Map.fetch!(variants, assigns[:variant])
+        ]
       end)
 
     if rest[:href] || rest[:navigate] || rest[:patch] do
       ~H"""
-      <.link class={@class} {@rest}>
-        {render_slot(@inner_block)}
-      </.link>
+      <.link class={@class} {@rest}>{render_slot(@inner_block)}</.link>
       """
     else
       ~H"""
-      <button class={@class} {@rest}>
-        {render_slot(@inner_block)}
-      </button>
+      <button class={@class} {@rest}>{render_slot(@inner_block)}</button>
       """
     end
   end
@@ -215,8 +218,7 @@ defmodule EtherWeb.CoreComponents do
           checked={@checked}
           class={@class || "rounded border-gray-300 text-blue-600 focus:ring-blue-500"}
           {@rest}
-        />
-        <span>{@label}</span>
+        /> <span>{@label}</span>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
@@ -231,12 +233,17 @@ defmodule EtherWeb.CoreComponents do
         <select
           id={@id}
           name={@name}
-          class={[@class || "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", @errors != [] && (@error_class || "border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500")]}
+          class={[
+            @class ||
+              "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm",
+            @errors != [] &&
+              (@error_class || "border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500")
+          ]}
           multiple={@multiple}
           {@rest}
         >
           <option :if={@prompt} value="">{@prompt}</option>
-          {Phoenix.HTML.Form.options_for_select(@options, @value)}
+           {Phoenix.HTML.Form.options_for_select(@options, @value)}
         </select>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
@@ -248,13 +255,14 @@ defmodule EtherWeb.CoreComponents do
     ~H"""
     <div class="mb-4">
       <label class="block">
-        <span :if={@label} class="block text-sm font-medium text-gray-700 mb-1">{@label}</span>
-        <textarea
+        <span :if={@label} class="block text-sm font-medium text-gray-700 mb-1">{@label}</span> <textarea
           id={@id}
           name={@name}
           class={[
-            @class || "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm",
-            @errors != [] && (@error_class || "border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500")
+            @class ||
+              "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm",
+            @errors != [] &&
+              (@error_class || "border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500")
           ]}
           {@rest}
         >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
@@ -276,8 +284,10 @@ defmodule EtherWeb.CoreComponents do
           id={@id}
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
           class={[
-            @class || "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm",
-            @errors != [] && (@error_class || "border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500")
+            @class ||
+              "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm",
+            @errors != [] &&
+              (@error_class || "border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500")
           ]}
           {@rest}
         />
@@ -291,8 +301,7 @@ defmodule EtherWeb.CoreComponents do
   defp error(assigns) do
     ~H"""
     <p class="mt-1.5 flex gap-2 items-center text-sm text-red-600">
-      <.icon name="lucide-alert-circle" class="size-5" />
-      {render_slot(@inner_block)}
+      <.icon name="lucide-alert-circle" class="size-5" /> {render_slot(@inner_block)}
     </p>
     """
   end
@@ -308,13 +317,11 @@ defmodule EtherWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", "pb-4"]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8">
-          {render_slot(@inner_block)}
-        </h1>
-        <p :if={@subtitle != []} class="text-sm text-gray-500">
-          {render_slot(@subtitle)}
-        </p>
+        <h1 class="text-lg font-semibold leading-8">{render_slot(@inner_block)}</h1>
+        
+        <p :if={@subtitle != []} class="text-sm text-gray-500">{render_slot(@subtitle)}</p>
       </div>
+      
       <div class="flex-none">{render_slot(@actions)}</div>
     </header>
     """
@@ -352,16 +359,16 @@ defmodule EtherWeb.CoreComponents do
       end
 
     ~H"""
-    ~H"""
+    ~H\"""
     <table class="min-w-full divide-y divide-gray-300">
       <thead>
         <tr>
           <th :for={col <- @col}>{col[:label]}</th>
-          <th :if={@action != []}>
-            <span class="sr-only">{gettext("Actions")}</span>
-          </th>
+          
+          <th :if={@action != []}><span class="sr-only">{gettext("Actions")}</span></th>
         </tr>
       </thead>
+      
       <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
         <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
           <td
@@ -371,6 +378,7 @@ defmodule EtherWeb.CoreComponents do
           >
             {render_slot(col, @row_item.(row))}
           </td>
+          
           <td :if={@action != []} class="w-0 font-semibold">
             <div class="flex gap-4">
               <%= for action <- @action do %>
@@ -404,6 +412,7 @@ defmodule EtherWeb.CoreComponents do
       <li :for={item <- @item} class="list-row">
         <div class="list-col-grow">
           <div class="font-bold">{item.title}</div>
+          
           <div>{render_slot(item)}</div>
         </div>
       </li>

@@ -3,7 +3,7 @@ defmodule Ether.Desktop do
   Desktop application wrapper for Ether IDE.
   Wraps `Desktop.Window` to provide a native window with WebView.
   """
-  
+
   def start_link(_opts \\ []) do
     # Start the Desktop.Window process
     # For now we are just starting the window

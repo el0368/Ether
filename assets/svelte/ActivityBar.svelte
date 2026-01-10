@@ -1,22 +1,21 @@
 <script>
   import { Files, Search, GitBranch, Settings, FlaskConical, Command } from 'lucide-svelte';
   
-  let { active_sidebar, sidebar_visible, pinned_containers = [], onToggleHeader, live } = $props();
-
-  function setSidebar(id) {
-    live.pushEvent("set_sidebar", { panel: id });
-  }
-
-  function toggleSidebar() {
-    live.pushEvent("toggle_sidebar", {});
-  }
+  let { 
+    active_sidebar, 
+    sidebar_visible, 
+    pinned_containers = [], 
+    onToggleHeader,
+    onSetSidebar, 
+    live 
+  } = $props();
 </script>
 
 <div class="w-[50px] min-w-[50px] bg-[#333333] flex flex-col items-center py-2 select-none border-r border-[#2b2b2b] z-20">
   <div class="flex flex-col gap-2 w-full items-center">
     {#each pinned_containers as container}
       <button
-        onclick={() => active_sidebar === container.id ? onToggleHeader() : setSidebar(container.id)}
+        onclick={() => active_sidebar === container.id ? onToggleHeader() : onSetSidebar(container.id)}
         class="p-3 cursor-pointer transition-colors duration-150 relative group {active_sidebar === container.id && sidebar_visible ? 'text-white' : 'text-[#858585] hover:text-[#cccccc]'}"
         title={container.label}
       >

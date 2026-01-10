@@ -16,16 +16,28 @@
     live 
   } = $props();
 
+
   let sidebar_visible = $state(initial_sidebar_visible);
+  let current_sidebar = $state(active_sidebar);
 
   function handleToggleSidebar() {
     sidebar_visible = !sidebar_visible;
     live.pushEvent("toggle_sidebar", { visible: sidebar_visible });
   }
 
+  function handleSetSidebar(id) {
+    if (current_sidebar === id) {
+      handleToggleSidebar();
+    } else {
+      current_sidebar = id;
+      if (!sidebar_visible) sidebar_visible = true;
+      live.pushEvent("set_sidebar", { panel: id });
+    }
+  }
+
   // Derived state for the active panel
   let active_container = $derived(
-    workbench_layout?.containers?.find(c => c.id === active_sidebar) || 
+    workbench_layout?.containers?.find(c => c.id === current_sidebar) || 
     { id: 'files', label: 'Explorer' }
   );
 
@@ -33,14 +45,23 @@
   $effect(() => {
     sidebar_visible = initial_sidebar_visible;
   });
+
+  $effect(() => {
+    // Only update if the prop is different and we haven't just changed it locally
+    // (This is a simplified check, ideally we'd track last update source)
+    if (active_sidebar !== current_sidebar) {
+      current_sidebar = active_sidebar;
+    }
+  });
 </script>
 
 <div class="h-screen w-screen flex flex-col bg-[#1e1e1e] text-[#cccccc] overflow-hidden font-sans">
   <div class="flex-1 flex min-h-0 overflow-hidden">
     <ActivityBar 
-      {active_sidebar} 
+      active_sidebar={current_sidebar} 
       {sidebar_visible}
       onToggleHeader={handleToggleSidebar} 
+      onSetSidebar={handleSetSidebar}
       pinned_containers={workbench_layout?.containers?.filter(c => workbench_layout.pinned_ids.includes(c.id)) || []}
       {live}
     />

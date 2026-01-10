@@ -24,7 +24,7 @@ call "bat\kill_zombies.bat"
 :: 🚀 LAUNCH
 echo [3/3] Launching Ether...
 echo.
-echo       Starting Backend (Port 4000)...
+echo       Starting Backend (Port 4001)...
 
 :: Start Backend in separate window with explicit path quoting
 start "Ether Backend" cmd /k "cd /d "%PROJECT_ROOT%" && mix phx.server"
@@ -33,7 +33,7 @@ start "Ether Backend" cmd /k "cd /d "%PROJECT_ROOT%" && mix phx.server"
 echo       Waiting for Backend...
 :loop
 timeout /t 1 /nobreak >nul
-curl -s http://localhost:4000 >nul 2>nul
+curl -s http://localhost:4001 >nul 2>nul
 if %ERRORLEVEL% neq 0 (
     goto loop
 )

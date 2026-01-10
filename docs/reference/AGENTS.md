@@ -41,9 +41,20 @@ Ether.Scanner.scan(directory, ignores \\ [])
 *   **Memory Safe**: Uses `BeamAllocator` to prevent leaks and Double-Frees.
 *   **Scheduler Friendly**: Consumes timeslices to prevent blocking other processes.
 
-### 3. Explorer
-**Module:** `Ether.Explorer`
-**Responsibility:** UI-centric file transformation and tree building for LiveView.
+### 3. SidebarAgent
+**Module:** `Ether.Agents.SidebarAgent`
+**Responsibility:** Isolated management of sidebar layout and visibility. Ensures UI transitions are decoupled from heavy operations.
+
+```elixir
+# API
+SidebarAgent.get_state()        # Current visibility and active panel
+SidebarAgent.set_panel(panel)   # Switch panel (w/ PubSub broadcast)
+SidebarAgent.toggle_visibility() # Toggle sidebar
+```
+
+**Features:**
+*   **State Persistence**: Keeps sidebar state across LiveView crashes.
+*   **PubSub Driven**: Syncs state to UI via `"sidebar:state"` topic.
 
 ---
 

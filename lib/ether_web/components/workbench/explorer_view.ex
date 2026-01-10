@@ -13,15 +13,12 @@ defmodule EtherWeb.Workbench.ExplorerView do
 
     ~H"""
     <div class="h-full flex flex-col overflow-hidden">
-      <style>
-        [data-path="<%= @active_path %>"] { background-color: #37373d !important; }
-      </style>
       <div id="file-tree" phx-update="stream" class="w-full">
         <div
           :for={{id, file} <- @files}
           id={id}
           data-path={file.path}
-          class="file-item group flex items-center pr-2 cursor-pointer hover:bg-[#2a2d2e] select-none text-[13px] leading-[22px]"
+          class={"file-item group flex items-center pr-2 cursor-pointer hover:bg-[#2a2d2e] select-none text-[13px] leading-[22px] #{if file.path == @active_path, do: "bg-[#37373d]", else: ""}"}
           style={"padding-left: #{file.depth * 12 + 8}px"}
           phx-click="select_file"
           phx-value-path={file.path}

@@ -11,11 +11,13 @@ defmodule EtherWeb.WorkbenchLive do
       Phoenix.PubSub.subscribe(Ether.PubSub, "filetree:deltas")
     end
 
+    sidebar_state = %{active_sidebar: "files", sidebar_visible: true}
+
     {:ok,
      socket
      |> assign(:page_title, "Ether")
-     |> assign(:active_sidebar, "files")
-     |> assign(:sidebar_visible, true)
+     |> assign(:active_sidebar, sidebar_state.active_sidebar)
+     |> assign(:sidebar_visible, sidebar_state.sidebar_visible)
      |> assign(:panel_visible, false)
      |> assign(:active_file, nil)
      |> assign(:recent_files, [])
@@ -34,17 +36,17 @@ defmodule EtherWeb.WorkbenchLive do
   end
 
   def handle_event("set_sidebar", %{"panel" => panel}, socket) do
-    # If clicking the same panel that is already active
-    if socket.assigns.active_sidebar == panel do
-      # Toggle visibility
-      {:noreply, assign(socket, :sidebar_visible, !socket.assigns.sidebar_visible)}
-    else
-      # Switch to new panel and ensure visible
-      {:noreply, 
-       socket
-       |> assign(:active_sidebar, panel)
-       |> assign(:sidebar_visible, true)}
-    end
+    socket = 
+      if socket.assigns.active_sidebar == panel do
+        # Toggle visibility if clicking same panel
+        assign(socket, :sidebar_visible, !socket.assigns.sidebar_visible)
+      else
+        # Switch to new panel and ensure visible
+        socket 
+        |> assign(:active_sidebar, panel)
+        |> assign(:sidebar_visible, true)
+      end
+    {:noreply, socket}
   end
 
   def handle_event("toggle_panel", _params, socket) do
@@ -115,57 +117,43 @@ defmodule EtherWeb.WorkbenchLive do
     end
   end
 
-  # Scanner Callbacks - Buffered for UI Performance
+  # Scanner Callbacks - Automatic Flow Control (ADR-005)
   def handle_info({:scanner_chunk, binary}, socket) do
     root = socket.assigns.root_path
     
-    # Decode with optimized Utils
+    # Decode directly
     items = 
       Utils.decode_slab(binary, root)
       |> Enum.map(&Utils.to_ui_item(&1, root))
 
-    # Buffer items instead of immediate UI update
-    buffer = socket.assigns.scan_buffer ++ items
-    
-    # Schedule a flush if not already pending
+    # Zero Buffer: Stream immediately to DOM
     socket = 
-      if socket.assigns.flush_pending do
-        assign(socket, :scan_buffer, buffer)
-      else
-        Process.send_after(self(), :flush_scan_buffer, @flush_interval_ms)
-        socket
-        |> assign(:scan_buffer, buffer)
-        |> assign(:flush_pending, true)
-      end
+      socket
+      |> update(:file_count, &(&1 + length(items)))
+      |> stream(:files, items)
 
     {:noreply, socket}
   end
 
-  # Flush buffered items to the UI stream (Chunked for UI Stability)
-  def handle_info(:flush_scan_buffer, socket) do
-    all_items = socket.assigns.scan_buffer
-    {to_stream, remaining} = Enum.split(all_items, 200)
-    
+  def handle_info({:scanner_sync, pid}, socket) do
+    # Pause backend, ask Frontend for Paint Acknowledgment
     socket = 
-      socket
-      |> update(:file_count, &(&1 + length(to_stream)))
-      |> stream(:files, to_stream)
-      |> assign(:scan_buffer, remaining)
+      socket 
+      |> assign(:scanner_pid, pid)
+      |> push_event("flow_sync", %{})
+      
+    {:noreply, socket}
+  end
 
-    socket = 
-      if remaining != [] do
-        Process.send_after(self(), :flush_scan_buffer, @flush_interval_ms)
-        assign(socket, :flush_pending, true)
-      else
-        assign(socket, :flush_pending, false)
-      end
-
+  def handle_event("flow_ack", _params, socket) do
+    # Frontend Painted. Resume Backend.
+    if pid = socket.assigns[:scanner_pid] do
+      send(pid, :scanner_continue)
+    end
     {:noreply, socket}
   end
 
   def handle_info({:scanner_done, _status}, socket) do
-    # Final flush of any remaining items
-    socket = flush_remaining_buffer(socket)
     {:noreply, assign(socket, :isLoading, false)}
   end
 
@@ -179,6 +167,8 @@ defmodule EtherWeb.WorkbenchLive do
     item = Utils.to_ui_item({path, type}, root)
     {:noreply, stream(socket, :files, [item])}
   end
+
+
 
   def handle_info({:execute_command, id}, socket) do
     handle_command_execution(id, socket)
@@ -208,16 +198,5 @@ defmodule EtherWeb.WorkbenchLive do
     end
   end
 
-  defp flush_remaining_buffer(socket) do
-    buffer = socket.assigns.scan_buffer
-    if buffer == [] do
-      socket
-    else
-      socket
-      |> update(:file_count, &(&1 + length(buffer)))
-      |> stream(:files, buffer)
-      |> assign(:scan_buffer, [])
-      |> assign(:flush_pending, false)
-    end
-  end
+
 end

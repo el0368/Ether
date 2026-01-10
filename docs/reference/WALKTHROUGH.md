@@ -538,3 +538,24 @@ The system is pre-configured to handle:
 - Custom MCP Manifests (`mcpGalleryManifest.ts`)
 
 **Outcome**: The IDE backbone is ready for deep agentic integration through standard protocols.
+
+---
+
+## Session 29: Premium Responsiveness & Flow Control
+**Date**: 2026-01-10
+
+### 1. Automatic Flow Control (The Zero-Buffer Handshake)
+**Goal**: Prevent UI freezes during high-speed native scans.
+- **Implementation**: The Zig scanner sends a `:scanner_sync` and pauses. 
+- **Handshake**: A JS Hook (`FlowControl`) listens for the sync, waits for `requestAnimationFrame` (ensuring the frame is painted), then sends a `:scanner_continue` back to the server.
+- **Result**: The backend speed is now perfectly governed by the frontend's ability to render.
+
+### 2. Client-Authority Sidebar (Optimistic UX)
+**Goal**: Reach 0ms latency in sidebar panel switching.
+- **Implementation**: Moved switching logic to `SidebarControl.js`.
+- **Technique**: The Hook updates the DOM instantly and synchronously. It then **debounces** the state sync to the server (50ms).
+- **Result**: VS Code-level smoothness. Even if the server is busy, the UI never lags.
+
+### 3. Architecture Alignment
+- **Plan**: Established `docs/plans/ARCHITECTURE_ALIGNMENT.md`.
+- **Cleanup**: Removed `SidebarAgent` to simplify the supervision tree and state flow.

@@ -55,11 +55,11 @@ Use conventional commits:
 - `refactor:` - Code restructuring
 - `test:` - Test changes
 
-### 7. System Pressure Protocol (ADR-005)
-To prevent "White Screen" and "Startup Congestion":
-- **Lazy Ignition**: Frontend MUST wait **800ms** after socket connection before requesting heavy data.
-- **Throttling**: Scanner/Benchmarks MUST NOT auto-start on channel join.
-- **Safety Valve**: UI MUST batch high-frequency events (e.g., 20fps limit) to preventing Event Loop starvation.
+### 7. Flow Control Protocol (ADR-005)
+To ensure "End-to-End" responsiveness without manual tuning:
+-   **Sync-Ack Loop**: The Backend (Scanner) MUST wait for a synchronization signal (`{:scanner_continue}`) from the Frontend before sending the next chunk.
+-   **Frame-Awareness**: The Frontend MUST only send the sync signal after the Browser has acknowledged the paint (via `requestAnimationFrame`).
+-   **Zero Buffer**: The LiveView process should stream data immediately and rely on the Backend to pause, rather than buffering in memory.
 
 ## File Structure
 ```

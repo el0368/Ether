@@ -11,9 +11,9 @@ defmodule EtherWeb.Components.Workbench.Sidebar do
 
   def sidebar(assigns) do
     ~H"""
-    <div class="w-[var(--vscode-sidebar-width)] min-w-[var(--vscode-sidebar-width)] bg-[var(--vscode-sidebar-background)] border-r border-[#2b2b2b] flex flex-col">
-      <%!-- Files Panel (Always Rendered, Hidden via CSS) --%>
-      <div class={"flex-1 flex flex-col min-h-0 overflow-hidden #{if @active_sidebar != "files", do: "hidden"}"}>
+    <div class="w-[var(--vscode-sidebar-width)] min-w-[var(--vscode-sidebar-width)] bg-[var(--vscode-sidebar-background)] border-r border-[#2b2b2b] flex flex-col relative overflow-hidden">
+      <%!-- Files Panel --%>
+      <div id="sidebar-panel-files" class="sidebar-panel absolute inset-0 flex flex-col bg-[var(--vscode-sidebar-background)] transition-transform duration-0 -translate-x-full invisible">
         <div class="title px-5 flex items-center h-[35px] min-h-[35px] text-[11px] font-normal uppercase tracking-wide text-[#cccccc] select-none">
           Explorer
         </div>
@@ -30,7 +30,7 @@ defmodule EtherWeb.Components.Workbench.Sidebar do
       </div>
 
       <%!-- Search Panel --%>
-      <div class={"flex-1 flex flex-col min-h-0 #{if @active_sidebar != "search", do: "hidden"}"}>
+      <div id="sidebar-panel-search" class="sidebar-panel absolute inset-0 flex flex-col bg-[var(--vscode-sidebar-background)] transition-transform duration-0 -translate-x-full invisible">
         <div class="title px-5 flex items-center h-[35px] min-h-[35px] text-[11px] font-normal uppercase tracking-wide text-[#cccccc] select-none">
           Search
         </div>
@@ -40,7 +40,7 @@ defmodule EtherWeb.Components.Workbench.Sidebar do
       </div>
 
       <%!-- Git Panel --%>
-      <div class={"flex-1 flex flex-col min-h-0 #{if @active_sidebar != "git", do: "hidden"}"}>
+      <div id="sidebar-panel-git" class="sidebar-panel absolute inset-0 flex flex-col bg-[var(--vscode-sidebar-background)] transition-transform duration-0 -translate-x-full invisible">
         <div class="title px-5 flex items-center h-[35px] min-h-[35px] text-[11px] font-normal uppercase tracking-wide text-[#cccccc] select-none">
           Source Control
         </div>
@@ -50,7 +50,7 @@ defmodule EtherWeb.Components.Workbench.Sidebar do
       </div>
       
       <%!-- Debug Panel --%>
-      <div class={"flex-1 flex flex-col min-h-0 #{if @active_sidebar != "debug", do: "hidden"}"}>
+      <div id="sidebar-panel-debug" class="sidebar-panel absolute inset-0 flex flex-col bg-[var(--vscode-sidebar-background)] transition-transform duration-0 -translate-x-full invisible">
         <div class="title px-5 flex items-center h-[35px] min-h-[35px] text-[11px] font-normal uppercase tracking-wide text-[#cccccc] select-none">
           Run and Debug
         </div>
@@ -60,7 +60,7 @@ defmodule EtherWeb.Components.Workbench.Sidebar do
       </div>
       
       <%!-- Extensions Panel --%>
-      <div class={"flex-1 flex flex-col min-h-0 #{if @active_sidebar != "extensions", do: "hidden"}"}>
+      <div id="sidebar-panel-extensions" class="sidebar-panel absolute inset-0 flex flex-col bg-[var(--vscode-sidebar-background)] transition-transform duration-0 -translate-x-full invisible">
         <div class="title px-5 flex items-center h-[35px] min-h-[35px] text-[11px] font-normal uppercase tracking-wide text-[#cccccc] select-none">
           Extensions
         </div>

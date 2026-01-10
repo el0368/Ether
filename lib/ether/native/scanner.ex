@@ -60,11 +60,19 @@ defmodule Ether.Native.Scanner do
       count when is_integer(count) -> {:ok, count}
       :ok -> :ok
       {:cont, ^resource} ->
-        # Yielding happened! Elixir loop resumes execution
-        # The scheduler will naturally preempt this process if needed.
-        # ADR-042: Explicit Throttling to prevent Main Thread Congestion
-        Process.sleep(5)
-        do_scan_loop(resource, path, pid, depth_limit)
+        # ADR-005 Flow Control Protocol
+        # Pause backend until frontend acknowledges receipt and paint.
+        send(pid, {:scanner_sync, self()})
+        
+        receive do
+          :scanner_continue -> 
+            do_scan_loop(resource, path, pid, depth_limit)
+        after
+          5000 -> 
+             Logger.warning("Scanner paused for 5s without ack. Terminating.")
+             {:error, :consumer_timeout}
+        end
+        
       {:error, _} = err -> err
       unknown -> {:error, {:unknown_native_failure, unknown}}
     end

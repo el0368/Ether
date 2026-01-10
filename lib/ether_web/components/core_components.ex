@@ -8,6 +8,13 @@ defmodule EtherWeb.CoreComponents do
   with doc strings and declarative assigns. You may customize and style
   them in any way you want, based on your application growth and needs.
 
+  The foundation for styling is Tailwind CSS, a utility-first CSS framework,
+  augmented with daisyUI, a Tailwind CSS plugin that provides UI components
+  and themes. Here are useful references:
+
+    * [daisyUI](https://daisyui.com/docs/intro/) - a good place to get
+      started and see the available components.
+
     * [Tailwind CSS](https://tailwindcss.com) - the foundational framework
       we build on. You will use it for layout, sizing, flexbox, grid, and
       spacing.
@@ -53,20 +60,19 @@ defmodule EtherWeb.CoreComponents do
       {@rest}
     >
       <div class={[
-        "w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap p-4 rounded-lg shadow-lg border",
-        @kind == :info && "bg-blue-100 border-blue-200 text-blue-800",
-        @kind == :error && "bg-red-100 border-red-200 text-red-800"
+        "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap",
+        @kind == :info && "alert-info",
+        @kind == :error && "alert-error"
       ]}>
-        <.icon :if={@kind == :info} name="lucide-info" class="size-5 shrink-0" />
-        <.icon :if={@kind == :error} name="lucide-alert-circle" class="size-5 shrink-0" />
+        <.icon :if={@kind == :info} name="hero-information-circle" class="size-5 shrink-0" />
+        <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
         <div>
           <p :if={@title} class="font-semibold">{@title}</p>
-          
           <p>{msg}</p>
         </div>
-         <div class="flex-1" />
+        <div class="flex-1" />
         <button type="button" class="group self-start cursor-pointer" aria-label={gettext("close")}>
-          <.icon name="lucide-x" class="size-5 opacity-40 group-hover:opacity-70" />
+          <.icon name="hero-x-mark" class="size-5 opacity-40 group-hover:opacity-70" />
         </button>
       </div>
     </div>
@@ -88,26 +94,24 @@ defmodule EtherWeb.CoreComponents do
   slot :inner_block, required: true
 
   def button(%{rest: rest} = assigns) do
-    variants = %{
-      "primary" => "bg-blue-600 hover:bg-blue-700 text-white",
-      nil => "bg-blue-600 hover:bg-blue-700 text-white"
-    }
+    variants = %{"primary" => "btn-primary", nil => "btn-primary btn-soft"}
 
     assigns =
       assign_new(assigns, :class, fn ->
-        [
-          "px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
-          Map.fetch!(variants, assigns[:variant])
-        ]
+        ["btn", Map.fetch!(variants, assigns[:variant])]
       end)
 
     if rest[:href] || rest[:navigate] || rest[:patch] do
       ~H"""
-      <.link class={@class} {@rest}>{render_slot(@inner_block)}</.link>
+      <.link class={@class} {@rest}>
+        {render_slot(@inner_block)}
+      </.link>
       """
     else
       ~H"""
-      <button class={@class} {@rest}>{render_slot(@inner_block)}</button>
+      <button class={@class} {@rest}>
+        {render_slot(@inner_block)}
+      </button>
       """
     end
   end
@@ -201,8 +205,8 @@ defmodule EtherWeb.CoreComponents do
       end)
 
     ~H"""
-    <div class="mb-4">
-      <label class="flex items-center gap-2">
+    <div class="fieldset mb-2">
+      <label>
         <input
           type="hidden"
           name={@name}
@@ -210,15 +214,17 @@ defmodule EtherWeb.CoreComponents do
           disabled={@rest[:disabled]}
           form={@rest[:form]}
         />
-        <input
-          type="checkbox"
-          id={@id}
-          name={@name}
-          value="true"
-          checked={@checked}
-          class={@class || "rounded border-gray-300 text-blue-600 focus:ring-blue-500"}
-          {@rest}
-        /> <span>{@label}</span>
+        <span class="label">
+          <input
+            type="checkbox"
+            id={@id}
+            name={@name}
+            value="true"
+            checked={@checked}
+            class={@class || "checkbox checkbox-sm"}
+            {@rest}
+          />{@label}
+        </span>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
@@ -227,23 +233,18 @@ defmodule EtherWeb.CoreComponents do
 
   def input(%{type: "select"} = assigns) do
     ~H"""
-    <div class="mb-4">
-      <label class="block">
-        <span :if={@label} class="block text-sm font-medium text-gray-700 mb-1">{@label}</span>
+    <div class="fieldset mb-2">
+      <label>
+        <span :if={@label} class="label mb-1">{@label}</span>
         <select
           id={@id}
           name={@name}
-          class={[
-            @class ||
-              "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm",
-            @errors != [] &&
-              (@error_class || "border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500")
-          ]}
+          class={[@class || "w-full select", @errors != [] && (@error_class || "select-error")]}
           multiple={@multiple}
           {@rest}
         >
           <option :if={@prompt} value="">{@prompt}</option>
-           {Phoenix.HTML.Form.options_for_select(@options, @value)}
+          {Phoenix.HTML.Form.options_for_select(@options, @value)}
         </select>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
@@ -253,16 +254,15 @@ defmodule EtherWeb.CoreComponents do
 
   def input(%{type: "textarea"} = assigns) do
     ~H"""
-    <div class="mb-4">
-      <label class="block">
-        <span :if={@label} class="block text-sm font-medium text-gray-700 mb-1">{@label}</span> <textarea
+    <div class="fieldset mb-2">
+      <label>
+        <span :if={@label} class="label mb-1">{@label}</span>
+        <textarea
           id={@id}
           name={@name}
           class={[
-            @class ||
-              "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm",
-            @errors != [] &&
-              (@error_class || "border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500")
+            @class || "w-full textarea",
+            @errors != [] && (@error_class || "textarea-error")
           ]}
           {@rest}
         >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
@@ -275,19 +275,17 @@ defmodule EtherWeb.CoreComponents do
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
-    <div class="mb-4">
-      <label class="block">
-        <span :if={@label} class="block text-sm font-medium text-gray-700 mb-1">{@label}</span>
+    <div class="fieldset mb-2">
+      <label>
+        <span :if={@label} class="label mb-1">{@label}</span>
         <input
           type={@type}
           name={@name}
           id={@id}
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
           class={[
-            @class ||
-              "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm",
-            @errors != [] &&
-              (@error_class || "border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500")
+            @class || "w-full input",
+            @errors != [] && (@error_class || "input-error")
           ]}
           {@rest}
         />
@@ -300,8 +298,9 @@ defmodule EtherWeb.CoreComponents do
   # Helper used by inputs to generate form errors
   defp error(assigns) do
     ~H"""
-    <p class="mt-1.5 flex gap-2 items-center text-sm text-red-600">
-      <.icon name="lucide-alert-circle" class="size-5" /> {render_slot(@inner_block)}
+    <p class="mt-1.5 flex gap-2 items-center text-sm text-error">
+      <.icon name="hero-exclamation-circle" class="size-5" />
+      {render_slot(@inner_block)}
     </p>
     """
   end
@@ -317,11 +316,13 @@ defmodule EtherWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", "pb-4"]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8">{render_slot(@inner_block)}</h1>
-        
-        <p :if={@subtitle != []} class="text-sm text-gray-500">{render_slot(@subtitle)}</p>
+        <h1 class="text-lg font-semibold leading-8">
+          {render_slot(@inner_block)}
+        </h1>
+        <p :if={@subtitle != []} class="text-sm text-base-content/70">
+          {render_slot(@subtitle)}
+        </p>
       </div>
-      
       <div class="flex-none">{render_slot(@actions)}</div>
     </header>
     """
@@ -359,16 +360,15 @@ defmodule EtherWeb.CoreComponents do
       end
 
     ~H"""
-    ~H\"""
-    <table class="min-w-full divide-y divide-gray-300">
+    <table class="table table-zebra">
       <thead>
         <tr>
           <th :for={col <- @col}>{col[:label]}</th>
-          
-          <th :if={@action != []}><span class="sr-only">{gettext("Actions")}</span></th>
+          <th :if={@action != []}>
+            <span class="sr-only">{gettext("Actions")}</span>
+          </th>
         </tr>
       </thead>
-      
       <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
         <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
           <td
@@ -378,7 +378,6 @@ defmodule EtherWeb.CoreComponents do
           >
             {render_slot(col, @row_item.(row))}
           </td>
-          
           <td :if={@action != []} class="w-0 font-semibold">
             <div class="flex gap-4">
               <%= for action <- @action do %>
@@ -412,7 +411,6 @@ defmodule EtherWeb.CoreComponents do
       <li :for={item <- @item} class="list-row">
         <div class="list-col-grow">
           <div class="font-bold">{item.title}</div>
-          
           <div>{render_slot(item)}</div>
         </div>
       </li>
@@ -441,7 +439,7 @@ defmodule EtherWeb.CoreComponents do
   attr :name, :string, required: true
   attr :class, :any, default: "size-4"
 
-  def icon(assigns) do
+  def icon(%{name: "hero-" <> _} = assigns) do
     ~H"""
     <span class={[@name, @class]} />
     """

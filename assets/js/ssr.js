@@ -1,14 +1,8 @@
 import { render } from "svelte/server"
 import Workbench from "../svelte/Workbench.svelte"
-import ActivityBar from "../svelte/ActivityBar.svelte"
-import Explorer from "../svelte/Explorer.svelte"
-import Editor from "../svelte/Editor.svelte"
 
 const components = {
-  Workbench,
-  ActivityBar,
-  Explorer,
-  Editor
+  Workbench
 }
 
 export function renderSvelte(name, props) {

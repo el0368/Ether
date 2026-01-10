@@ -8,11 +8,7 @@
 import Config
 
 config :ether,
-  ecto_repos: [Ether.Repo],
-  generators: [timestamp_type: :utc_datetime]
-
-# Unbreakable Zig Protocol: Local binary management
-config :zigler, local_zig: true
+  generators: [timestamp_type: :utc_datetime, binary_id: true]
 
 # Configure the endpoint
 config :ether, EtherWeb.Endpoint,
@@ -23,13 +19,16 @@ config :ether, EtherWeb.Endpoint,
     layout: false
   ],
   pubsub_server: Ether.PubSub,
-  live_view: [signing_salt: "VaPmyk8J"]
+  live_view: [signing_salt: "AjbfszvY"]
 
 # Configure live_svelte with Bun
 config :live_svelte,
   bundle_command: "bun run build.js",
   ssr_command: "bun run ../assets/js/ssr.js",
   cd: Path.expand("../assets", __DIR__)
+
+# Configure zigler
+config :zigler, local_zig: true
 
 # Configure Elixir's Logger
 config :logger, :default_formatter,

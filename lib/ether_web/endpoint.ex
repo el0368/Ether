@@ -7,17 +7,13 @@ defmodule EtherWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_ether_key",
-    signing_salt: "1Qj9F/uQ",
+    signing_salt: "c1eR3KJ5",
     same_site: "Lax"
   ]
 
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
-
-  socket "/socket", EtherWeb.UserSocket,
-    websocket: true,
-    longpoll: false
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -37,7 +33,6 @@ defmodule EtherWeb.Endpoint do
     socket "/phoenix/live_reload/socket", Phoenix.LiveReloader.Socket
     plug Phoenix.LiveReloader
     plug Phoenix.CodeReloader
-    # plug Phoenix.Ecto.CheckRepoStatus, otp_app: :ether
   end
 
   plug Phoenix.LiveDashboard.RequestLogger,

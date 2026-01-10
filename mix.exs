@@ -8,12 +8,10 @@ defmodule Ether.MixProject do
       elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
-      compilers: [:zig] ++ Mix.compilers(),
+      compilers: Mix.compilers(),
       aliases: aliases(),
       deps: deps(),
-      listeners: [Phoenix.CodeReloader],
-      releases: releases(),
-      clean_paths: ["_build", "priv/native"]
+      listeners: [Phoenix.CodeReloader]
     ]
   end
 
@@ -43,55 +41,18 @@ defmodule Ether.MixProject do
   defp deps do
     [
       {:phoenix, "~> 1.8.3"},
-      {:phoenix_ecto, "~> 4.5"},
-      {:ecto_sql, "~> 3.13"},
-      {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 1.1.0"},
       {:lazy_html, ">= 0.1.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.3"},
-      {:lucide_liveview, "~> 0.1"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
-      # Development Lifecycle
-      {:credo, "~> 1.7", runtime: false},
-      # Desktop Application
-      {:desktop, "~> 1.5"},
-      {:wx, "~> 1.1", hex: :bridge, targets: [:windows, :macos, :linux]},
-      {:burrito, "~> 1.2"},
-      # Native Reflexes (The Industrial Hybrid Engine)
-      {:zigler, "~> 0.15.0", runtime: false},
-      # File Watching (Incremental Deltas)
-      {:file_system, "~> 1.0"},
-
-      # Agent Framework & Intelligence
-      {:jido, "~> 1.0.0"},
-      {:sourceror, "~> 1.0"},
-      {:httpoison, "~> 2.0"},
-      {:elixir_sense, github: "elixir-lsp/elixir_sense"},
       {:live_svelte, "~> 0.15.0"}
-      # {:instructor, "~> 0.1.0"}
-    ]
-  end
-
-  def releases do
-    [
-      ether: [
-        steps: [:assemble, &Burrito.wrap/1],
-        burrito: [
-          targets: [
-            windows: [os: :windows, cpu: :x86_64],
-            macos: [os: :darwin, cpu: :x86_64],
-            macos_m1: [os: :darwin, cpu: :aarch64],
-            linux: [os: :linux, cpu: :x86_64]
-          ]
-        ]
-      ]
     ]
   end
 
@@ -103,30 +64,14 @@ defmodule Ether.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
-      compile: ["compile.bootstrap", "compile"],
-      "compile.bootstrap": fn _ ->
-        if File.exists?("lib/mix/tasks/compile.zig.ex") do
-          Code.compile_file("lib/mix/tasks/compile.zig.ex")
-        end
-      end,
-      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
-      "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      setup: ["deps.get", "assets.setup", "assets.build"],
       "assets.setup": ["cmd /c bun install"],
       "assets.build": ["cmd /c bun run build"],
       "assets.deploy": [
         "cmd /c bun run build",
         "phx.digest"
       ],
-      precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"],
-      "bench.total": [
-        "run bench/internal_ops.exs",
-        "run bench/ipc_bench.exs",
-        "run bench/nif_microbench.exs",
-        "run bench/scanner_bench.exs",
-        "run bench/web_vitals.exs"
-      ]
+      precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"]
     ]
   end
 end

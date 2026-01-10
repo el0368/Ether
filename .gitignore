@@ -23,7 +23,7 @@ erl_crash.dump
 /tmp/
 
 # Ignore package tarball (built via "mix hex.build").
-aether-*.tar
+ether-*.tar
 
 # Ignore assets that are produced by build tools.
 /priv/static/assets/
@@ -35,21 +35,3 @@ aether-*.tar
 npm-debug.log
 /assets/node_modules/
 
- 
-# Zig Artifacts 
-.zig-cache/ 
-zig-out/ 
-**/zig-out/ 
-/priv/native/*.dll
-
-# External Source (excluded from repo)
-#/vscode-main/
-#/vscode-main.zip
-
-
-
-# Ignore automatically generated Svelte files by the ~V sigil
-/assets/svelte/_build/
-
-# Ignore ssr build for svelte.
-/priv/svelte/

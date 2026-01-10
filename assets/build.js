@@ -6,18 +6,16 @@ const isWatch = process.argv.includes("--watch")
 async function doBuild() {
   const result = await build({
     entrypoints: ["js/app.js"],
-    outdir: "../priv/static/assets/js",
+    outdir: "../priv/static/assets",
     minify: !isWatch,
     sourcemap: isWatch ? "external" : "none",
     plugins: [
       SveltePlugin({
-        // Svelte 5 options
         compilerOptions: {
           hydratable: true
         }
       })
     ],
-    // Add external for fonts/images if needed
     external: ["/fonts/*", "/images/*"]
   })
 

@@ -17,7 +17,7 @@ defmodule EtherWeb.Router do
   scope "/", EtherWeb do
     pipe_through :browser
 
-    live "/", WorkbenchLive, :index
+    live "/", WorkbenchLive
   end
 
   # Other scopes may use custom stacks.

@@ -9,25 +9,10 @@ defmodule Ether.Application do
   def start(_type, _args) do
     children = [
       EtherWeb.Telemetry,
-      Ether.Repo,
       {DNSCluster, query: Application.get_env(:ether, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Ether.PubSub},
-      # Ether Agents - Disabled for Stability Phase
-      # Ether.Agents.FileServerAgent,
-      # Ether.Agents.TestingAgent,
-      # Ether.Agents.LintAgent,
-      # Ether.Agents.FormatAgent,
-      # Quality Assurance
-      # Ether.Agents.QualityAgent,
-      
-      # Advanced Agents (Phase 4)
-      # Ether.Agents.RefactorAgent,
-      # Ether.Agents.GitAgent,
-      # Ether.Agents.CommandAgent,
-
-      # Phase 6: LSP
-      # Ether.Agents.LSPAgent,
-
+      # Start a worker by calling: Ether.Worker.start_link(arg)
+      # {Ether.Worker, arg},
       # Start to serve requests, typically the last entry
       EtherWeb.Endpoint
     ]

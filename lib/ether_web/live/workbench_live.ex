@@ -139,14 +139,37 @@ defmodule EtherWeb.WorkbenchLive do
     {:noreply, assign(socket, :panel_visible, !socket.assigns.panel_visible)}
   end
 
-  # Handle "Open Folder" equivalent (triggered by UI button)
+  # Handle "Open Folder" with path from Tauri dialog
+  def handle_event("open_folder_path", %{"path" => path}, socket) do
+    Ether.Scanner.scan_async(path, [".git", "node_modules", "_build", "deps"], 2)
+
+    {:noreply,
+     socket
+     |> assign(:isLoading, true)
+     |> assign(:root_path, path)
+     |> assign(:files_list, [])}
+  end
+
+  # Handle "Open Folder" fallback (triggered by UI button without Tauri)
   def handle_event("open_folder", _params, socket) do
-    # In a real desktop app, we'd trigger a native dialog here.
-    # For now, we scan the current directory.
+    # Scan the current directory as fallback
     path = socket.assigns.root_path || File.cwd!()
     Ether.Scanner.scan_async(path, [".git", "node_modules", "_build", "deps"], 2)
 
-    {:noreply, socket |> assign(:isLoading, true) |> assign(:root_path, path)}
+    {:noreply,
+     socket
+     |> assign(:isLoading, true)
+     |> assign(:root_path, path)
+     |> assign(:files_list, [])}
+  end
+
+  def handle_event("refresh_folder", _params, socket) do
+    if path = socket.assigns.root_path do
+      Ether.Scanner.scan_async(path, [".git", "node_modules", "_build", "deps"], 2)
+      {:noreply, socket |> assign(:isLoading, true) |> assign(:files_list, [])}
+    else
+      {:noreply, socket}
+    end
   end
 
   def handle_event("open_quick_pick", params, socket) do
@@ -189,6 +212,12 @@ defmodule EtherWeb.WorkbenchLive do
       # TODO: Handle folder expansion toggle
       {:noreply, socket}
     end
+  end
+
+  # Handle editor content changes from Monaco
+  def handle_event("editor_change", %{"text" => text}, socket) do
+    # Store the editor content for potential save operations
+    {:noreply, assign(socket, :editor_content, text)}
   end
 
   def handle_event("flow_ack", _params, socket) do

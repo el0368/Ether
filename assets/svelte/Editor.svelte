@@ -6,17 +6,44 @@
   let container;
   let editor;
   let debounceTimer;
+  let currentPath = null;
 
+  function getLanguage(path) {
+    const ext = path?.split('.').pop()?.toLowerCase() || '';
+    const langMap = {
+      'ex': 'elixir',
+      'exs': 'elixir',
+      'heex': 'html',
+      'js': 'javascript',
+      'ts': 'typescript',
+      'svelte': 'html',
+      'css': 'css',
+      'json': 'json',
+      'md': 'markdown',
+      'zig': 'zig',
+      'html': 'html',
+      'xml': 'xml',
+      'yaml': 'yaml',
+      'yml': 'yaml',
+      'toml': 'ini'
+    };
+    return langMap[ext] || 'plaintext';
+  }
+
+  // Watch for content changes via props  
   $effect(() => {
-    if (editor && active_file) {
-      const model = monaco.editor.createModel(content, language, monaco.Uri.parse(`file://${active_file.path}`));
-      editor.setModel(model);
+    if (editor && content !== undefined && content !== null) {
+      const currentValue = editor.getValue();
+      if (content !== currentValue) {
+        console.log('[Editor] Updating Monaco with new content, length:', content.length);
+        editor.setValue(content);
+      }
     }
   });
 
   onMount(async () => {
     editor = monaco.editor.create(container, {
-      value: content,
+      value: content || '',
       language: language,
       theme: "vs-dark",
       automaticLayout: true,
@@ -33,12 +60,29 @@
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         const text = editor.getValue();
-        live.pushEvent("editor_change", { text });
-      }, 500); // Faster debounce for Svelte
+        if (live) {
+          live.pushEvent("editor_change", { text });
+        }
+      }, 500);
     });
+
+    // Listen for push_event from LiveView to load file content
+    if (live) {
+      live.handleEvent("load_file", ({ text, language: lang, path }) => {
+        console.log('[Editor] Received load_file event, path:', path, 'length:', text?.length);
+        if (editor && text !== undefined) {
+          editor.setValue(text);
+          const model = editor.getModel();
+          if (model && lang) {
+            monaco.editor.setModelLanguage(model, lang);
+          }
+        }
+      });
+    }
   });
 
   onDestroy(() => {
+    if (debounceTimer) clearTimeout(debounceTimer);
     if (editor) editor.dispose();
   });
 </script>

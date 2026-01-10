@@ -8,58 +8,54 @@ defmodule EtherWeb.Components.Workbench.ActivityBar do
   alias Phoenix.LiveView.JS
 
   attr :active_sidebar, :string, required: true
+  attr :sidebar_visible, :boolean, required: true
+  attr :pinned_containers, :list, required: true
 
   def activity_bar(assigns) do
     ~H"""
     <div 
       id="activity-bar"
-      phx-hook="SidebarControl"
-      data-initial-active={@active_sidebar}
+      phx-hook="ActivityBarSort"
+      data-active-sidebar={@active_sidebar}
+      data-sidebar-visible={"#{@sidebar_visible}"}
       class="w-[var(--vscode-activitybar-width)] min-w-[var(--vscode-activitybar-width)] bg-[var(--vscode-activitybar-background)] flex flex-col items-center py-2 gap-4 border-r border-[#2b2b2b]"
     >
-      <div
-        id="activity-icon-files"
-        data-panel="files"
-        class="activity-icon p-2 cursor-pointer border-l-2 text-[#858585] hover:text-white border-transparent"
-        title="Explorer"
-      >
-        <.icon name="lucide-copy" class="w-6 h-6" />
-      </div>
-      <div
-        id="activity-icon-search"
-        data-panel="search"
-        class="activity-icon p-2 cursor-pointer border-l-2 text-[#858585] hover:text-white border-transparent"
-        title="Search"
-      >
-        <.icon name="lucide-search" class="w-6 h-6" />
-      </div>
-      <div
-        id="activity-icon-git"
-        data-panel="git"
-        class="activity-icon p-2 cursor-pointer border-l-2 text-[#858585] hover:text-white border-transparent"
-        title="Source Control"
-      >
-        <.icon name="lucide-git-branch" class="w-6 h-6" />
-      </div>
-      <div
-        id="activity-icon-debug"
-        data-panel="debug"
-        class="activity-icon p-2 cursor-pointer border-l-2 text-[#858585] hover:text-white border-transparent"
-        title="Run and Debug"
-      >
-        <.icon name="lucide-play-circle" class="w-6 h-6" />
-      </div>
-      <div
-        id="activity-icon-extensions"
-        data-panel="extensions"
-        class="activity-icon p-2 cursor-pointer border-l-2 text-[#858585] hover:text-white border-transparent"
-        title="Extensions"
-      >
-        <.icon name="lucide-layout-grid" class="w-6 h-6" />
-      </div>
+      <%= for container <- @pinned_containers do %>
+        <.nav_item 
+          id={"activity-icon-#{container.id}"} 
+          panel={container.id} 
+          title={container.label} 
+          icon={container.icon} 
+          active={@active_sidebar == container.id} 
+        />
+      <% end %>
       <div class="mt-auto p-2 cursor-pointer text-[#858585] hover:text-white" title="Settings">
         <.icon name="lucide-settings" class="w-6 h-6" />
       </div>
+    </div>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :panel, :string, required: true
+  attr :title, :string, required: true
+  attr :icon, :string, required: true
+  attr :active, :boolean, required: true
+
+  defp nav_item(assigns) do
+    ~H"""
+    <div
+      id={@id}
+      data-panel={@panel}
+      draggable="true"
+      class={[
+        "activity-icon p-2 cursor-pointer border-l-2 hover:text-white",
+        @active && "text-white opacity-100 border-white active",
+        !@active && "text-[#858585] border-transparent"
+      ]}
+      title={@title}
+    >
+      <.icon name={@icon} class="w-6 h-6" />
     </div>
     """
   end

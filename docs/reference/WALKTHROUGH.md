@@ -557,5 +557,27 @@ The system is pre-configured to handle:
 - **Result**: VS Code-level smoothness. Even if the server is busy, the UI never lags.
 
 ### 3. Architecture Alignment
-- **Plan**: Established `docs/plans/ARCHITECTURE_ALIGNMENT.md`.
 - **Cleanup**: Removed `SidebarAgent` to simplify the supervision tree and state flow.
+
+---
+
+## Session 30: Isomorphic Architecture & Tool Verification
+**Date**: 2026-01-10
+
+### Stack Verification: PLEX-Z vs Hologram
+- **Finding**: The project avoids external isomorphic frameworks in favor of a **Native-First** approach.
+- **Engine**: Custom Zig NIFs providing low-latency binary streams to the LiveView frontend.
+- **Stability**: Level 5 verified.
+
+---
+
+## Session 31: Repository Orchestration & GitHub Sync
+**Date**: 2026-01-10
+
+### 1. vscode-main Integration
+- **Action**: Added detailed `.gitignore` to the `vscode-main` sub-repo to prevent tracking large binaries and `node_modules`.
+- **Status**: Sub-repo is now safely staged for tracking.
+
+### 2. Global State Synchronization
+- **Action**: Pushed all core IDE updates, performance enhancements, and architectural documentations to GitHub.
+- **Verdict**: Repository state is unified and up-to-date.

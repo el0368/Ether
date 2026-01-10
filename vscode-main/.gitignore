@@ -1,0 +1,11 @@
+node_modules/
+out/
+build/
+.cache/
+test-results/
+.vscode-test/
+dist/
+*.tsbuildinfo
+**/node_modules/
+**/out/
+**/dist/

@@ -43,5 +43,6 @@ zig-out/
 /priv/native/*.dll
 
 # External Source (excluded from repo)
-/vscode-main/
-/vscode-main.zip
+#/vscode-main/
+#/vscode-main.zip
+

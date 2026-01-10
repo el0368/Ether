@@ -3,7 +3,7 @@ import WindowControls from "./window_controls";
 import { GlobalShortcuts } from "./shortcuts";
 import FlowControl from "./flow_control";
 import SidebarControl from "./sidebar_control";
-import ActiveFile from "./active_file";
+import ActivityBarSort from "./activity_bar_sort";
 
 export default {
   MonacoEditor,
@@ -11,5 +11,5 @@ export default {
   GlobalShortcuts,
   FlowControl,
   SidebarControl,
-  ActiveFile
+  ActivityBarSort
 };

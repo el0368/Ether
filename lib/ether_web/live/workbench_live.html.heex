@@ -10,18 +10,22 @@
 
   <div class="flex-1 flex min-h-0 overflow-hidden">
     <%!-- ActivityBar --%>
-    <EtherWeb.Components.Workbench.ActivityBar.activity_bar active_sidebar={@active_sidebar} />
+    <EtherWeb.Components.Workbench.ActivityBar.activity_bar 
+      active_sidebar={@active_sidebar} 
+      sidebar_visible={@sidebar_visible}
+      pinned_containers={Ether.Workbench.LayoutState.pinned_containers(@workbench_layout)}
+    />
 
     <%!-- SideBar --%>
-    <%= if @sidebar_visible do %>
-      <EtherWeb.Components.Workbench.Sidebar.sidebar
-        active_sidebar={@active_sidebar}
-        active_file={@active_file}
-        file_count={@file_count}
-        is_loading={@isLoading}
-        files={@streams.files}
-      />
-    <% end %>
+    <EtherWeb.Components.Workbench.Sidebar.sidebar
+      active_sidebar={@active_sidebar}
+      sidebar_visible={@sidebar_visible}
+      workbench_layout={@workbench_layout}
+      active_file={@active_file}
+      file_count={@file_count}
+      is_loading={@isLoading}
+      files={@streams.files}
+    />
 
     <%!-- Main Content Area --%>
     <div class="flex-1 flex flex-col min-w-0">
@@ -38,6 +42,14 @@
   <EtherWeb.Components.Workbench.StatusBar.status_bar active_file={@active_file} />
 
   <%!-- Global Overlays --%>
+  <%= if @context_menu do %>
+    <EtherWeb.Components.Workbench.ContextMenu.context_menu 
+      x={@context_menu.x} 
+      y={@context_menu.y} 
+      items={@context_menu.items} 
+    />
+  <% end %>
+
   <%= if @quick_pick_visible do %>
     <.live_component 
       module={EtherWeb.Workbench.QuickPick} 

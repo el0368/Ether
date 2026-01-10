@@ -2,6 +2,8 @@ defmodule EtherWeb.WorkbenchLive do
   use EtherWeb, :live_view
 
   alias Ether.Scanner.Utils
+  alias Ether.Workbench.LayoutState
+  alias Ether.Workbench.Storage
 
   @flush_interval_ms 100
 
@@ -10,14 +12,15 @@ defmodule EtherWeb.WorkbenchLive do
     if connected?(socket) do
       Phoenix.PubSub.subscribe(Ether.PubSub, "filetree:deltas")
     end
-
-    sidebar_state = %{active_sidebar: "files", sidebar_visible: true}
+    
+    layout = Storage.load()
 
     {:ok,
      socket
      |> assign(:page_title, "Ether")
-     |> assign(:active_sidebar, sidebar_state.active_sidebar)
-     |> assign(:sidebar_visible, sidebar_state.sidebar_visible)
+     |> assign(:workbench_layout, layout)
+     |> assign(:active_sidebar, layout.active_id)
+     |> assign(:sidebar_visible, layout.visible)
      |> assign(:panel_visible, false)
      |> assign(:active_file, nil)
      |> assign(:recent_files, [])
@@ -28,25 +31,94 @@ defmodule EtherWeb.WorkbenchLive do
      |> assign(:flush_pending, false)
      |> assign(:quick_pick_visible, false)
      |> assign(:quick_pick_mode, "files")
+     |> assign(:context_menu, nil)
      |> stream(:files, [])}
   end
 
+  def handle_event("show_context_menu", %{"panel" => _panel, "x" => x, "y" => y}, socket) do
+    # VS Code behavior: show ALL views with checkmarks
+    all_views = Registry.all()
+    pinned_ids = socket.assigns.workbench_layout.pinned_ids
+    
+    items = 
+      all_views
+      |> Enum.map(fn view -> 
+        is_pinned = view.id in pinned_ids
+        %{
+          label: view.label,
+          checked: is_pinned,
+          action: JS.push(if(is_pinned, do: "unpin_view", else: "pin_view"), value: %{panel: view.id})
+        }
+      end)
+      |> Enum.concat([
+        :separator,
+        %{label: "Reset Activity Bar", action: JS.push("reset_layout")}
+      ])
+
+    {:noreply, assign(socket, :context_menu, %{x: x, y: y, items: items})}
+  end
+
+  def handle_event("show_context_menu", %{"panel" => panel}, socket) do
+    # Fallback for when coordinates aren't sent from basic phx-click
+    handle_event("show_context_menu", %{"panel" => panel, "x" => 50, "y" => 100}, socket)
+  end
+
+  def handle_event("close_context_menu", _params, socket) do
+    {:noreply, assign(socket, :context_menu, nil)}
+  end
+
+  def handle_event("unpin_view", %{"panel" => panel}, socket) do
+    layout = LayoutState.unpin_view(socket.assigns.workbench_layout, panel)
+    Storage.save(layout)
+    {:noreply, 
+     socket 
+     |> assign(:workbench_layout, layout)
+     |> assign(:context_menu, nil)}
+  end
+
+  def handle_event("reset_layout", _params, socket) do
+     layout = LayoutState.reset()
+     Storage.save(layout)
+     {:noreply, 
+      socket 
+      |> assign(:workbench_layout, layout)
+      |> assign(:active_sidebar, layout.active_id)
+      |> assign(:sidebar_visible, layout.visible)
+      |> assign(:context_menu, nil)}
+  end
+
+  def handle_event("pin_view", %{"panel" => panel}, socket) do
+    layout = LayoutState.pin_view(socket.assigns.workbench_layout, panel)
+    Storage.save(layout)
+    {:noreply, 
+     socket 
+     |> assign(:workbench_layout, layout)
+     |> assign(:context_menu, nil)}
+  end
+  
+  def handle_event("reorder_icons", %{"panel" => panel, "to_index" => to_index}, socket) do
+    layout = LayoutState.reorder_views(socket.assigns.workbench_layout, panel, to_index)
+    Storage.save(layout)
+    {:noreply, assign(socket, :workbench_layout, layout)}
+  end
+
   def handle_event("toggle_sidebar", _params, socket) do
-    {:noreply, assign(socket, :sidebar_visible, !socket.assigns.sidebar_visible)}
+    layout = %{socket.assigns.workbench_layout | visible: !socket.assigns.workbench_layout.visible}
+    Storage.save(layout)
+    {:noreply, 
+     socket 
+     |> assign(:workbench_layout, layout)
+     |> assign(:sidebar_visible, layout.visible)}
   end
 
   def handle_event("set_sidebar", %{"panel" => panel}, socket) do
-    socket = 
-      if socket.assigns.active_sidebar == panel do
-        # Toggle visibility if clicking same panel
-        assign(socket, :sidebar_visible, !socket.assigns.sidebar_visible)
-      else
-        # Switch to new panel and ensure visible
-        socket 
-        |> assign(:active_sidebar, panel)
-        |> assign(:sidebar_visible, true)
-      end
-    {:noreply, socket}
+    layout = LayoutState.toggle_view(socket.assigns.workbench_layout, panel)
+    Storage.save(layout)
+    {:noreply, 
+     socket 
+     |> assign(:workbench_layout, layout)
+     |> assign(:active_sidebar, layout.active_id)
+     |> assign(:sidebar_visible, layout.visible)}
   end
 
   def handle_event("toggle_panel", _params, socket) do
@@ -56,7 +128,6 @@ defmodule EtherWeb.WorkbenchLive do
   # Handle "Open Folder" equivalent (triggered by UI button)
   def handle_event("open_folder", _params, socket) do
     # In a real desktop app, we'd trigger a native dialog here.
-    # For now, we scan the current directory.
     # For now, we scan the current directory.
     path = socket.assigns.root_path || File.cwd!()
     Ether.Scanner.scan_async(path, [".git", "node_modules", "_build", "deps"], 2)
@@ -102,20 +173,15 @@ defmodule EtherWeb.WorkbenchLive do
     end
   end
 
-  defp get_language(path) do
-    case Path.extname(path) do
-      ext when ext in [".ex", ".exs"] -> "elixir"
-      ".heex" -> "html"
-      ".js" -> "javascript"
-      ".ts" -> "typescript"
-      ".svelte" -> "html"
-      ".css" -> "css"
-      ".json" -> "json"
-      ".md" -> "markdown"
-      ".zig" -> "zig"
-      _ -> "text"
+
+  def handle_event("flow_ack", _params, socket) do
+    # Frontend Painted. Resume Backend.
+    if pid = socket.assigns[:scanner_pid] do
+      send(pid, :scanner_continue)
     end
+    {:noreply, socket}
   end
+
 
   # Scanner Callbacks - Automatic Flow Control (ADR-005)
   def handle_info({:scanner_chunk, binary}, socket) do
@@ -142,14 +208,6 @@ defmodule EtherWeb.WorkbenchLive do
       |> assign(:scanner_pid, pid)
       |> push_event("flow_sync", %{})
       
-    {:noreply, socket}
-  end
-
-  def handle_event("flow_ack", _params, socket) do
-    # Frontend Painted. Resume Backend.
-    if pid = socket.assigns[:scanner_pid] do
-      send(pid, :scanner_continue)
-    end
     {:noreply, socket}
   end
 
@@ -195,6 +253,21 @@ defmodule EtherWeb.WorkbenchLive do
       
       _ ->
         {:noreply, socket}
+    end
+  end
+
+  defp get_language(path) do
+    case Path.extname(path) do
+      ext when ext in [".ex", ".exs"] -> "elixir"
+      ".heex" -> "html"
+      ".js" -> "javascript"
+      ".ts" -> "typescript"
+      ".svelte" -> "html"
+      ".css" -> "css"
+      ".json" -> "json"
+      ".md" -> "markdown"
+      ".zig" -> "zig"
+      _ -> "text"
     end
   end
 

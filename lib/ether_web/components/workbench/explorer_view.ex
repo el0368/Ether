@@ -45,17 +45,7 @@ defmodule EtherWeb.Workbench.ExplorerView do
         </div>
       </div>
 
-      <%= if @file_count == 0 && !@is_loading do %>
-        <div class="flex flex-col items-center justify-center p-8 text-center h-full gap-4">
-          <p class="text-[12px] opacity-60">You have not yet opened a folder.</p>
-          <button
-            phx-click="open_folder"
-            class="px-4 py-2 bg-[#007acc] hover:bg-[#0062a3] text-white text-[12px] rounded transition-colors font-medium shadow-lg"
-          >
-            Open Folder
-          </button>
-        </div>
-      <% end %>
+
     </div>
     """
   end

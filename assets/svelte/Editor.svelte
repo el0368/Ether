@@ -79,12 +79,31 @@
         }
       });
     }
+
+    // Global Keydown Listener for Ctrl+S
+    const handleKeydown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault(); // Stop browser "Save Page As"
+        if (active_file && editor) {
+          const text = editor.getValue();
+          console.log('[Editor] Saving file:', active_file);
+          if (live) {
+            live.pushEvent("save_file", { path: active_file.path, text });
+          }
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeydown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeydown);
+      if (editor) editor.dispose();
+      if (debounceTimer) clearTimeout(debounceTimer);
+    };
   });
 
-  onDestroy(() => {
-    if (debounceTimer) clearTimeout(debounceTimer);
-    if (editor) editor.dispose();
-  });
+
+
 </script>
 
 <div class="flex-1 flex flex-col min-w-0 bg-[#1e1e1e]">

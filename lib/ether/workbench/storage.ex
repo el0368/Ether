@@ -7,9 +7,13 @@ defmodule Ether.Workbench.Storage do
   @storage_path "priv/storage/layout.json"
 
   def save(layout) do
-    File.mkdir_p!(Path.dirname(@storage_path))
-    content = Jason.encode!(layout)
-    File.write!(@storage_path, content)
+    # Async save to prevent blocking the UI thread (LiveView)
+    # TODO: Migrate to GenServer for serialized writes if race conditions occur
+    Task.start(fn ->
+      File.mkdir_p!(Path.dirname(@storage_path))
+      content = Jason.encode!(layout)
+      File.write!(@storage_path, content)
+    end)
   end
 
   def load do

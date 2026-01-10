@@ -20,59 +20,15 @@
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
 import "phoenix_html"
 // Establish Phoenix Socket and LiveView configuration.
-import {Socket} from "phoenix"
-import {LiveSocket} from "phoenix_live_view"
-import hooks from "./hooks"
-import topbar from "../vendor/topbar"
-import { getHooks } from "live_svelte"
-import Workbench from "../svelte/Workbench.svelte"
-import ActivityBar from "../svelte/ActivityBar.svelte"
-import Explorer from "../svelte/Explorer.svelte"
-import Editor from "../svelte/Editor.svelte"
-
-const Components = {
-  Workbench,
-  ActivityBar,
-  Explorer,
-  Editor
-}
-
-// Performance Audit: svelte-render-scan
-if (process.env.NODE_ENV === "development") {
-  import("svelte-render-scan").then(({ scan }) => {
-    scan({
-      enabled: true,
-      log: true,
-    })
-  })
-}
-
-const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-const liveSocket = new LiveSocket("/live", Socket, {
-  longPollFallbackMs: 2500,
-  params: {_csrf_token: csrfToken},
-  hooks: {
-    ...hooks,
-    ...getHooks(Components)
-  },
-  dom: {
-    onBeforeElUpdated(from, to) {
-      if (from._svelte) {
-        from._svelte.$set({
-          name: to.getAttribute("name"),
-          props: JSON.parse(to.getAttribute("props")),
-        })
-        return false
-      }
-      return true
-    },
-  },
-})
+import { Socket } from "phoenix"
+import { LiveSocket } from "phoenix_live_view"
+// Topbar removed for Desktop-native feel
+// import topbar from "../vendor/topbar"
 
 // Show progress bar on live navigation and form submits
-topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
-window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
-window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
+// topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
+// window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
+// window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
 // connect if there are any LiveViews on the page
 liveSocket.connect()

@@ -127,45 +127,36 @@ pub export fn zig_scan_yieldable(
     };
 
     // 5. Iterative Stack Scan
-    while (res_obj.stack.items.len > 0 and res_obj.is_active) {
-        if (nif_api.consume_timeslice(env, 1) != 0) {
-            flush_buffer(&scan_ctx);
-            // Fix: Return {:cont, resource} tuple instead of atom :yield
-            const tag = nif_api.make_atom(env, "cont");
-            return nif_api.make_tuple2(env, tag, argv[0]);
-        }
+    // The "Level 7" Resumable Loop (Refactored for deep directory yielding)
+    while (res_obj.active_iter != null or (res_obj.stack.items.len > 0 and res_obj.is_active)) {
 
-        const current_entry = res_obj.stack.pop().?;
-        const current_path = current_entry.path;
-        const current_depth = current_entry.depth;
-        defer allocator.free(current_path);
-
-        const path_utf16 = sliceToHeapUTF16(allocator, current_path) catch continue;
-        defer allocator.free(path_utf16);
-
-        const attrs = kernel32.GetFileAttributesW(path_utf16.ptr);
-        if (attrs == 0xFFFFFFFF) continue;
-
-        if ((attrs & 0x10) != 0) { // Directory
-            if (current_depth >= depth_limit) continue; // Safety valve / User limit
-            var search_pattern_u8 = std.ArrayListUnmanaged(u8){};
-            defer search_pattern_u8.deinit(allocator);
-            search_pattern_u8.appendSlice(allocator, current_path) catch continue;
-            if (!std.mem.endsWith(u8, current_path, "\\") and !std.mem.endsWith(u8, current_path, "/")) {
-                search_pattern_u8.appendSlice(allocator, "\\*") catch continue;
-            } else {
-                search_pattern_u8.append(allocator, '*') catch continue;
-            }
-
-            const pattern_utf16 = sliceToHeapUTF16(allocator, search_pattern_u8.items) catch continue;
-            defer allocator.free(pattern_utf16);
-
+        // --- RESUME Active Iterator ---
+        if (res_obj.active_iter) |*iter| {
+            // We have an open directory handle from previous yield
             var find_data: w.WIN32_FIND_DATAW = undefined;
-            const find_handle = kernel32.FindFirstFileW(pattern_utf16.ptr, &find_data);
-            if (find_handle == w.INVALID_HANDLE_VALUE) continue;
-            defer _ = kernel32.FindClose(find_handle);
+            const find_handle = @as(w.HANDLE, @ptrCast(iter.handle));
+            const current_path = iter.path;
+            const current_depth = iter.depth;
 
+            // Process next file in this directory
+            // We loop here until timeslice exhaustion OR directory end
             while (true) {
+                if (nif_api.consume_timeslice(env, 1) != 0) {
+                    flush_buffer(&scan_ctx);
+                    // Yield again, keeping active_iter set
+                    const tag = nif_api.make_atom(env, "cont");
+                    return nif_api.make_tuple2(env, tag, argv[0]);
+                }
+
+                if (!kernel32.FindNextFileW(find_handle, &find_data)) {
+                    // Directory finished
+                    _ = kernel32.FindClose(find_handle);
+                    allocator.free(current_path); // Free the path stored in iterator
+                    res_obj.active_iter = null; // Clear iterator
+                    break; // Go back to stack loop
+                }
+
+                // --- Process Entry (Copied Logic) ---
                 const name_u16 = std.mem.sliceTo(&find_data.cFileName, 0);
                 if (!std.mem.eql(u16, name_u16, &.{'.'}) and !std.mem.eql(u16, name_u16, &.{ '.', '.' })) {
                     const name_len = kernel32.WideCharToMultiByte(CP_UTF8, 0, name_u16.ptr, @intCast(name_u16.len), null, 0, null, null);
@@ -188,7 +179,7 @@ pub export fn zig_scan_yieldable(
                             const is_dir = (find_data.dwFileAttributes & 0x10) != 0;
                             const type_code: u8 = if (is_dir) 2 else 1;
 
-                            // Add entry to buffer: [type (u8)] [depth (u8)] [len (u16)] [path]
+                            // Add entry to buffer
                             var success = true;
                             local_buffer.append(allocator, type_code) catch {
                                 success = false;
@@ -224,13 +215,83 @@ pub export fn zig_scan_yieldable(
                         }
                     }
                 }
-                if (!kernel32.FindNextFileW(find_handle, &find_data)) break;
 
                 // Pre-emptive flush to avoid giant messages
                 if (local_buffer.items.len > 1024 * 16) {
                     flush_buffer(&scan_ctx);
                 }
             }
+            if (res_obj.active_iter != null) continue; // Should not happen with logic above but safety
+        }
+
+        // --- START New Directory from Stack ---
+        if (res_obj.stack.items.len == 0) break; // Finished everything
+
+        const current_entry = res_obj.stack.pop().?;
+        const current_path = current_entry.path;
+        const current_depth = current_entry.depth;
+        // Don't free current_path yet, we might need it for iterator
+
+        const path_utf16 = sliceToHeapUTF16(allocator, current_path) catch {
+            allocator.free(current_path);
+            continue;
+        };
+        defer allocator.free(path_utf16);
+
+        const attrs = kernel32.GetFileAttributesW(path_utf16.ptr);
+        if (attrs == 0xFFFFFFFF) {
+            allocator.free(current_path);
+            continue;
+        }
+
+        if ((attrs & 0x10) != 0) { // Directory
+            if (current_depth >= depth_limit) { // Safety valve / User limit
+                allocator.free(current_path);
+                continue;
+            }
+            var search_pattern_u8 = std.ArrayListUnmanaged(u8){};
+            defer search_pattern_u8.deinit(allocator);
+            search_pattern_u8.appendSlice(allocator, current_path) catch {
+                allocator.free(current_path);
+                continue;
+            };
+            if (!std.mem.endsWith(u8, current_path, "\\") and !std.mem.endsWith(u8, current_path, "/")) {
+                search_pattern_u8.appendSlice(allocator, "\\*") catch {
+                    allocator.free(current_path);
+                    continue;
+                };
+            } else {
+                search_pattern_u8.append(allocator, '*') catch {
+                    allocator.free(current_path);
+                    continue;
+                };
+            }
+
+            const pattern_utf16 = sliceToHeapUTF16(allocator, search_pattern_u8.items) catch {
+                allocator.free(current_path);
+                continue;
+            };
+            defer allocator.free(pattern_utf16);
+
+            var find_data: w.WIN32_FIND_DATAW = undefined;
+            const find_handle = kernel32.FindFirstFileW(pattern_utf16.ptr, &find_data);
+
+            if (find_handle != w.INVALID_HANDLE_VALUE) {
+                // Successfully opened directory. Save to ActiveIterator immediately.
+                res_obj.active_iter = .{
+                    .handle = find_handle,
+                    .path = current_path, // Transfer ownership
+                    .depth = current_depth,
+                };
+                // Do NOT free current_path, it's owned by iter now.
+                // The actual item processing happens in the next loop iteration (top of 'while')
+                // triggering "RESUME Active Iterator" block logic immediately.
+                continue;
+            } else {
+                allocator.free(current_path);
+            }
+        } else {
+            allocator.free(current_path);
         }
 
         if (scan_ctx.entry_count >= CHUNK_SIZE) {

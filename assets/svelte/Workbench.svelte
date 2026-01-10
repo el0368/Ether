@@ -20,17 +20,31 @@
   let sidebar_visible = $state(initial_sidebar_visible);
   let current_sidebar = $state(active_sidebar);
 
+  // Guard against server race conditions
+  let last_interaction_time = 0;
+
   function handleToggleSidebar() {
+    last_interaction_time = Date.now();
     sidebar_visible = !sidebar_visible;
     live.pushEvent("toggle_sidebar", { visible: sidebar_visible });
   }
 
   function handleSetSidebar(id) {
+    last_interaction_time = Date.now();
+    
     if (current_sidebar === id) {
-      handleToggleSidebar();
+      if (sidebar_visible) {
+        // Toggle off if clicking active
+        sidebar_visible = false;
+        live.pushEvent("toggle_sidebar", { visible: false });
+      } else {
+        // Toggle on if clicking hidden active
+        sidebar_visible = true;
+        live.pushEvent("toggle_sidebar", { visible: true });
+      }
     } else {
       current_sidebar = id;
-      if (!sidebar_visible) sidebar_visible = true;
+      sidebar_visible = true;
       live.pushEvent("set_sidebar", { panel: id });
     }
   }
@@ -41,16 +55,32 @@
     { id: 'files', label: 'Explorer' }
   );
 
-  // Sync prop change back to state if server overrides
-  $effect(() => {
-    sidebar_visible = initial_sidebar_visible;
-  });
+  let previous_active_sidebar = active_sidebar; // Track the last prop value we processed
 
   $effect(() => {
-    // Only update if the prop is different and we haven't just changed it locally
-    // (This is a simplified check, ideally we'd track last update source)
-    if (active_sidebar !== current_sidebar) {
-      current_sidebar = active_sidebar;
+    // Only update local state if:
+    // 1. The PROP has actually changed
+    // 2. We haven't clicked recently (Guard against server Ack race condition)
+    if (active_sidebar !== previous_active_sidebar) {
+      previous_active_sidebar = active_sidebar;
+      
+      const time_since_interaction = Date.now() - last_interaction_time;
+      if (time_since_interaction > 500) {
+        current_sidebar = active_sidebar;
+        sidebar_visible = initial_sidebar_visible; // Sync visibility strictly from server? No, dangerous.
+      } else {
+        console.log("Ignored stale server update (Race Condition Guard)");
+      }
+    }
+  });
+
+  // Sync visibility prop separately but loosely
+  $effect(() => {
+    if (initial_sidebar_visible !== sidebar_visible) {
+       const time_since_interaction = Date.now() - last_interaction_time;
+       if (time_since_interaction > 500) {
+          sidebar_visible = initial_sidebar_visible;
+       }
     }
   });
 </script>
@@ -76,10 +106,12 @@
         </div>
         
         <div class="flex-1 overflow-y-auto">
-          {#if active_container.id === 'files'}
+          <div class={active_container.id === 'files' ? 'h-full block' : 'hidden'}>
             <Explorer {files} {active_file} {live} />
-          {:else}
-            <div class="flex-1 flex items-center justify-center text-[12px] text-[#858585] italic">
+          </div>
+          
+          {#if active_container.id !== 'files'}
+            <div class="flex-1 flex items-center justify-center text-[12px] text-[#858585] italic h-full">
               {active_container.label} functionality coming soon...
             </div>
           {/if}

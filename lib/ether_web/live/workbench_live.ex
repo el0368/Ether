@@ -220,6 +220,18 @@ defmodule EtherWeb.WorkbenchLive do
     {:noreply, assign(socket, :editor_content, text)}
   end
 
+  def handle_event("save_file", %{"path" => path, "text" => text}, socket) do
+    # Async Local Save (Non-blocking)
+    Task.start(fn ->
+      case File.write(path, text) do
+        :ok -> IO.puts("[Ether] Saved file: #{path}")
+        {:error, reason} -> IO.puts("[Ether] Failed to save file: #{path} (#{inspect(reason)})")
+      end
+    end)
+
+    {:noreply, socket}
+  end
+
   def handle_event("flow_ack", _params, socket) do
     # Frontend Painted. Resume Backend.
     if pid = socket.assigns[:scanner_pid] do
